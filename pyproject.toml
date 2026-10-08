@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cardgame"
+version = "0.1.0"
+description = "Stage 1 card-game engine and PPO self-play bot"
+requires-python = ">=3.10"
+dependencies = ["numpy>=1.26", "torch>=2.2"]
+
+[project.optional-dependencies]
+test = ["pytest>=8.0"]
+
+[tool.setuptools.packages.find]
+include = ["cardgame*"]
+
+[tool.setuptools.package-data]
+cardgame = ["data/*.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

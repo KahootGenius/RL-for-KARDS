@@ -1,0 +1,938 @@
+{
+  "agent": "models/ppo_final.pt",
+  "agent_kwargs": {},
+  "games_per_opponent": 2000,
+  "start_seed": 0,
+  "workers": 6,
+  "target": {
+    "opponent": "greedy",
+    "target": 0.7,
+    "win_rate": 0.757,
+    "games": 2000,
+    "win_rate_ci95_low": 0.737722072000444,
+    "conclusive": true,
+    "passed": true
+  },
+  "results": [
+    {
+      "opponent": "greedy",
+      "label": "greedy",
+      "agent_a": "models/ppo_final.pt",
+      "agent_b": "greedy",
+      "kwargs_a": {},
+      "kwargs_b": {},
+      "start_seed": 0,
+      "n_deals": 1000,
+      "games": 2000,
+      "wins": 1514,
+      "draws": 0,
+      "losses": 486,
+      "win_rate": 0.757,
+      "draw_rate": 0.0,
+      "loss_rate": 0.243,
+      "score": 0.757,
+      "win_rate_ci95": [
+        0.737722072000444,
+        0.775292565696992
+      ],
+      "by_seat": {
+        "0": {
+          "games": 1000,
+          "wins": 766,
+          "draws": 0,
+          "losses": 234,
+          "win_rate": 0.766,
+          "draw_rate": 0.0,
+          "loss_rate": 0.234,
+          "score": 0.766,
+          "win_rate_ci95": [
+            0.7387721670475355,
+            0.7911919974381493
+          ]
+        },
+        "1": {
+          "games": 1000,
+          "wins": 748,
+          "draws": 0,
+          "losses": 252,
+          "win_rate": 0.748,
+          "draw_rate": 0.0,
+          "loss_rate": 0.252,
+          "score": 0.748,
+          "win_rate_ci95": [
+            0.720176639029259,
+            0.7739252887619057
+          ]
+        }
+      },
+      "by_turn_order": {
+        "first": {
+          "games": 1000,
+          "wins": 941,
+          "draws": 0,
+          "losses": 59,
+          "win_rate": 0.941,
+          "draw_rate": 0.0,
+          "loss_rate": 0.059,
+          "score": 0.941,
+          "win_rate_ci95": [
+            0.9246390972285408,
+            0.9539857017871995
+          ]
+        },
+        "second": {
+          "games": 1000,
+          "wins": 573,
+          "draws": 0,
+          "losses": 427,
+          "win_rate": 0.573,
+          "draw_rate": 0.0,
+          "loss_rate": 0.427,
+          "score": 0.573,
+          "win_rate_ci95": [
+            0.5421204037602065,
+            0.6033208895009023
+          ]
+        }
+      },
+      "deals": {
+        "a_won_both": 517,
+        "split": 480,
+        "b_won_both": 3,
+        "with_draw": 0
+      },
+      "avg_rounds": 11.0745,
+      "avg_steps": 83.466,
+      "elapsed_s": 0.8514040829613805,
+      "games_per_s": 2349.0608513921347
+    },
+    {
+      "opponent": "random",
+      "label": "random",
+      "agent_a": "models/ppo_final.pt",
+      "agent_b": "random",
+      "kwargs_a": {},
+      "kwargs_b": {},
+      "start_seed": 0,
+      "n_deals": 1000,
+      "games": 2000,
+      "wins": 1994,
+      "draws": 0,
+      "losses": 6,
+      "win_rate": 0.997,
+      "draw_rate": 0.0,
+      "loss_rate": 0.003,
+      "score": 0.997,
+      "win_rate_ci95": [
+        0.9934700849260646,
+        0.9986243700763698
+      ],
+      "by_seat": {
+        "0": {
+          "games": 1000,
+          "wins": 996,
+          "draws": 0,
+          "losses": 4,
+          "win_rate": 0.996,
+          "draw_rate": 0.0,
+          "loss_rate": 0.004,
+          "score": 0.996,
+          "win_rate_ci95": [
+            0.9897604437227377,
+            0.9984434118595916
+          ]
+        },
+        "1": {
+          "games": 1000,
+          "wins": 998,
+          "draws": 0,
+          "losses": 2,
+          "win_rate": 0.998,
+          "draw_rate": 0.0,
+          "loss_rate": 0.002,
+          "score": 0.998,
+          "win_rate_ci95": [
+            0.9927371921365079,
+            0.9994513564118793
+          ]
+        }
+      },
+      "by_turn_order": {
+        "first": {
+          "games": 1000,
+          "wins": 1000,
+          "draws": 0,
+          "losses": 0,
+          "win_rate": 1.0,
+          "draw_rate": 0.0,
+          "loss_rate": 0.0,
+          "score": 1.0,
+          "win_rate_ci95": [
+            0.996173241514445,
+            1.0
+          ]
+        },
+        "second": {
+          "games": 1000,
+          "wins": 994,
+          "draws": 0,
+          "losses": 6,
+          "win_rate": 0.994,
+          "draw_rate": 0.0,
+          "loss_rate": 0.006,
+          "score": 0.994,
+          "win_rate_ci95": [
+            0.9869718317581478,
+            0.9972473308581237
+          ]
+        }
+      },
+      "deals": {
+        "a_won_both": 994,
+        "split": 6,
+        "b_won_both": 0,
+        "with_draw": 0
+      },
+      "avg_rounds": 8.212,
+      "avg_steps": 55.7805,
+      "elapsed_s": 0.6015424579964019,
+      "games_per_s": 3324.7860951686353
+    },
+    {
+      "opponent": "runs/ppo_v4a/ckpt_00100.pt",
+      "label": "ckpt_00100.pt",
+      "agent_a": "models/ppo_final.pt",
+      "agent_b": "runs/ppo_v4a/ckpt_00100.pt",
+      "kwargs_a": {},
+      "kwargs_b": {},
+      "start_seed": 0,
+      "n_deals": 1000,
+      "games": 2000,
+      "wins": 1239,
+      "draws": 0,
+      "losses": 761,
+      "win_rate": 0.6195,
+      "draw_rate": 0.0,
+      "loss_rate": 0.3805,
+      "score": 0.6195,
+      "win_rate_ci95": [
+        0.598012070294439,
+        0.6405297554053416
+      ],
+      "by_seat": {
+        "0": {
+          "games": 1000,
+          "wins": 618,
+          "draws": 0,
+          "losses": 382,
+          "win_rate": 0.618,
+          "draw_rate": 0.0,
+          "loss_rate": 0.382,
+          "score": 0.618,
+          "win_rate_ci95": [
+            0.5874883403629351,
+            0.6476085446344738
+          ]
+        },
+        "1": {
+          "games": 1000,
+          "wins": 621,
+          "draws": 0,
+          "losses": 379,
+          "win_rate": 0.621,
+          "draw_rate": 0.0,
+          "loss_rate": 0.379,
+          "score": 0.621,
+          "win_rate_ci95": [
+            0.5905223582047959,
+            0.6505515662416997
+          ]
+        }
+      },
+      "by_turn_order": {
+        "first": {
+          "games": 1000,
+          "wins": 718,
+          "draws": 0,
+          "losses": 282,
+          "win_rate": 0.718,
+          "draw_rate": 0.0,
+          "loss_rate": 0.282,
+          "score": 0.718,
+          "win_rate_ci95": [
+            0.6893175585138386,
+            0.7450139747864594
+          ]
+        },
+        "second": {
+          "games": 1000,
+          "wins": 521,
+          "draws": 0,
+          "losses": 479,
+          "win_rate": 0.521,
+          "draw_rate": 0.0,
+          "loss_rate": 0.479,
+          "score": 0.521,
+          "win_rate_ci95": [
+            0.49001642660541767,
+            0.5518228495381892
+          ]
+        }
+      },
+      "deals": {
+        "a_won_both": 291,
+        "split": 657,
+        "b_won_both": 52,
+        "with_draw": 0
+      },
+      "avg_rounds": 11.982,
+      "avg_steps": 95.396,
+      "elapsed_s": 1.5124484159750864,
+      "games_per_s": 1322.3591488312582
+    },
+    {
+      "opponent": "runs/ppo_v4a/ckpt_00200.pt",
+      "label": "ckpt_00200.pt",
+      "agent_a": "models/ppo_final.pt",
+      "agent_b": "runs/ppo_v4a/ckpt_00200.pt",
+      "kwargs_a": {},
+      "kwargs_b": {},
+      "start_seed": 0,
+      "n_deals": 1000,
+      "games": 2000,
+      "wins": 1202,
+      "draws": 0,
+      "losses": 798,
+      "win_rate": 0.601,
+      "draw_rate": 0.0,
+      "loss_rate": 0.399,
+      "score": 0.601,
+      "win_rate_ci95": [
+        0.5793647479136985,
+        0.6222480085354882
+      ],
+      "by_seat": {
+        "0": {
+          "games": 1000,
+          "wins": 584,
+          "draws": 0,
+          "losses": 416,
+          "win_rate": 0.584,
+          "draw_rate": 0.0,
+          "loss_rate": 0.416,
+          "score": 0.584,
+          "win_rate_ci95": [
+            0.5531860721954471,
+            0.6141710323789795
+          ]
+        },
+        "1": {
+          "games": 1000,
+          "wins": 618,
+          "draws": 0,
+          "losses": 382,
+          "win_rate": 0.618,
+          "draw_rate": 0.0,
+          "loss_rate": 0.382,
+          "score": 0.618,
+          "win_rate_ci95": [
+            0.5874883403629351,
+            0.6476085446344738
+          ]
+        }
+      },
+      "by_turn_order": {
+        "first": {
+          "games": 1000,
+          "wins": 696,
+          "draws": 0,
+          "losses": 304,
+          "win_rate": 0.696,
+          "draw_rate": 0.0,
+          "loss_rate": 0.304,
+          "score": 0.696,
+          "win_rate_ci95": [
+            0.6667851800100445,
+            0.7237147306636179
+          ]
+        },
+        "second": {
+          "games": 1000,
+          "wins": 506,
+          "draws": 0,
+          "losses": 494,
+          "win_rate": 0.506,
+          "draw_rate": 0.0,
+          "loss_rate": 0.494,
+          "score": 0.506,
+          "win_rate_ci95": [
+            0.47504885836338107,
+            0.5369052205347923
+          ]
+        }
+      },
+      "deals": {
+        "a_won_both": 255,
+        "split": 692,
+        "b_won_both": 53,
+        "with_draw": 0
+      },
+      "avg_rounds": 12.102,
+      "avg_steps": 96.1825,
+      "elapsed_s": 1.573457915976178,
+      "games_per_s": 1271.085791169187
+    },
+    {
+      "opponent": "runs/ppo_v4a/ckpt_00300.pt",
+      "label": "ckpt_00300.pt",
+      "agent_a": "models/ppo_final.pt",
+      "agent_b": "runs/ppo_v4a/ckpt_00300.pt",
+      "kwargs_a": {},
+      "kwargs_b": {},
+      "start_seed": 0,
+      "n_deals": 1000,
+      "games": 2000,
+      "wins": 1192,
+      "draws": 0,
+      "losses": 808,
+      "win_rate": 0.596,
+      "draw_rate": 0.0,
+      "loss_rate": 0.404,
+      "score": 0.596,
+      "win_rate_ci95": [
+        0.5743304292107909,
+        0.6173014977112083
+      ],
+      "by_seat": {
+        "0": {
+          "games": 1000,
+          "wins": 581,
+          "draws": 0,
+          "losses": 419,
+          "win_rate": 0.581,
+          "draw_rate": 0.0,
+          "loss_rate": 0.419,
+          "score": 0.581,
+          "win_rate_ci95": [
+            0.5501666261541897,
+            0.6112134389711504
+          ]
+        },
+        "1": {
+          "games": 1000,
+          "wins": 611,
+          "draws": 0,
+          "losses": 389,
+          "win_rate": 0.611,
+          "draw_rate": 0.0,
+          "loss_rate": 0.389,
+          "score": 0.611,
+          "win_rate_ci95": [
+            0.5804136555818767,
+            0.6407368040343301
+          ]
+        }
+      },
+      "by_turn_order": {
+        "first": {
+          "games": 1000,
+          "wins": 678,
+          "draws": 0,
+          "losses": 322,
+          "win_rate": 0.678,
+          "draw_rate": 0.0,
+          "loss_rate": 0.322,
+          "score": 0.678,
+          "win_rate_ci95": [
+            0.6484067877958661,
+            0.7062308861832765
+          ]
+        },
+        "second": {
+          "games": 1000,
+          "wins": 514,
+          "draws": 0,
+          "losses": 486,
+          "win_rate": 0.514,
+          "draw_rate": 0.0,
+          "loss_rate": 0.486,
+          "score": 0.514,
+          "win_rate_ci95": [
+            0.48302810642681226,
+            0.5448647443355923
+          ]
+        }
+      },
+      "deals": {
+        "a_won_both": 245,
+        "split": 702,
+        "b_won_both": 53,
+        "with_draw": 0
+      },
+      "avg_rounds": 12.089,
+      "avg_steps": 96.417,
+      "elapsed_s": 1.4852593750110827,
+      "games_per_s": 1346.5661511041305
+    },
+    {
+      "opponent": "runs/ppo_v4a/ckpt_00400.pt",
+      "label": "ckpt_00400.pt",
+      "agent_a": "models/ppo_final.pt",
+      "agent_b": "runs/ppo_v4a/ckpt_00400.pt",
+      "kwargs_a": {},
+      "kwargs_b": {},
+      "start_seed": 0,
+      "n_deals": 1000,
+      "games": 2000,
+      "wins": 1108,
+      "draws": 0,
+      "losses": 892,
+      "win_rate": 0.554,
+      "draw_rate": 0.0,
+      "loss_rate": 0.446,
+      "score": 0.554,
+      "win_rate_ci95": [
+        0.5321322329184799,
+        0.575660725975145
+      ],
+      "by_seat": {
+        "0": {
+          "games": 1000,
+          "wins": 541,
+          "draws": 0,
+          "losses": 459,
+          "win_rate": 0.541,
+          "draw_rate": 0.0,
+          "loss_rate": 0.459,
+          "score": 0.541,
+          "win_rate_ci95": [
+            0.5100164673887266,
+            0.5716697384154579
+          ]
+        },
+        "1": {
+          "games": 1000,
+          "wins": 567,
+          "draws": 0,
+          "losses": 433,
+          "win_rate": 0.567,
+          "draw_rate": 0.0,
+          "loss_rate": 0.433,
+          "score": 0.567,
+          "win_rate_ci95": [
+            0.5360910862439573,
+            0.5973961281189782
+          ]
+        }
+      },
+      "by_turn_order": {
+        "first": {
+          "games": 1000,
+          "wins": 645,
+          "draws": 0,
+          "losses": 355,
+          "win_rate": 0.645,
+          "draw_rate": 0.0,
+          "loss_rate": 0.355,
+          "score": 0.645,
+          "win_rate_ci95": [
+            0.6148387032147422,
+            0.6740515368244469
+          ]
+        },
+        "second": {
+          "games": 1000,
+          "wins": 463,
+          "draws": 0,
+          "losses": 537,
+          "win_rate": 0.463,
+          "draw_rate": 0.0,
+          "loss_rate": 0.537,
+          "score": 0.463,
+          "win_rate_ci95": [
+            0.43229566915425255,
+            0.49398751097367855
+          ]
+        }
+      },
+      "deals": {
+        "a_won_both": 194,
+        "split": 720,
+        "b_won_both": 86,
+        "with_draw": 0
+      },
+      "avg_rounds": 12.21,
+      "avg_steps": 97.7475,
+      "elapsed_s": 1.5305996660026722,
+      "games_per_s": 1306.6774052180594
+    },
+    {
+      "opponent": "runs/ppo_v4a/ckpt_00500.pt",
+      "label": "ckpt_00500.pt",
+      "agent_a": "models/ppo_final.pt",
+      "agent_b": "runs/ppo_v4a/ckpt_00500.pt",
+      "kwargs_a": {},
+      "kwargs_b": {},
+      "start_seed": 0,
+      "n_deals": 1000,
+      "games": 2000,
+      "wins": 1036,
+      "draws": 0,
+      "losses": 964,
+      "win_rate": 0.518,
+      "draw_rate": 0.0,
+      "loss_rate": 0.482,
+      "score": 0.518,
+      "win_rate_ci95": [
+        0.4960876073343329,
+        0.5398433789635421
+      ],
+      "by_seat": {
+        "0": {
+          "games": 1000,
+          "wins": 495,
+          "draws": 0,
+          "losses": 505,
+          "win_rate": 0.495,
+          "draw_rate": 0.0,
+          "loss_rate": 0.505,
+          "score": 0.495,
+          "win_rate_ci95": [
+            0.4640902748007247,
+            0.525947992784131
+          ]
+        },
+        "1": {
+          "games": 1000,
+          "wins": 541,
+          "draws": 0,
+          "losses": 459,
+          "win_rate": 0.541,
+          "draw_rate": 0.0,
+          "loss_rate": 0.459,
+          "score": 0.541,
+          "win_rate_ci95": [
+            0.5100164673887266,
+            0.5716697384154579
+          ]
+        }
+      },
+      "by_turn_order": {
+        "first": {
+          "games": 1000,
+          "wins": 609,
+          "draws": 0,
+          "losses": 391,
+          "win_rate": 0.609,
+          "draw_rate": 0.0,
+          "loss_rate": 0.391,
+          "score": 0.609,
+          "win_rate_ci95": [
+            0.5783935161547875,
+            0.6387722504953615
+          ]
+        },
+        "second": {
+          "games": 1000,
+          "wins": 427,
+          "draws": 0,
+          "losses": 573,
+          "win_rate": 0.427,
+          "draw_rate": 0.0,
+          "loss_rate": 0.573,
+          "score": 0.427,
+          "win_rate_ci95": [
+            0.3966791104990976,
+            0.4578795962397934
+          ]
+        }
+      },
+      "deals": {
+        "a_won_both": 145,
+        "split": 746,
+        "b_won_both": 109,
+        "with_draw": 0
+      },
+      "avg_rounds": 12.2145,
+      "avg_steps": 98.0025,
+      "elapsed_s": 1.5296482919948176,
+      "games_per_s": 1307.4901011341606
+    },
+    {
+      "opponent": "runs/ppo_v4a/ckpt_00600.pt",
+      "label": "ckpt_00600.pt",
+      "agent_a": "models/ppo_final.pt",
+      "agent_b": "runs/ppo_v4a/ckpt_00600.pt",
+      "kwargs_a": {},
+      "kwargs_b": {},
+      "start_seed": 0,
+      "n_deals": 1000,
+      "games": 2000,
+      "wins": 1003,
+      "draws": 0,
+      "losses": 997,
+      "win_rate": 0.5015,
+      "draw_rate": 0.0,
+      "loss_rate": 0.4985,
+      "score": 0.5015,
+      "win_rate_ci95": [
+        0.4796051735058332,
+        0.5233890753523228
+      ],
+      "by_seat": {
+        "0": {
+          "games": 1000,
+          "wins": 476,
+          "draws": 0,
+          "losses": 524,
+          "win_rate": 0.476,
+          "draw_rate": 0.0,
+          "loss_rate": 0.524,
+          "score": 0.476,
+          "win_rate_ci95": [
+            0.4451969584283181,
+            0.5069867259789885
+          ]
+        },
+        "1": {
+          "games": 1000,
+          "wins": 527,
+          "draws": 0,
+          "losses": 473,
+          "win_rate": 0.527,
+          "draw_rate": 0.0,
+          "loss_rate": 0.473,
+          "score": 0.527,
+          "win_rate_ci95": [
+            0.4960112345098614,
+            0.5577821205319188
+          ]
+        }
+      },
+      "by_turn_order": {
+        "first": {
+          "games": 1000,
+          "wins": 594,
+          "draws": 0,
+          "losses": 406,
+          "win_rate": 0.594,
+          "draw_rate": 0.0,
+          "loss_rate": 0.406,
+          "score": 0.594,
+          "win_rate_ci95": [
+            0.5632592745396628,
+            0.6240212948650526
+          ]
+        },
+        "second": {
+          "games": 1000,
+          "wins": 409,
+          "draws": 0,
+          "losses": 591,
+          "win_rate": 0.409,
+          "draw_rate": 0.0,
+          "loss_rate": 0.591,
+          "score": 0.409,
+          "win_rate_ci95": [
+            0.37893242495569907,
+            0.4397640450886719
+          ]
+        }
+      },
+      "deals": {
+        "a_won_both": 105,
+        "split": 793,
+        "b_won_both": 102,
+        "with_draw": 0
+      },
+      "avg_rounds": 12.2425,
+      "avg_steps": 98.368,
+      "elapsed_s": 1.5576560840127058,
+      "games_per_s": 1283.980475874857
+    },
+    {
+      "opponent": "runs/ppo_v4a/ckpt_00700.pt",
+      "label": "ckpt_00700.pt",
+      "agent_a": "models/ppo_final.pt",
+      "agent_b": "runs/ppo_v4a/ckpt_00700.pt",
+      "kwargs_a": {},
+      "kwargs_b": {},
+      "start_seed": 0,
+      "n_deals": 1000,
+      "games": 2000,
+      "wins": 982,
+      "draws": 0,
+      "losses": 1018,
+      "win_rate": 0.491,
+      "draw_rate": 0.0,
+      "loss_rate": 0.509,
+      "score": 0.491,
+      "win_rate_ci95": [
+        0.469128744176061,
+        0.5129057626750014
+      ],
+      "by_seat": {
+        "0": {
+          "games": 1000,
+          "wins": 475,
+          "draws": 0,
+          "losses": 525,
+          "win_rate": 0.475,
+          "draw_rate": 0.0,
+          "loss_rate": 0.525,
+          "score": 0.475,
+          "win_rate_ci95": [
+            0.44420380838551404,
+            0.5059875295387637
+          ]
+        },
+        "1": {
+          "games": 1000,
+          "wins": 507,
+          "draws": 0,
+          "losses": 493,
+          "win_rate": 0.507,
+          "draw_rate": 0.0,
+          "loss_rate": 0.493,
+          "score": 0.507,
+          "win_rate_ci95": [
+            0.47604583278568624,
+            0.537900592595516
+          ]
+        }
+      },
+      "by_turn_order": {
+        "first": {
+          "games": 1000,
+          "wins": 583,
+          "draws": 0,
+          "losses": 417,
+          "win_rate": 0.583,
+          "draw_rate": 0.0,
+          "loss_rate": 0.417,
+          "score": 0.583,
+          "win_rate_ci95": [
+            0.5521794617220657,
+            0.6131852963693321
+          ]
+        },
+        "second": {
+          "games": 1000,
+          "wins": 399,
+          "draws": 0,
+          "losses": 601,
+          "win_rate": 0.399,
+          "draw_rate": 0.0,
+          "loss_rate": 0.601,
+          "score": 0.399,
+          "win_rate_ci95": [
+            0.3690912514553691,
+            0.42968175375871304
+          ]
+        }
+      },
+      "deals": {
+        "a_won_both": 82,
+        "split": 818,
+        "b_won_both": 100,
+        "with_draw": 0
+      },
+      "avg_rounds": 12.214,
+      "avg_steps": 97.9795,
+      "elapsed_s": 1.64386754197767,
+      "games_per_s": 1216.6430377923768
+    },
+    {
+      "opponent": "runs/ppo_v4a/ckpt_00800.pt",
+      "label": "ckpt_00800.pt",
+      "agent_a": "models/ppo_final.pt",
+      "agent_b": "runs/ppo_v4a/ckpt_00800.pt",
+      "kwargs_a": {},
+      "kwargs_b": {},
+      "start_seed": 0,
+      "n_deals": 1000,
+      "games": 2000,
+      "wins": 959,
+      "draws": 0,
+      "losses": 1041,
+      "win_rate": 0.4795,
+      "draw_rate": 0.0,
+      "loss_rate": 0.5205,
+      "score": 0.4795,
+      "win_rate_ci95": [
+        0.4576656229232075,
+        0.5014129760153236
+      ],
+      "by_seat": {
+        "0": {
+          "games": 1000,
+          "wins": 458,
+          "draws": 0,
+          "losses": 542,
+          "win_rate": 0.458,
+          "draw_rate": 0.0,
+          "loss_rate": 0.542,
+          "score": 0.458,
+          "win_rate_ci95": [
+            0.4273392207850265,
+            0.48898222692776017
+          ]
+        },
+        "1": {
+          "games": 1000,
+          "wins": 501,
+          "draws": 0,
+          "losses": 499,
+          "win_rate": 0.501,
+          "draw_rate": 0.0,
+          "loss_rate": 0.499,
+          "score": 0.501,
+          "win_rate_ci95": [
+            0.47006583523375295,
+            0.5319265112492759
+          ]
+        }
+      },
+      "by_turn_order": {
+        "first": {
+          "games": 1000,
+          "wins": 550,
+          "draws": 0,
+          "losses": 450,
+          "win_rate": 0.55,
+          "draw_rate": 0.0,
+          "loss_rate": 0.45,
+          "score": 0.55,
+          "win_rate_ci95": [
+            0.5190327082257413,
+            0.5805846159257033
+          ]
+        },
+        "second": {
+          "games": 1000,
+          "wins": 409,
+          "draws": 0,
+          "losses": 591,
+          "win_rate": 0.409,
+          "draw_rate": 0.0,
+          "loss_rate": 0.591,
+          "score": 0.409,
+          "win_rate_ci95": [
+            0.37893242495569907,
+            0.4397640450886719
+          ]
+        }
+      },
+      "deals": {
+        "a_won_both": 94,
+        "split": 771,
+        "b_won_both": 135,
+        "with_draw": 0
+      },
+      "avg_rounds": 12.2745,
+      "avg_steps": 98.445,
+      "elapsed_s": 1.5713714170269668,
+      "games_per_s": 1272.7735647527547
+    }
+  ]
+}

@@ -1,0 +1,114 @@
+{
+  "agent": "models/ppo_final.pt",
+  "agent_kwargs": {
+    "deterministic": true
+  },
+  "games_per_opponent": 2000,
+  "start_seed": 0,
+  "workers": 6,
+  "target": {
+    "opponent": "greedy",
+    "target": 0.7,
+    "win_rate": 0.773,
+    "games": 2000,
+    "win_rate_ci95_low": 0.7541283463671337,
+    "conclusive": true,
+    "passed": true
+  },
+  "results": [
+    {
+      "opponent": "greedy",
+      "label": "greedy",
+      "agent_a": "models/ppo_final.pt",
+      "agent_b": "greedy",
+      "kwargs_a": {
+        "deterministic": true
+      },
+      "kwargs_b": {},
+      "start_seed": 0,
+      "n_deals": 1000,
+      "games": 2000,
+      "wins": 1546,
+      "draws": 0,
+      "losses": 454,
+      "win_rate": 0.773,
+      "draw_rate": 0.0,
+      "loss_rate": 0.227,
+      "score": 0.773,
+      "win_rate_ci95": [
+        0.7541283463671337,
+        0.7908249458173021
+      ],
+      "by_seat": {
+        "0": {
+          "games": 1000,
+          "wins": 773,
+          "draws": 0,
+          "losses": 227,
+          "win_rate": 0.773,
+          "draw_rate": 0.0,
+          "loss_rate": 0.227,
+          "score": 0.773,
+          "win_rate_ci95": [
+            0.7460212141343303,
+            0.7978893757325567
+          ]
+        },
+        "1": {
+          "games": 1000,
+          "wins": 773,
+          "draws": 0,
+          "losses": 227,
+          "win_rate": 0.773,
+          "draw_rate": 0.0,
+          "loss_rate": 0.227,
+          "score": 0.773,
+          "win_rate_ci95": [
+            0.7460212141343303,
+            0.7978893757325567
+          ]
+        }
+      },
+      "by_turn_order": {
+        "first": {
+          "games": 1000,
+          "wins": 950,
+          "draws": 0,
+          "losses": 50,
+          "win_rate": 0.95,
+          "draw_rate": 0.0,
+          "loss_rate": 0.05,
+          "score": 0.95,
+          "win_rate_ci95": [
+            0.9346861797557492,
+            0.9618697376072513
+          ]
+        },
+        "second": {
+          "games": 1000,
+          "wins": 596,
+          "draws": 0,
+          "losses": 404,
+          "win_rate": 0.596,
+          "draw_rate": 0.0,
+          "loss_rate": 0.404,
+          "score": 0.596,
+          "win_rate_ci95": [
+            0.5652754709915896,
+            0.6259897913791838
+          ]
+        }
+      },
+      "deals": {
+        "a_won_both": 550,
+        "split": 446,
+        "b_won_both": 4,
+        "with_draw": 0
+      },
+      "avg_rounds": 10.9605,
+      "avg_steps": 82.2605,
+      "elapsed_s": 0.6754001249792054,
+      "games_per_s": 2961.2076249787146
+    }
+  ]
+}

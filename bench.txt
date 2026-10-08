@@ -1,0 +1,16 @@
+python 3.13.5 on arm64 (8 CPUs); 2000 games per row, seeds from 0
+
+benchmark                      games  seconds   games/s    steps/s steps/game rounds/game
+engine only, random actions     2000     0.66    3011.5     507067      168.4        23.9
+random vs random (play_game)    2000     1.18    1688.2     287969      170.6        24.4
+greedy vs greedy (play_game)    2000     1.11    1803.3     251825      139.6        17.6
+random vs random, 8 workers     2000     0.25    8073.7    1377202      170.6        24.4
+ppo vs greedy (play_game)       2000     3.10     644.5      53795       83.5        11.1
+ppo vs greedy, 8 workers        2000     0.74    2699.5     225314       83.5        11.1
+
+per-call cost (2000 sampled positions)   us/call
+Game.observe(player)                        1.34
+ObservationEncoder.encode(obs)              5.84
+Game.legal_actions() (uncached)             1.04
+Game.legal_mask() (uncached)                1.37
+Game.clone()                               14.58
