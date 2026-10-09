@@ -1,0 +1,30 @@
+python 3.13.5 on arm64 (8 CPUs; load average 14.8); 2000 games per row, seeds from 0; decks sampled per seed from 4
+warning: 1-minute load average 14.8 > 0.5 x 8 CPUs on this machine: other processes compete for the CPU, so the timings understate the speed
+
+benchmark                      games  seconds   games/s    steps/s steps/game rounds/game
+engine only, random actions     2000     1.31    1525.1     184192      120.8        15.8
+random vs random (play_game)    2000     2.97     672.8      79963      118.8        15.6
+greedy vs greedy (play_game)    2000     2.29     875.2      63887       73.0        10.2
+random vs random, 4 workers     2000     0.79    2534.0     301148      118.8        15.6
+
+per-call cost (2000 sampled positions)   us/call
+Game.observe(player)                        6.52
+ObservationEncoder.encode(obs, mask)       50.53
+Game.legal_actions() (uncached)             3.64
+Game.legal_mask() (uncached)                4.33
+Game.clone()                               27.62
+
+comparison with /private/tmp/claude-501/-Users-lawrence-Desktop-RL-k/0c8f6983-a85e-4951-afd2-7d85ad97967c/scratchpad/bench_stage1_now.txt (ratio = new / old)
+  old: python 3.13.5 on arm64 (8 CPUs); 2000 games per row, seeds from 0
+  new: python 3.13.5 on arm64 (8 CPUs; load average 14.8); 2000 games per row, seeds from 0; decks sampled per seed from 4
+benchmark                             old games/s  new games/s   ratio  old steps/s  new steps/s   ratio
+engine only, random actions                1715.5       1525.1   0.89x       288850       184192   0.64x
+random vs random (play_game)                962.0        672.8   0.70x       164095        79963   0.49x
+greedy vs greedy (play_game)               1007.3        875.2   0.87x       140665        63887   0.45x
+random vs random, 4 workers                3687.9       2534.0   0.69x       629074       301148   0.48x
+per-call cost (us)                            old          new   ratio
+Game.observe(player)                         2.34         6.52   2.79x
+ObservationEncoder.encode(obs, mask)        10.45        50.53   4.84x
+Game.legal_actions() (uncached)              1.79         3.64   2.04x
+Game.legal_mask() (uncached)                 2.58         4.33   1.68x
+Game.clone()                                25.17        27.62   1.10x
