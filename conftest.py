@@ -1,10 +1,24 @@
-"""Shared fixtures and helpers for the engine tests (engine-only: no `cardgame.agents`)."""
+"""Shared fixtures and helpers for the engine tests (engine-only: no `cardgame.agents`/`cardgame.rl`).
+
+Building positions (SPEC §4 state):
+* `blank_game(current, first, round_, coins)` — a running game with empty hands, decks and board.
+* `add_unit(game, owner, "back" | "front", card_id=None, **fields)` — appends a unit that can act
+  (flags False) with a fresh uid. With a card id the stats come from the card; without one, pass
+  explicit stats (`atk`, `hp`, optional `nature`, `defense`, `armor`, `move_cost`, flags) and a card of
+  the same nature/traits is used for the `card` field. Card stats may be retuned: tests never
+  hard-code a card's numbers.
+* `set_hand(game, player, cards)` — card ids or indices, kept sorted.
+Action helpers: `END`, `play(i)`, `move(j)`, `attack(a, t)` with slots `back(j)`, `front(j)`, `BASE`.
+Fuzzing: `iter_states(seed, profiles, decks)` plays a seeded game with biased policies (`PROFILES`).
+"""
 from __future__ import annotations
 
+import operator
 import os
 import random
 import sys
-from typing import Iterator, Optional, Sequence
+from itertools import product
+from typing import Callable, Iterator, Optional, Sequence
 
 import pytest
 
@@ -15,33 +29,20 @@ for _path in (ROOT, TESTS_DIR):  # works under any pytest import mode
         sys.path.insert(0, _path)
 
 from cardgame.actions import ActionKind, ActionSpace  # noqa: E402
-from cardgame.cards import GameConfig, load_ruleset  # noqa: E402
-from cardgame.engine import Game, Unit  # noqa: E402
+from cardgame.cards import FAST, RANGED, TROOP, GameConfig, load_ruleset  # noqa: E402
+from cardgame.engine import DRAW, Game, Unit  # noqa: E402
 
 CONFIG: GameConfig = load_ruleset()
 SPACE = ActionSpace(CONFIG.max_hand_size, CONFIG.zone_capacity)
 NUM_ACTIONS = SPACE.n
 H, Z = CONFIG.max_hand_size, CONFIG.zone_capacity
-
-# Per-kind action weights for the seeded fuzzing policies. Skewed profiles reach the corners
-# of the state space: full zones, full hands (and burns), frontline fights, long games.
-PROFILES = {
-    "uniform": {k: 1.0 for k in ActionKind},
-    "aggro": {ActionKind.END_TURN: 0.02, ActionKind.PLAY: 1.0, ActionKind.MOVE: 1.0,
-              ActionKind.ATTACK_BASE: 1.0, ActionKind.FRONT_ATTACK: 1.0, ActionKind.BACK_ATTACK: 1.0},
-    "builder": {ActionKind.END_TURN: 0.05, ActionKind.PLAY: 5.0, ActionKind.MOVE: 3.0,
-                ActionKind.ATTACK_BASE: 0.1, ActionKind.FRONT_ATTACK: 0.1, ActionKind.BACK_ATTACK: 0.1},
-    "hoarder": {ActionKind.END_TURN: 1.0, ActionKind.PLAY: 0.03, ActionKind.MOVE: 1.0,
-                ActionKind.ATTACK_BASE: 0.5, ActionKind.FRONT_ATTACK: 1.0, ActionKind.BACK_ATTACK: 1.0},
-    "turtle": {ActionKind.END_TURN: 0.2, ActionKind.PLAY: 4.0, ActionKind.MOVE: 0.02,
-               ActionKind.ATTACK_BASE: 1.0, ActionKind.FRONT_ATTACK: 1.0, ActionKind.BACK_ATTACK: 2.0},
-    "wall": {ActionKind.END_TURN: 0.3, ActionKind.PLAY: 5.0, ActionKind.MOVE: 0.001,
-             ActionKind.ATTACK_BASE: 0.01, ActionKind.FRONT_ATTACK: 0.01, ActionKind.BACK_ATTACK: 0.01},
-    "massing": {ActionKind.END_TURN: 1.0, ActionKind.PLAY: 5.0, ActionKind.MOVE: 5.0,
-                ActionKind.ATTACK_BASE: 0.001, ActionKind.FRONT_ATTACK: 0.001, ActionKind.BACK_ATTACK: 0.001},
-}
-PROFILE_NAMES = tuple(PROFILES)
-KIND_OF = tuple(SPACE.decode(i).kind for i in range(NUM_ACTIONS))
+N_CARDS = len(CONFIG.cards)
+N_DECKS = CONFIG.n_decks
+DECK_PAIRS = tuple(product(range(N_DECKS), repeat=2))
+END = SPACE.END_TURN
+BASE = SPACE.BASE_TARGET
+UNIT_FIELDS = ("card", "owner", "uid", "atk", "hp", "max_hp", "armor", "defense", "nature", "move_cost",
+               "summoned", "moved", "attacked")
 
 
 @pytest.fixture(scope="session")
@@ -49,147 +50,321 @@ def config() -> GameConfig:
     return CONFIG
 
 
-def new_game(seed: int = 0) -> Game:
-    g = Game(CONFIG)
-    g.reset(seed)
-    return g
-
-
-def card(card_id: str) -> int:
-    """Card index for a card id."""
-    return CONFIG.cards.by_id(card_id).index
+# ---------------------------------------------------------------- cards and actions
+def card(card_id) -> int:
+    """Card index for a card id (an index is returned unchanged)."""
+    return card_id if isinstance(card_id, int) else CONFIG.cards.by_id(card_id).index
 
 
 def cost(card_index: int) -> int:
     return CONFIG.cards[card_index].cost
 
 
-# ---------------------------------------------------------------- full-state comparison
+def cards_where(nature: Optional[int] = None, defense: Optional[bool] = None,
+                armor: Optional[bool] = None, pred: Optional[Callable] = None) -> list:
+    """Indices of pool cards with the given nature / Defense / (armor > 0) / predicate."""
+    return [c.index for c in CONFIG.cards.cards
+            if (nature is None or c.nature == nature) and (defense is None or c.defense == defense)
+            and (armor is None or (c.armor > 0) == armor) and (pred is None or pred(c))]
+
+
+def card_for(nature: int = TROOP, defense: bool = False, armor: bool = False) -> int:
+    """A card of the given nature/trait combination (any card of that nature as a fallback)."""
+    found = cards_where(nature, defense, armor) or cards_where(nature) or [0]
+    return found[0]
+
+
+def play(i: int) -> int:
+    return SPACE.PLAY0 + i
+
+
+def move(j: int) -> int:
+    return SPACE.MOVE0 + j
+
+
+def back(j: int) -> int:
+    """Attacker/target slot of backline position j."""
+    return j
+
+
+def front(j: int) -> int:
+    """Attacker/target slot of frontline position j."""
+    return Z + j
+
+
+def attack(a: int, t: int) -> int:
+    return SPACE.attack(a, t)
+
+
+def act(kind: ActionKind, a: int = -1, b: int = -1) -> int:
+    return SPACE.encode(kind, a, b)
+
+
+# ---------------------------------------------------------------- games
+def new_game(seed: int = 0, decks: Optional[Sequence[int]] = None, config: GameConfig = CONFIG) -> Game:
+    g = Game(config)
+    g.reset(seed, decks)
+    return g
+
+
+def all_units(game: Game) -> list:
+    return [*game.backline[0], *game.backline[1], *game.frontline]
+
+
+_unit_fields = operator.attrgetter(*UNIT_FIELDS)
+_PLAIN_UNIT = set(Unit.__slots__) == set(UNIT_FIELDS)
+
+
+def unit_key(u: Unit) -> tuple:
+    """Every slot of a unit (including slots a subclass adds)."""
+    if type(u) is Unit and _PLAIN_UNIT:
+        return _unit_fields(u)
+    names = [n for klass in type(u).__mro__ for n in getattr(klass, "__slots__", ())]
+    return (type(u).__name__,) + tuple((n, getattr(u, n, None)) for n in names)
+
+
 def state_key(game: Game, rng: bool = True) -> tuple:
     """Every piece of documented state, including hidden info and (optionally) the RNG state."""
     def units(zone):
-        return tuple((u.card, u.atk, u.hp, u.owner, u.ready) for u in zone)
+        return tuple(unit_key(u) for u in zone)
 
     return (
-        game.first_player, game.current, game.round, tuple(game.coins), tuple(game.base_hp),
-        tuple(map(tuple, game.hands)), tuple(map(tuple, game.decks)), tuple(game.burned),
-        tuple(units(z) for z in game.backline), units(game.frontline), game.front_owner,
-        game.done, game.winner(), game.rng.getstate() if rng else None,
+        game.first_player, game.current, game.round, tuple(game.deck_ids), tuple(game.coins),
+        tuple(game.base_hp), tuple(map(tuple, game.hands)), tuple(map(tuple, game.deck_cards)),
+        tuple(map(tuple, game.played)), tuple(game.burned), tuple(units(z) for z in game.backline),
+        units(game.frontline), game.front_owner, game.next_uid, game.done, game.winner(),
+        game.rng.getstate() if rng else None,
     )
 
 
 def snapshot(game: Game) -> tuple:
     """state_key + everything an outside caller can read through the public API."""
-    return (state_key(game), game.render(), game.observe(0), game.observe(1),
-            tuple(game.legal_actions()), game.current_player(), game.winner(), game.done, game.round)
+    return (state_key(game), game.render(), game.observe(0), game.observe(1), tuple(game.legal_actions()),
+            game.legal_mask().tobytes(), game.current_player(), game.winner(), game.done, game.round)
 
 
 # ---------------------------------------------------------------- seeded fuzzing policies
-class WeightedPolicy:
-    """Seeded random policy over legal actions with per-kind weights."""
+def _weights(end: float, play_w: Callable, move_w: Callable, attack_w: Callable) -> Callable:
+    """Profile from per-kind weight functions of (game, action, card/unit)."""
+    def weight(game: Game, action) -> float:
+        kind = action.kind
+        p = game.current
+        if kind == ActionKind.END_TURN:
+            return end
+        if kind == ActionKind.PLAY:
+            return play_w(game.config.cards[game.hands[p][action.a]])
+        if kind == ActionKind.MOVE:
+            return move_w(game.backline[p][action.a])
+        z = game.config.zone_capacity
+        unit = game.backline[p][action.a] if action.a < z else game.frontline[action.a - z]
+        return attack_w(unit, action.b == 2 * z)
+    return weight
 
-    def __init__(self, seed: int, weights: Optional[dict] = None):
+
+# Per-action weights of the fuzzing policies. Skewed profiles reach the corners of the state
+# space: full zones, full hands (and burns), Defense walls, ranged duels, fast rushes, long games.
+PROFILES = {
+    "uniform": lambda game, action: 1.0,
+    "fast_rush": _weights(0.05, lambda c: 4.0 if c.nature == FAST else 0.3,
+                          lambda u: 6.0 if u.nature == FAST else 1.0,
+                          lambda u, base: 6.0 if base else 1.0),
+    "ranged_snipe": _weights(0.1, lambda c: 4.0 if c.nature == RANGED else 0.3,
+                             lambda u: 0.5 if u.nature == RANGED else 0.2,
+                             lambda u, base: 5.0 if u.nature == RANGED else 1.0),
+    "defense_wall": _weights(0.3, lambda c: 5.0 if c.defense else 0.5, lambda u: 0.05,
+                             lambda u, base: 0.5),
+    "full_frontline": _weights(0.3, lambda c: 5.0, lambda u: 6.0, lambda u, base: 0.002),
+    "hoarder": _weights(1.0, lambda c: 0.02, lambda u: 1.0, lambda u, base: 1.0),
+}
+PROFILE_NAMES = tuple(PROFILES)
+PROFILE_PAIRS = tuple(product(PROFILE_NAMES, repeat=2))
+
+
+class WeightedPolicy:
+    """Seeded random policy over legal actions with profile weights."""
+
+    def __init__(self, seed: int, profile: str | Callable = "uniform"):
         self.rng = random.Random(seed)
-        self.weights = weights or PROFILES["uniform"]
+        self.weight = PROFILES[profile] if isinstance(profile, str) else profile
 
     def __call__(self, game: Game) -> int:
         legal = game.legal_actions()
-        w = [self.weights[KIND_OF[a]] for a in legal]
+        decode = game.action_space.decode
+        w = [self.weight(game, decode(a)) for a in legal]
         return self.rng.choices(legal, weights=w)[0]
 
 
 def profiles_for(seed: int) -> tuple:
-    """Deterministic profile pair for a seed, cycling through all combinations."""
-    n = len(PROFILE_NAMES)
-    return PROFILE_NAMES[seed % n], PROFILE_NAMES[(seed // n) % n]
+    """Deterministic ordered profile pair for a seed, cycling through all combinations."""
+    return PROFILE_PAIRS[seed % len(PROFILE_PAIRS)]
 
 
-def iter_states(seed: int, profiles: Optional[Sequence[str]] = None,
-                max_steps: int = 20_000) -> Iterator[tuple]:
+def iter_states(seed: int, profiles: Optional[Sequence[str]] = None, decks: Optional[Sequence[int]] = None,
+                max_steps: int = 20_000, config: GameConfig = CONFIG) -> Iterator[tuple]:
     """Play one seeded game; yield (game, plays, action) at every state including the final one.
 
     `plays[p]` counts PLAY actions by seat p so far; `action` is what will be played next
     (None at the final state). Consumers must not mutate `game` (use `game.clone()`).
     """
     profiles = profiles or profiles_for(seed)
-    game = new_game(seed)
-    policies = [WeightedPolicy(seed * 7919 + p, PROFILES[profiles[p]]) for p in (0, 1)]
+    game = new_game(seed, decks, config)
+    policies = [WeightedPolicy(seed * 7919 + p, profiles[p]) for p in (0, 1)]
     plays = [0, 0]
+    play0, move0 = game.action_space.PLAY0, game.action_space.MOVE0
     for _ in range(max_steps):
         if game.done:
             break
         p = game.current_player()
         action = policies[p](game)
         yield game, plays, action
-        if KIND_OF[action] == ActionKind.PLAY:
+        if play0 <= action < move0:
             plays[p] += 1
         game.step(action)
     assert game.done, "game did not terminate"
     yield game, plays, None
 
 
-def check_invariants(game: Game, plays: Optional[Sequence[int]] = None) -> None:
-    """Structural invariants that must hold in every reachable state."""
+_DECK_COUNTS: dict = {}
+
+
+def _deck_counts(cfg: GameConfig, deck_id: int) -> list:
+    """Copies of each card index in a deck (cached by content)."""
+    key = (len(cfg.cards), cfg.decks[deck_id])
+    if key not in _DECK_COUNTS:
+        counts = [0] * len(cfg.cards)
+        for c in cfg.decks[deck_id]:
+            counts[c] += 1
+        _DECK_COUNTS[key] = counts
+    return _DECK_COUNTS[key]
+
+
+def check_invariants(game: Game, plays: Optional[Sequence[int]] = None, reachable: bool = True) -> None:
+    """Structural invariants of every state. `reachable=False` skips the checks that only hold for
+    states reached by play from reset() (card stats, card conservation, flag history, uids)."""
     cfg = game.config
+    Zc, Hc = cfg.zone_capacity, cfg.max_hand_size
     assert game.current in (0, 1) and game.first_player in (0, 1)
     assert 1 <= game.round <= cfg.max_rounds
+    assert len(game.deck_ids) == 2 and all(0 <= d < cfg.n_decks for d in game.deck_ids)
+    units = all_units(game)
     for p in (0, 1):
-        assert len(game.backline[p]) <= cfg.zone_capacity
+        assert len(game.backline[p]) <= Zc
         assert all(u.owner == p for u in game.backline[p])
         assert game.coins[p] >= 0
-        assert len(game.hands[p]) <= cfg.max_hand_size
+        assert len(game.hands[p]) <= Hc
         assert list(game.hands[p]) == sorted(game.hands[p])
         assert game.burned[p] >= 0
+        assert len(game.played[p]) == len(cfg.cards) and min(game.played[p]) >= 0
         if plays is not None:
-            assert len(game.hands[p]) + len(game.decks[p]) + game.burned[p] + plays[p] == cfg.deck_size
-    assert len(game.frontline) <= cfg.zone_capacity
+            assert sum(game.played[p]) == plays[p]
+        if reachable:  # every card of the deck is in the hand, the deck, played or burned
+            deck = _deck_counts(cfg, game.deck_ids[p])
+            seen = list(game.played[p])
+            for c in game.hands[p]:
+                seen[c] += 1
+            for c in game.deck_cards[p]:
+                seen[c] += 1
+            assert all(map(operator.le, seen, deck)), f"P{p} holds cards that are not in its deck"
+            assert sum(deck) - sum(seen) == game.burned[p]
+            on_board = [0] * len(deck)
+            for u in units:
+                if u.owner == p:
+                    on_board[u.card] += 1
+            assert all(map(operator.le, on_board, game.played[p])), f"P{p} has unplayed cards on the board"
+    assert len(game.frontline) <= Zc
     if game.frontline:
         assert game.front_owner in (0, 1)
         assert all(u.owner == game.front_owner for u in game.frontline)
     else:
         assert game.front_owner is None
-    for u in [*game.backline[0], *game.backline[1], *game.frontline]:
-        assert u.hp > 0
-        assert u.atk == cfg.cards[u.card].attack
-        assert u.hp <= cfg.cards[u.card].health
+    assert len({u.uid for u in units}) == len(units), "duplicate uids"
+    front_ids = {id(u) for u in game.frontline}
+    for u in units:
+        assert 0 < u.hp <= u.max_hp
+        if not reachable:
+            continue
+        c = cfg.cards[u.card]
+        assert (u.atk, u.max_hp, u.armor, u.defense, u.nature, u.move_cost) == (
+            c.attack, c.health, c.armor, c.defense, c.nature, c.move_cost), u
+        assert 0 <= u.uid < game.next_uid
+        if u.summoned:  # deployed this round: still in the backline, has not acted
+            assert not u.moved and not u.attacked and id(u) not in front_ids, u
+        if u.moved:
+            assert id(u) in front_ids, u
+        if u.nature != FAST:
+            assert not (u.moved and u.attacked), u
+        if not game.done and u.owner != game.current:  # refreshed at the owner's END_TURN
+            assert not (u.summoned or u.moved or u.attacked), u
+    if reachable:
+        assert game.next_uid == sum(map(sum, game.played))
     assert game.done == (game.winner() is not None)
     if not game.done:
         assert min(game.base_hp) > 0
         assert game.coins[1 - game.current] == 0  # unused coins are lost at END_TURN
+        if reachable:
+            assert game.coins[game.current] <= cfg.coins_for_round(game.round)
     elif game.winner() in (0, 1):
         assert game.base_hp[1 - game.winner()] <= 0 < game.base_hp[game.winner()]
+    else:
+        assert game.winner() == DRAW and game.round == cfg.max_rounds and min(game.base_hp) > 0
 
 
 # ---------------------------------------------------------------- building positions (SPEC §4)
-def blank_game(current: int = 0, first: int = 0, round_: int = 1, coins: int = 0,
-               seed: int = 0) -> Game:
-    """A reset game with empty hands, decks and board, ready for a hand-built position.
+def blank_game(current: int = 0, first: int = 0, round_: int = 1, coins: int = 0, seed: int = 0,
+               decks: Sequence[int] = (0, 1), config: GameConfig = CONFIG) -> Game:
+    """A running game with empty hands, decks and board, ready for a hand-built position.
 
-    Empty decks keep turn starts free of draws. Call `game.invalidate()` after further edits.
+    Empty decks keep turn starts free of draws. `add_unit`/`set_hand` call `invalidate()`;
+    call it yourself after other direct edits.
     """
-    g = new_game(seed)
+    g = new_game(seed, decks, config)
     g.first_player, g.current, g.round = first, current, round_
     g.hands = [[], []]
-    g.decks = [[], []]
+    g.deck_cards = [[], []]
     g.coins = [0, 0]
     g.coins[current] = coins
+    g.base_hp = [config.base_hp, config.base_hp]
+    g.burned = [0, 0]
+    g.played = [[0] * len(config.cards), [0] * len(config.cards)]
     g.backline = [[], []]
     g.frontline = []
     g.front_owner = None
+    g.next_uid = 0
+    g.done, g._winner = False, None
     g.invalidate()
     return g
 
 
-def add_unit(game: Game, owner: int, zone: str, card_id: str, ready: bool = True,
-             hp: Optional[int] = None, atk: Optional[int] = None) -> Unit:
-    """Append a unit to `owner`'s backline (zone="back") or to the frontline (zone="front")."""
-    cdef = CONFIG.cards.by_id(card_id)
-    unit = Unit(cdef.index, cdef.attack if atk is None else atk, cdef.health if hp is None else hp,
-                owner, ready)
+def add_unit(game: Game, owner: int, zone: str, card_id=None, **fields) -> Unit:
+    """Append a unit to `owner`'s backline (zone="back") or to the frontline (zone="front").
+
+    `fields` override Unit fields (atk, hp, max_hp, armor, defense, nature, move_cost, summoned,
+    moved, attacked, card). Flags default to False: the unit can act this turn.
+    """
+    unknown = set(fields) - set(UNIT_FIELDS)
+    if unknown:
+        raise TypeError(f"unknown unit fields {sorted(unknown)}")
+    if card_id is not None:
+        c = game.config.cards[card(card_id)]
+        stats = dict(card=c.index, atk=c.attack, hp=c.health, max_hp=c.health, armor=c.armor,
+                     defense=c.defense, nature=c.nature, move_cost=c.move_cost)
+    else:
+        if "atk" not in fields or "hp" not in fields:
+            raise TypeError("add_unit needs a card id or explicit atk and hp")
+        nature, defense = fields.get("nature", TROOP), fields.get("defense", False)
+        stats = dict(card=card_for(nature, defense, fields.get("armor", 0) > 0), armor=0, defense=False,
+                     nature=TROOP, move_cost=1)
+    stats.update(summoned=False, moved=False, attacked=False, uid=game.next_uid)
+    stats.update(fields)
+    stats.setdefault("max_hp", stats["hp"])
+    if "hp" in fields and "max_hp" not in fields:
+        stats["max_hp"] = max(stats["max_hp"], stats["hp"])
+    unit = Unit(stats.pop("card"), owner, **stats)
+    game.next_uid = max(game.next_uid, unit.uid + 1)
     if zone == "back":
         game.backline[owner].append(unit)
     elif zone == "front":
-        assert game.front_owner in (None, owner)
+        assert game.front_owner in (None, owner), "the enemy holds the frontline"
         game.frontline.append(unit)
         game.front_owner = owner
     else:
@@ -198,10 +373,12 @@ def add_unit(game: Game, owner: int, zone: str, card_id: str, ready: bool = True
     return unit
 
 
-def set_hand(game: Game, player: int, card_ids: Sequence[str]) -> None:
-    game.hands[player] = sorted(card(c) for c in card_ids)
+def set_hand(game: Game, player: int, cards: Sequence) -> None:
+    game.hands[player] = sorted(card(c) for c in cards)
     game.invalidate()
 
 
-def act(kind: ActionKind, a: int = -1, b: int = -1) -> int:
-    return SPACE.encode(kind, a, b)
+def set_deck(game: Game, player: int, cards: Sequence) -> None:
+    """Deck contents, top = end of the list."""
+    game.deck_cards[player] = [card(c) for c in cards]
+    game.invalidate()

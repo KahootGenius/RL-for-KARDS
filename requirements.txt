@@ -1,3 +1,4 @@
 numpy>=1.26
-torch>=2.2
+torch>=2.7  # RTX 50-series (sm_120) needs 2.7+ with CUDA 12.8 wheels
+tensorboard>=2.16
 pytest>=8.0

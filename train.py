@@ -1,8 +1,13 @@
 #!/usr/bin/env python
-"""Train the PPO self-play bot.
+"""Train the PPO self-play bot (Stage 2).
 
-    python train.py --run-dir runs/ppo                           # 800 updates, ~15-20 min on 8 cores
-    python train.py --resume runs/ppo/latest.pt --updates 1200   # continue a run
+    python train.py --run-dir runs/ppo                     # defaults: auto workers, device auto
+    python train.py --run-dir runs/smoke --updates 2       # smoke test
+    python train.py --resume runs/ppo/latest.pt --updates 1500
+
+Rollouts run in `--workers` CPU processes (default: cpu_count - 2, at most 16; 0 = in-process);
+network updates run on `--device auto` (CUDA, else MPS, else CPU). TensorBoard logs go to
+<run-dir>/tb (`tensorboard --logdir runs`).
 
 On --resume the run's saved hyperparameters are restored and output continues in the resumed
 file's directory; only flags given explicitly on the command line override them. The learning
@@ -20,62 +25,90 @@ import torch
 from cardgame.cards import load_ruleset
 from cardgame.rl.ppo import PPOConfig, PPOTrainer
 
-# CLI flag -> PPOConfig field (flags are --kebab-case of the field unless listed here)
-RENAMED = {"updates": "total_updates"}
+RENAMED = {"updates": "total_updates"}  # CLI flag -> PPOConfig field
+HELP = {
+    "run_dir": "output directory", "seed": "run seed in [0, 100)", "total_updates": "total PPO updates",
+    "workers": "rollout processes (-1 = auto, 0 = in-process)", "envs_per_worker": "games per rollout worker",
+    "batch_steps": "learner transitions per update", "target_kl": "early-stop epochs above this KL (0 = off)",
+    "arch": "entity | mlp", "attention_layers": "transformer layers over card slots (entity arch)",
+    "shared_trunk": "share the policy/value towers", "hidden": "MLP widths (mlp arch)",
+    "self_play_prob": "P(opponent = latest self)",
+    "opp_weights": "pool weights merged over the defaults (or the resumed run's), e.g. greedy=0.3,snapshot=0.2",
+    "snapshot_every": "N: freeze a snapshot into the pool every N updates",
+    "snapshots_per_worker": "snapshots each worker plays per update", "eval_every": "quick eval every K updates",
+    "eval_deals": "deals per quick eval (2 games each, all deck pairs)", "device": "auto | cpu | cuda | mps",
+    "torch_threads": "learner CPU threads", "tensorboard": "write TensorBoard logs",
+}
+
+
+def parse_weights(text: str) -> dict:
+    """Parse "greedy=0.3,snapshot=0.2" into {"greedy": 0.3, "snapshot": 0.2}; PPOTrainer checks kinds and values."""
+    out = {}
+    for part in text.split(","):
+        k, _, v = part.partition("=")
+        try:
+            out[k.strip()] = float(v)
+        except ValueError:
+            raise argparse.ArgumentTypeError(f"expected kind=weight pairs, got {part!r}") from None
+    return out
 
 
 def build_parser() -> argparse.ArgumentParser:
-    d = PPOConfig()
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    # Every default is None so we can tell which flags were passed; real defaults come from PPOConfig.
-    add = ap.add_argument
-    add("--run-dir", help=f"output directory (default {d.run_dir})")
-    add("--seed", type=int, help=f"run seed in [0, 100) (default {d.seed})")
-    add("--updates", type=int, help=f"total PPO updates (default {d.total_updates})")
-    add("--num-envs", type=int, help=f"parallel games (default {d.num_envs})")
-    add("--batch-steps", type=int, help=f"learner transitions per update (default {d.batch_steps})")
-    add("--epochs", type=int, help=f"default {d.epochs}")
-    add("--minibatch", type=int, help=f"default {d.minibatch}")
-    add("--lr", type=float, help=f"default {d.lr}")
-    add("--lr-final-frac", type=float, help=f"final LR as a fraction of --lr (default {d.lr_final_frac})")
-    add("--gamma", type=float, help=f"default {d.gamma}")
-    add("--gae-lambda", type=float, help=f"default {d.gae_lambda}")
-    add("--clip", type=float, help=f"default {d.clip}")
-    add("--ent-coef", type=float, help=f"default {d.ent_coef}")
-    add("--vf-coef", type=float, help=f"default {d.vf_coef}")
-    add("--target-kl", type=float, help=f"early-stop epochs above this KL, 0 = off (default {d.target_kl})")
-    add("--hidden", type=int, nargs="+", help=f"MLP widths (default {' '.join(map(str, d.hidden))})")
-    add("--snapshot-every", type=int,
-        help=f"N: add a frozen snapshot to the opponent pool every N updates (default {d.snapshot_every})")
-    add("--max-snapshots", type=int, help=f"default {d.max_snapshots}")
-    add("--self-play-prob", type=float, help=f"P(opponent = latest self) (default {d.self_play_prob})")
-    add("--eval-every", type=int, help=f"quick eval vs greedy every K updates, 0 = off (default {d.eval_every})")
-    add("--eval-deals", type=int, help=f"deals per quick eval, 2 games each (default {d.eval_deals})")
-    add("--torch-threads", type=int, help=f"default {d.torch_threads}")
-    add("--resume", default=None, help="latest.pt of a previous run")
+    defaults = asdict(PPOConfig())
+    inverse = {v: k for k, v in RENAMED.items()}
+    for f in fields(PPOConfig):
+        flag = "--" + inverse.get(f.name, f.name).replace("_", "-")
+        default = defaults[f.name]
+        help_text = f"{HELP.get(f.name, '')} (default {default})".strip()
+        if isinstance(default, bool):
+            if default:
+                ap.add_argument("--no-" + flag[2:], dest=f.name, action="store_false", default=None, help=help_text)
+            else:
+                ap.add_argument(flag, dest=f.name, action="store_true", default=None, help=help_text)
+        elif isinstance(default, (tuple, list)):
+            ap.add_argument(flag, dest=f.name, type=int, nargs="+", default=None, help=help_text)
+        elif isinstance(default, dict):
+            ap.add_argument(flag, dest=f.name, type=parse_weights, default=None, help=help_text)
+        else:
+            ap.add_argument(flag, dest=f.name, type=type(default), default=None, help=help_text)
+    ap.add_argument("--resume", default=None, help="latest.pt of a previous run")
     return ap
+
+
+def make_config(args: argparse.Namespace) -> PPOConfig:
+    """The defaults (or the resumed run's saved config) overridden by the flags given explicitly;
+    --opp-weights entries are merged over the base weights, so naming one kind keeps the others."""
+    base = asdict(PPOConfig())
+    if args.resume:
+        saved = torch.load(args.resume, map_location="cpu", weights_only=False)["args"]
+        base.update({f.name: saved[f.name] for f in fields(PPOConfig) if f.name in saved})
+        base["run_dir"] = str(Path(args.resume).parent)  # keep writing next to the resumed run
+    for name, value in vars(args).items():
+        if name != "resume" and value is not None:
+            base[name] = {**base[name], **value} if isinstance(value, dict) else value
+    base["hidden"] = tuple(base["hidden"])
+    return PPOConfig(**base)
 
 
 def main() -> None:
     args = build_parser().parse_args()
-    if args.resume:
-        saved = torch.load(args.resume, map_location="cpu", weights_only=False)["args"]
-        base = {f.name: saved[f.name] for f in fields(PPOConfig) if f.name in saved}
-        base["run_dir"] = str(Path(args.resume).parent)  # keep writing next to the resumed run
-    else:
-        base = asdict(PPOConfig())
-    for flag, value in vars(args).items():
-        if flag != "resume" and value is not None:
-            base[RENAMED.get(flag, flag)] = value
-    base["hidden"] = tuple(base["hidden"])
-    cfg = PPOConfig(**base)
+    cfg = make_config(args)
 
     trainer = PPOTrainer(cfg, load_ruleset())
     if args.resume:
         trainer.resume(args.resume)
         print(f"resumed from {args.resume} at update {trainer.update}")
-    print(f"obs_dim={trainer.encoder.dim} n_actions={trainer.n_actions} run_dir={cfg.run_dir}")
-    trainer.train()
+    print(f"device={trainer.device} workers={trainer.n_workers} envs={max(1, trainer.n_workers) * cfg.envs_per_worker} "
+          f"obs_dim={trainer.encoder.dim} n_actions={trainer.n_actions} "
+          f"params={sum(p.numel() for p in trainer.net.parameters()):,} run_dir={cfg.run_dir}", flush=True)
+    try:
+        trainer.train(log=lambda line: print(line, flush=True))
+    except KeyboardInterrupt:  # workers are already stopped; latest.pt holds the last completed update
+        latest = Path(cfg.run_dir) / "latest.pt"
+        hint = f"; continue with --resume {latest}" if latest.exists() else ""
+        print(f"interrupted after {trainer.update} completed updates{hint}", flush=True)
+        raise SystemExit(130) from None
 
 
 if __name__ == "__main__":

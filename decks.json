@@ -1,0 +1,12 @@
+{
+  "decks": [
+    {"name": "Blitz", "style": "aggro fast troops",
+     "cards": {"militia": 3, "footman": 2, "shieldbearer": 1, "swordsman": 3, "knight": 2, "scout": 3, "raider": 3, "outrider": 3, "guard_rider": 3, "lancer": 3, "wolf_rider": 3, "cataphract": 3, "paladin": 3, "slinger": 3, "archer": 2}},
+    {"name": "Bulwark", "style": "defensive",
+     "cards": {"militia": 3, "footman": 2, "shieldbearer": 3, "pikeman": 3, "knight": 3, "warden": 3, "ogre": 2, "juggernaut": 3, "bastion": 2, "scout": 1, "outrider": 1, "guard_rider": 2, "paladin": 2, "slinger": 2, "archer": 3, "shield_archer": 1, "crossbowman": 2, "siege_tower": 2}},
+    {"name": "Volley", "style": "ranged-heavy",
+     "cards": {"militia": 3, "footman": 3, "shieldbearer": 2, "swordsman": 1, "pikeman": 3, "knight": 3, "warden": 2, "ogre": 2, "outrider": 2, "guard_rider": 1, "slinger": 3, "archer": 3, "shield_archer": 3, "crossbowman": 3, "longbowman": 2, "siege_tower": 3, "ballista": 1}},
+    {"name": "Legion", "style": "balanced",
+     "cards": {"militia": 2, "footman": 3, "shieldbearer": 2, "swordsman": 3, "pikeman": 2, "knight": 2, "warden": 1, "ogre": 1, "bastion": 2, "scout": 1, "raider": 2, "outrider": 2, "guard_rider": 1, "lancer": 2, "wolf_rider": 2, "cataphract": 1, "paladin": 1, "slinger": 2, "archer": 3, "crossbowman": 2, "longbowman": 2, "ballista": 1}}
+  ]
+}

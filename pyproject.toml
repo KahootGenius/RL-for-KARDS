@@ -5,9 +5,9 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "cardgame"
 version = "0.1.0"
-description = "Stage 1 card-game engine and PPO self-play bot"
+description = "Staged card-game AI: headless engine, scripted and PPO self-play bots (Stage 2)"
 requires-python = ">=3.10"
-dependencies = ["numpy>=1.26", "torch>=2.2"]
+dependencies = ["numpy>=1.26", "torch>=2.7", "tensorboard>=2.16"]
 
 [project.optional-dependencies]
 test = ["pytest>=8.0"]
@@ -20,3 +20,4 @@ cardgame = ["data/*.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = ["slow: long-running statistical tests (enable with CARDGAME_SLOW=1)"]

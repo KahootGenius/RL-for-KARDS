@@ -1,0 +1,31 @@
+{
+  "cards": [
+    {"id": "militia",       "name": "Militia",       "type": "unit", "nature": "troop",  "cost": 1, "attack": 1, "health": 2, "move_cost": 1, "traits": {}, "effects": []},
+    {"id": "footman",       "name": "Footman",       "type": "unit", "nature": "troop",  "cost": 2, "attack": 2, "health": 3, "move_cost": 1, "traits": {}, "effects": []},
+    {"id": "shieldbearer",  "name": "Shieldbearer",  "type": "unit", "nature": "troop",  "cost": 2, "attack": 1, "health": 4, "move_cost": 1, "traits": {"defense": true}, "effects": []},
+    {"id": "swordsman",     "name": "Swordsman",     "type": "unit", "nature": "troop",  "cost": 3, "attack": 4, "health": 3, "move_cost": 1, "traits": {}, "effects": []},
+    {"id": "pikeman",       "name": "Pikeman",       "type": "unit", "nature": "troop",  "cost": 4, "attack": 3, "health": 5, "move_cost": 1, "traits": {"defense": true}, "effects": []},
+    {"id": "knight",        "name": "Knight",        "type": "unit", "nature": "troop",  "cost": 4, "attack": 3, "health": 4, "move_cost": 2, "traits": {"armor": 1}, "effects": []},
+    {"id": "warden",        "name": "Warden",        "type": "unit", "nature": "troop",  "cost": 5, "attack": 3, "health": 6, "move_cost": 1, "traits": {"defense": true, "armor": 1}, "effects": []},
+    {"id": "ogre",          "name": "Ogre",          "type": "unit", "nature": "troop",  "cost": 6, "attack": 7, "health": 6, "move_cost": 2, "traits": {}, "effects": []},
+    {"id": "juggernaut",    "name": "Juggernaut",    "type": "unit", "nature": "troop",  "cost": 7, "attack": 6, "health": 7, "move_cost": 2, "traits": {"armor": 2}, "effects": []},
+    {"id": "bastion",       "name": "Bastion",       "type": "unit", "nature": "troop",  "cost": 8, "attack": 4, "health": 9, "move_cost": 2, "traits": {"defense": true, "armor": 2}, "effects": []},
+
+    {"id": "scout",         "name": "Scout",         "type": "unit", "nature": "fast",   "cost": 1, "attack": 2, "health": 1, "move_cost": 0, "traits": {}, "effects": []},
+    {"id": "raider",        "name": "Raider",        "type": "unit", "nature": "fast",   "cost": 2, "attack": 3, "health": 1, "move_cost": 1, "traits": {}, "effects": []},
+    {"id": "outrider",      "name": "Outrider",      "type": "unit", "nature": "fast",   "cost": 3, "attack": 2, "health": 3, "move_cost": 1, "traits": {"armor": 1}, "effects": []},
+    {"id": "guard_rider",   "name": "Guard Rider",   "type": "unit", "nature": "fast",   "cost": 3, "attack": 2, "health": 3, "move_cost": 1, "traits": {"defense": true}, "effects": []},
+    {"id": "lancer",        "name": "Lancer",        "type": "unit", "nature": "fast",   "cost": 4, "attack": 5, "health": 3, "move_cost": 1, "traits": {}, "effects": []},
+    {"id": "wolf_rider",    "name": "Wolf Rider",    "type": "unit", "nature": "fast",   "cost": 5, "attack": 6, "health": 4, "move_cost": 1, "traits": {}, "effects": []},
+    {"id": "cataphract",    "name": "Cataphract",    "type": "unit", "nature": "fast",   "cost": 6, "attack": 5, "health": 4, "move_cost": 2, "traits": {"armor": 2}, "effects": []},
+    {"id": "paladin",       "name": "Paladin",       "type": "unit", "nature": "fast",   "cost": 7, "attack": 5, "health": 6, "move_cost": 2, "traits": {"defense": true, "armor": 1}, "effects": []},
+
+    {"id": "slinger",       "name": "Slinger",       "type": "unit", "nature": "ranged", "cost": 1, "attack": 1, "health": 1, "move_cost": 1, "traits": {}, "effects": []},
+    {"id": "archer",        "name": "Archer",        "type": "unit", "nature": "ranged", "cost": 2, "attack": 2, "health": 1, "move_cost": 1, "traits": {}, "effects": []},
+    {"id": "shield_archer", "name": "Shield Archer", "type": "unit", "nature": "ranged", "cost": 3, "attack": 1, "health": 4, "move_cost": 1, "traits": {"defense": true}, "effects": []},
+    {"id": "crossbowman",   "name": "Crossbowman",   "type": "unit", "nature": "ranged", "cost": 4, "attack": 3, "health": 2, "move_cost": 1, "traits": {"armor": 1}, "effects": []},
+    {"id": "longbowman",    "name": "Longbowman",    "type": "unit", "nature": "ranged", "cost": 5, "attack": 4, "health": 3, "move_cost": 1, "traits": {}, "effects": []},
+    {"id": "siege_tower",   "name": "Siege Tower",   "type": "unit", "nature": "ranged", "cost": 6, "attack": 2, "health": 5, "move_cost": 3, "traits": {"defense": true, "armor": 2}, "effects": []},
+    {"id": "ballista",      "name": "Ballista",      "type": "unit", "nature": "ranged", "cost": 7, "attack": 5, "health": 5, "move_cost": 3, "traits": {"armor": 1}, "effects": []}
+  ]
+}
