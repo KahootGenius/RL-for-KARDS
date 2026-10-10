@@ -1,0 +1,3858 @@
+{
+ "about": "A sample of real KARDS cards (official card data, game version 53) encoded in the Stage 3 card schema (SPEC 1.5). Paraphrases are functional summaries in our own words, not the card text. Each entry has an 'encoding' (a card dict the loader accepts) or 'unsupported' (the missing primitives, keys of unsupported_vocabulary). tests/test_kards_sample.py parses every encoding and recomputes 'coverage'.",
+ "mapping": {
+  "kind": "infantry -> troop, tank -> fast, artillery -> ranged; fighter/bomber -> ranged (aircraft strike any line from the support line: the ranged reach) with tag 'air'; order -> operation; countermeasure -> unsupported",
+  "stats": "kredits -> cost, attack -> attack, defense -> health, operation cost -> move_cost",
+  "keywords": "Guard -> defense, Heavy Armor X -> armor X, Blitz / Smokescreen / Ambush / Fury / Shock -> the trait of the same name; Exile (deck building only) -> tag 'exile'",
+  "tags": "the KARDS kind, 'air' for aircraft, and the nation (lower case)"
+ },
+ "unsupported_vocabulary": {
+  "countermeasure": {
+   "spec_deferred": true,
+   "description": "Countermeasures: hidden armed cards that fire on the opponent's turn and can cancel effects."
+  },
+  "cost_modifier": {
+   "spec_deferred": true,
+   "description": "Cost modifiers for cards in hand."
+  },
+  "delayed_or_granted_effect": {
+   "spec_deferred": true,
+   "description": "Delayed or granted effects, and durations beyond \"turn\" (e.g. 'while this is in play', 'at the end of your turn, destroy it')."
+  },
+  "copy_or_random_card": {
+   "spec_deferred": true,
+   "description": "Copies of cards and random card generation."
+  },
+  "transform_veteran": {
+   "spec_deferred": true,
+   "description": "Transform effects and Veteran forms."
+  },
+  "deck_manipulation": {
+   "spec_deferred": true,
+   "description": "Deck manipulation: dig, shuffle into a deck, tutor."
+  },
+  "damage_modifier": {
+   "spec_deferred": true,
+   "description": "Damage modifiers (double damage, +1 damage, reduced damage)."
+  },
+  "take_control_or_remove": {
+   "spec_deferred": true,
+   "description": "Taking control of a unit, or removing it from play without destroying it."
+  },
+  "choose_one": {
+   "spec_deferred": true,
+   "description": "Choose-one modes."
+  },
+  "set_stat": {
+   "spec_deferred": true,
+   "description": "Setting a stat to a value."
+  },
+  "rule_modifier": {
+   "spec_deferred": true,
+   "description": "Global rule modifiers and per-unit rule exceptions (cannot be targeted, cannot attack the HQ, HQs cannot gain defense, deployment effects do not trigger)."
+  },
+  "intel_covert": {
+   "spec_deferred": true,
+   "description": "Intel and Covert."
+  },
+  "develop": {
+   "spec_deferred": true,
+   "description": "Develop (choose one of several generated cards)."
+  },
+  "forecast": {
+   "spec_deferred": true,
+   "description": "Forecast and weather cards."
+  },
+  "play_restriction": {
+   "spec_deferred": false,
+   "description": "Conditions that restrict playing or deploying a card."
+  },
+  "per_unit_history": {
+   "spec_deferred": false,
+   "description": "Conditions on one unit's own history (was it attacked last turn, how often has this trigger fired)."
+  },
+  "new_trigger": {
+   "spec_deferred": false,
+   "description": "Triggers the schema lacks: a player draws, a unit damages an HQ, a unit is targeted by an order."
+  },
+  "amount_difference": {
+   "spec_deferred": false,
+   "description": "Amounts that subtract two quantities (e.g. draw up to the opponent's hand size)."
+  },
+  "per_target_amount": {
+   "spec_deferred": false,
+   "description": "Amounts evaluated separately for each target (e.g. each unit takes damage equal to its own operation cost)."
+  },
+  "random_amount": {
+   "spec_deferred": false,
+   "description": "Random amounts (e.g. 0-1 bonus damage)."
+  },
+  "conditional_repeat": {
+   "spec_deferred": false,
+   "description": "Repetition whose count is decided during resolution (repeat while the last pass destroyed a unit, once per unit destroyed)."
+  },
+  "position_placement": {
+   "spec_deferred": false,
+   "description": "Putting units into a specific board position (next to this unit)."
+  },
+  "refresh_unit": {
+   "spec_deferred": false,
+   "description": "Letting a unit operate (move/attack) again in the same turn."
+  },
+  "splash_after_death": {
+   "spec_deferred": false,
+   "description": "'Target and adjacent units' splash that must still reach the neighbours after the main target died (SPEC 2.13 known limitation)."
+  },
+  "fight": {
+   "spec_deferred": false,
+   "description": "A unit fights another unit outside an attack (a combat exchange as if it attacked)."
+  },
+  "hand_position": {
+   "spec_deferred": false,
+   "description": "Effects that depend on a card's position in the hand."
+  }
+ },
+ "coverage": {
+  "entries": 110,
+  "supported": 68,
+  "unsupported": 42,
+  "fraction_supported": 0.618,
+  "by_kind": {
+   "artillery": {
+    "supported": 9,
+    "unsupported": 1
+   },
+   "bomber": {
+    "supported": 6,
+    "unsupported": 3
+   },
+   "countermeasure": {
+    "supported": 0,
+    "unsupported": 4
+   },
+   "fighter": {
+    "supported": 8,
+    "unsupported": 5
+   },
+   "infantry": {
+    "supported": 18,
+    "unsupported": 10
+   },
+   "order": {
+    "supported": 19,
+    "unsupported": 14
+   },
+   "tank": {
+    "supported": 8,
+    "unsupported": 5
+   }
+  },
+  "unsupported_patterns": {
+   "countermeasure": 4,
+   "rule_modifier": 4,
+   "cost_modifier": 3,
+   "deck_manipulation": 3,
+   "delayed_or_granted_effect": 3,
+   "new_trigger": 3,
+   "choose_one": 2,
+   "conditional_repeat": 2,
+   "copy_or_random_card": 2,
+   "damage_modifier": 2,
+   "per_unit_history": 2,
+   "take_control_or_remove": 2,
+   "amount_difference": 1,
+   "develop": 1,
+   "fight": 1,
+   "forecast": 1,
+   "hand_position": 1,
+   "intel_covert": 1,
+   "per_target_amount": 1,
+   "play_restriction": 1,
+   "position_placement": 1,
+   "random_amount": 1,
+   "refresh_unit": 1,
+   "set_stat": 1,
+   "splash_after_death": 1,
+   "transform_veteran": 1
+  },
+  "unsupported_spec_deferred": 27,
+  "supported_triggers": {
+   "on_deploy": 27,
+   "on_play": 24,
+   "static": 5,
+   "end_of_turn": 3,
+   "on_attack": 2,
+   "on_move": 2,
+   "start_of_turn": 2,
+   "on_damaged": 1,
+   "on_death": 1,
+   "on_kill": 1
+  },
+  "supported_actions": {
+   "damage": 24,
+   "buff": 18,
+   "destroy": 9,
+   "draw": 8,
+   "pin": 6,
+   "add_trait": 4,
+   "discard": 2,
+   "heal": 2,
+   "increase_max_coins": 2,
+   "return_to_hand": 2,
+   "gain_coins": 1,
+   "remove_trait": 1,
+   "retreat": 1,
+   "summon": 1
+  },
+  "supported_without_effects": 1
+ },
+ "tokens": [
+  {
+   "id": "i16_ishak",
+   "name": "I-16 ISHAK",
+   "type": "unit",
+   "nature": "ranged",
+   "cost": 2,
+   "attack": 2,
+   "health": 2,
+   "move_cost": 1,
+   "traits": {},
+   "token": true,
+   "tags": [
+    "fighter",
+    "air",
+    "soviet"
+   ],
+   "effects": []
+  }
+ ],
+ "token_sources": {
+  "i16_ishak": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=i16_ishak): Soviet fighter, 2 kredits, operation cost 1, 2/2, no rules text."
+ },
+ "cards": [
+  {
+   "name": "10th PARA BATTALION",
+   "card_id": "10th_para_battalion",
+   "nation": "Britain",
+   "kind": "infantry",
+   "kredits": 1,
+   "operation_cost": 1,
+   "attack": 2,
+   "defense": 1,
+   "keywords": [],
+   "paraphrase": "Arrives with +1/+1 and Blitz when you have already played an order this turn.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=10th_para_battalion)",
+   "encoding": {
+    "id": "10th_para_battalion",
+    "name": "10th PARA BATTALION",
+    "type": "unit",
+    "nature": "troop",
+    "cost": 1,
+    "attack": 2,
+    "health": 1,
+    "move_cost": 1,
+    "traits": {},
+    "tags": [
+     "infantry",
+     "britain"
+    ],
+    "effects": [
+     {
+      "trigger": "on_deploy",
+      "condition": {
+       "type": "history",
+       "event": "operation_played",
+       "side": "friendly",
+       "window": "turn",
+       "min": 1
+      },
+      "action": "buff",
+      "atk": 1,
+      "hp": 1,
+      "target": "self"
+     },
+     {
+      "trigger": "on_deploy",
+      "condition": {
+       "type": "history",
+       "event": "operation_played",
+       "side": "friendly",
+       "window": "turn",
+       "min": 1
+      },
+      "action": "add_trait",
+      "trait": "blitz",
+      "target": "self"
+     }
+    ]
+   }
+  },
+  {
+   "name": "109th COMBAT ENGINEERS",
+   "card_id": "109th_combat_engineers",
+   "nation": "USA",
+   "kind": "infantry",
+   "kredits": 1,
+   "operation_cost": 1,
+   "attack": 1,
+   "defense": 2,
+   "keywords": [
+    "Smokescreen"
+   ],
+   "paraphrase": "Gives +1 attack to each of your other units as it moves into the frontline.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=109th_combat_engineers)",
+   "encoding": {
+    "id": "109th_combat_engineers",
+    "name": "109th COMBAT ENGINEERS",
+    "type": "unit",
+    "nature": "troop",
+    "cost": 1,
+    "attack": 1,
+    "health": 2,
+    "move_cost": 1,
+    "traits": {
+     "smokescreen": true
+    },
+    "tags": [
+     "infantry",
+     "usa"
+    ],
+    "effects": [
+     {
+      "trigger": "on_move",
+      "scope": "friendly",
+      "action": "buff",
+      "atk": 1,
+      "target": "event"
+     }
+    ]
+   }
+  },
+  {
+   "name": "1st GURKHA RIFLES",
+   "card_id": "1st_gurkha_rifles",
+   "nation": "Britain",
+   "kind": "infantry",
+   "kredits": 2,
+   "operation_cost": 1,
+   "attack": 1,
+   "defense": 4,
+   "keywords": [
+    "Guard"
+   ],
+   "paraphrase": "Each order you play adds 1 attack to it for the rest of the game.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=1st_gurkha_rifles)",
+   "encoding": {
+    "id": "1st_gurkha_rifles",
+    "name": "1st GURKHA RIFLES",
+    "type": "unit",
+    "nature": "troop",
+    "cost": 2,
+    "attack": 1,
+    "health": 4,
+    "move_cost": 1,
+    "traits": {
+     "defense": true
+    },
+    "tags": [
+     "infantry",
+     "britain"
+    ],
+    "effects": [
+     {
+      "trigger": "on_play",
+      "scope": "friendly",
+      "action": "buff",
+      "atk": 1,
+      "target": "self"
+     }
+    ]
+   }
+  },
+  {
+   "name": "No. 10 COMMANDO",
+   "card_id": "no_10_commando",
+   "nation": "Britain",
+   "kind": "infantry",
+   "kredits": 2,
+   "operation_cost": 1,
+   "attack": 2,
+   "defense": 1,
+   "keywords": [
+    "Smokescreen"
+   ],
+   "paraphrase": "Each British order you play sends 1 damage at a random enemy target (a unit or the HQ).",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=no_10_commando)",
+   "encoding": {
+    "id": "no_10_commando",
+    "name": "No. 10 COMMANDO",
+    "type": "unit",
+    "nature": "troop",
+    "cost": 2,
+    "attack": 2,
+    "health": 1,
+    "move_cost": 1,
+    "traits": {
+     "smokescreen": true
+    },
+    "tags": [
+     "infantry",
+     "britain"
+    ],
+    "effects": [
+     {
+      "trigger": "on_play",
+      "scope": "friendly",
+      "event_filter": {
+       "tag": "britain"
+      },
+      "action": "damage",
+      "amount": 1,
+      "target": {
+       "select": "random",
+       "side": "enemy",
+       "kind": "unit_or_base"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "SEAFORTH HIGHLANDERS",
+   "card_id": "seaforth_highlanders",
+   "nation": "Britain",
+   "kind": "infantry",
+   "kredits": 4,
+   "operation_cost": 1,
+   "attack": 1,
+   "defense": 7,
+   "keywords": [
+    "Guard"
+   ],
+   "paraphrase": "Gets 3 extra attack while the opponent is taking their turn.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=seaforth_highlanders)",
+   "encoding": {
+    "id": "seaforth_highlanders",
+    "name": "SEAFORTH HIGHLANDERS",
+    "type": "unit",
+    "nature": "troop",
+    "cost": 4,
+    "attack": 1,
+    "health": 7,
+    "move_cost": 1,
+    "traits": {
+     "defense": true
+    },
+    "tags": [
+     "infantry",
+     "britain"
+    ],
+    "effects": [
+     {
+      "trigger": "static",
+      "condition": {
+       "type": "turn",
+       "whose": "opponent"
+      },
+      "action": "buff",
+      "atk": 3,
+      "target": "self"
+     }
+    ]
+   }
+  },
+  {
+   "name": "INFANTRY REGIMENT 13",
+   "card_id": "infantry_regiment_13",
+   "nation": "Finland",
+   "kind": "infantry",
+   "kredits": 5,
+   "operation_cost": 1,
+   "attack": 2,
+   "defense": 4,
+   "keywords": [
+    "Guard"
+   ],
+   "paraphrase": "Arrives with +1/+1 for every unit on the opponent's side.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=infantry_regiment_13)",
+   "encoding": {
+    "id": "infantry_regiment_13",
+    "name": "INFANTRY REGIMENT 13",
+    "type": "unit",
+    "nature": "troop",
+    "cost": 5,
+    "attack": 2,
+    "health": 4,
+    "move_cost": 1,
+    "traits": {
+     "defense": true
+    },
+    "tags": [
+     "infantry",
+     "finland"
+    ],
+    "effects": [
+     {
+      "trigger": "on_deploy",
+      "action": "buff",
+      "atk": {
+       "count": "units",
+       "side": "enemy"
+      },
+      "hp": {
+       "count": "units",
+       "side": "enemy"
+      },
+      "target": "self"
+     }
+    ]
+   }
+  },
+  {
+   "name": "22. INFANTRY REGIMENT",
+   "card_id": "22_infantry_regiment",
+   "nation": "Germany",
+   "kind": "infantry",
+   "kredits": 2,
+   "operation_cost": 1,
+   "attack": 2,
+   "defense": 1,
+   "keywords": [],
+   "paraphrase": "Draws you a card at the end of your turn, provided the frontline is yours.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=22_infantry_regiment)",
+   "encoding": {
+    "id": "22_infantry_regiment",
+    "name": "22. INFANTRY REGIMENT",
+    "type": "unit",
+    "nature": "troop",
+    "cost": 2,
+    "attack": 2,
+    "health": 1,
+    "move_cost": 1,
+    "traits": {},
+    "tags": [
+     "infantry",
+     "germany"
+    ],
+    "effects": [
+     {
+      "trigger": "end_of_turn",
+      "condition": {
+       "type": "frontline",
+       "owner": "friendly"
+      },
+      "action": "draw",
+      "amount": 1,
+      "target": "controller"
+     }
+    ]
+   }
+  },
+  {
+   "name": "169. GRENADIERS",
+   "card_id": "169_grenadiers",
+   "nation": "Germany",
+   "kind": "infantry",
+   "kredits": 5,
+   "operation_cost": 1,
+   "attack": 5,
+   "defense": 6,
+   "keywords": [],
+   "paraphrase": "Every order the opponent plays costs them a random card from hand.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=169_grenadiers)",
+   "encoding": {
+    "id": "169_grenadiers",
+    "name": "169. GRENADIERS",
+    "type": "unit",
+    "nature": "troop",
+    "cost": 5,
+    "attack": 5,
+    "health": 6,
+    "move_cost": 1,
+    "traits": {},
+    "tags": [
+     "infantry",
+     "germany"
+    ],
+    "effects": [
+     {
+      "trigger": "on_play",
+      "scope": "enemy",
+      "action": "discard",
+      "amount": 1,
+      "target": "opponent"
+     }
+    ]
+   }
+  },
+  {
+   "name": "SHIBATA REGIMENT",
+   "card_id": "shibata_regiment",
+   "nation": "Japan",
+   "kind": "infantry",
+   "kredits": 1,
+   "operation_cost": 1,
+   "attack": 1,
+   "defense": 3,
+   "keywords": [],
+   "paraphrase": "The opponent's HQ suffers 1 damage for every order they play.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=shibata_regiment)",
+   "encoding": {
+    "id": "shibata_regiment",
+    "name": "SHIBATA REGIMENT",
+    "type": "unit",
+    "nature": "troop",
+    "cost": 1,
+    "attack": 1,
+    "health": 3,
+    "move_cost": 1,
+    "traits": {},
+    "tags": [
+     "infantry",
+     "japan"
+    ],
+    "effects": [
+     {
+      "trigger": "on_play",
+      "scope": "enemy",
+      "action": "damage",
+      "amount": 1,
+      "target": "enemy_base"
+     }
+    ]
+   }
+  },
+  {
+   "name": "74th SILESIAN REGIMENT",
+   "card_id": "74th_silesian_regiment",
+   "nation": "Poland",
+   "kind": "infantry",
+   "kredits": 2,
+   "operation_cost": 1,
+   "attack": 2,
+   "defense": 2,
+   "keywords": [],
+   "paraphrase": "Pins every enemy unit the moment it advances to the frontline.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=74th_silesian_regiment)",
+   "encoding": {
+    "id": "74th_silesian_regiment",
+    "name": "74th SILESIAN REGIMENT",
+    "type": "unit",
+    "nature": "troop",
+    "cost": 2,
+    "attack": 2,
+    "health": 2,
+    "move_cost": 1,
+    "traits": {},
+    "tags": [
+     "infantry",
+     "poland"
+    ],
+    "effects": [
+     {
+      "trigger": "on_move",
+      "scope": "enemy",
+      "action": "pin",
+      "target": "event"
+     }
+    ]
+   }
+  },
+  {
+   "name": "676th REGIMENT",
+   "card_id": "676th_regiment",
+   "nation": "Soviet Union",
+   "kind": "infantry",
+   "kredits": 2,
+   "operation_cost": 1,
+   "attack": 1,
+   "defense": 5,
+   "keywords": [
+    "Blitz"
+   ],
+   "paraphrase": "Taking damage and surviving gives it 2 more attack and Shock.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=676th_regiment)",
+   "encoding": {
+    "id": "676th_regiment",
+    "name": "676th REGIMENT",
+    "type": "unit",
+    "nature": "troop",
+    "cost": 2,
+    "attack": 1,
+    "health": 5,
+    "move_cost": 1,
+    "traits": {
+     "blitz": true
+    },
+    "tags": [
+     "infantry",
+     "soviet"
+    ],
+    "effects": [
+     {
+      "trigger": "on_damaged",
+      "action": "buff",
+      "atk": 2,
+      "target": "self"
+     },
+     {
+      "trigger": "on_damaged",
+      "action": "add_trait",
+      "trait": "shock",
+      "target": "self"
+     }
+    ]
+   },
+   "notes": "KARDS fires on any damage; a unit that dies keeps no buff, so on_damaged (survivors) is equivalent."
+  },
+  {
+   "name": "101st AIRBORNE",
+   "card_id": "101st_airborne",
+   "nation": "USA",
+   "kind": "infantry",
+   "kredits": 4,
+   "operation_cost": 1,
+   "attack": 4,
+   "defense": 3,
+   "keywords": [
+    "Blitz",
+    "Ambush"
+   ],
+   "paraphrase": "Its arrival hits the enemy support line for 2: either a unit there or the HQ, your pick.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=101st_airborne)",
+   "encoding": {
+    "id": "101st_airborne",
+    "name": "101st AIRBORNE",
+    "type": "unit",
+    "nature": "troop",
+    "cost": 4,
+    "attack": 4,
+    "health": 3,
+    "move_cost": 1,
+    "traits": {
+     "blitz": true,
+     "ambush": true
+    },
+    "tags": [
+     "infantry",
+     "usa"
+    ],
+    "effects": [
+     {
+      "trigger": "on_deploy",
+      "action": "damage",
+      "amount": 2,
+      "target": {
+       "select": "chosen",
+       "side": "enemy",
+       "kind": "unit_or_base",
+       "zone": "backline"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "RED BULL",
+   "card_id": "red_bull",
+   "nation": "USA",
+   "kind": "infantry",
+   "kredits": 3,
+   "operation_cost": 1,
+   "attack": 1,
+   "defense": 6,
+   "keywords": [],
+   "paraphrase": "When your turn starts, its attack doubles.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=red_bull)",
+   "encoding": {
+    "id": "red_bull",
+    "name": "RED BULL",
+    "type": "unit",
+    "nature": "troop",
+    "cost": 3,
+    "attack": 1,
+    "health": 6,
+    "move_cost": 1,
+    "traits": {},
+    "tags": [
+     "infantry",
+     "usa"
+    ],
+    "effects": [
+     {
+      "trigger": "start_of_turn",
+      "action": "buff",
+      "atk": {
+       "stat": "atk",
+       "of": "self"
+      },
+      "target": "self"
+     }
+    ]
+   }
+  },
+  {
+   "name": "LA DECIMA",
+   "card_id": "la_decima",
+   "nation": "Italy",
+   "kind": "infantry",
+   "kredits": 7,
+   "operation_cost": 1,
+   "attack": 2,
+   "defense": 5,
+   "keywords": [
+    "Ambush",
+    "Guard"
+   ],
+   "paraphrase": "Its arrival destroys a unit of your choice from the enemy support line.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=la_decima)",
+   "encoding": {
+    "id": "la_decima",
+    "name": "LA DECIMA",
+    "type": "unit",
+    "nature": "troop",
+    "cost": 7,
+    "attack": 2,
+    "health": 5,
+    "move_cost": 1,
+    "traits": {
+     "ambush": true,
+     "defense": true
+    },
+    "tags": [
+     "infantry",
+     "italy"
+    ],
+    "effects": [
+     {
+      "trigger": "on_deploy",
+      "action": "destroy",
+      "target": {
+       "select": "chosen",
+       "side": "enemy",
+       "kind": "unit",
+       "zone": "backline"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "ROYAL WEST KENTS",
+   "card_id": "royal_west_kents",
+   "nation": "Britain",
+   "kind": "infantry",
+   "kredits": 4,
+   "operation_cost": 1,
+   "attack": 4,
+   "defense": 4,
+   "keywords": [
+    "Blitz",
+    "Guard"
+   ],
+   "paraphrase": "Every other Guard unit on your side gains Blitz and 2 extra attack.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=royal_west_kents)",
+   "encoding": {
+    "id": "royal_west_kents",
+    "name": "ROYAL WEST KENTS",
+    "type": "unit",
+    "nature": "troop",
+    "cost": 4,
+    "attack": 4,
+    "health": 4,
+    "move_cost": 1,
+    "traits": {
+     "blitz": true,
+     "defense": true
+    },
+    "tags": [
+     "infantry",
+     "britain"
+    ],
+    "effects": [
+     {
+      "trigger": "static",
+      "action": "buff",
+      "atk": 2,
+      "target": {
+       "select": "all",
+       "side": "friendly",
+       "filter": {
+        "trait": "defense",
+        "other": true
+       }
+      }
+     },
+     {
+      "trigger": "static",
+      "action": "add_trait",
+      "trait": "blitz",
+      "target": {
+       "select": "all",
+       "side": "friendly",
+       "filter": {
+        "trait": "defense",
+        "other": true
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "59. PANZERGRENADIER",
+   "card_id": "59_panzergrenadier",
+   "nation": "Germany",
+   "kind": "infantry",
+   "kredits": 2,
+   "operation_cost": 1,
+   "attack": 3,
+   "defense": 3,
+   "keywords": [],
+   "paraphrase": "Infantry that can advance and attack in one turn.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=59_panzergrenadier)",
+   "encoding": {
+    "id": "59_panzergrenadier",
+    "name": "59. PANZERGRENADIER",
+    "type": "unit",
+    "nature": "fast",
+    "cost": 2,
+    "attack": 3,
+    "health": 3,
+    "move_cost": 1,
+    "traits": {},
+    "tags": [
+     "infantry",
+     "germany"
+    ],
+    "effects": []
+   },
+   "notes": "No effect clause: moving and attacking in one turn is the fast nature (KARDS kind kept as the infantry tag)."
+  },
+  {
+   "name": "8e MAROCAINS",
+   "card_id": "8e_marocains",
+   "nation": "France",
+   "kind": "infantry",
+   "kredits": 3,
+   "operation_cost": 3,
+   "attack": 5,
+   "defense": 5,
+   "keywords": [],
+   "paraphrase": "Each later deployment of one of your units adds that unit's operation cost to your HQ defense, with no upper cap.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=8e_marocains)",
+   "encoding": {
+    "id": "8e_marocains",
+    "name": "8e MAROCAINS",
+    "type": "unit",
+    "nature": "troop",
+    "cost": 3,
+    "attack": 5,
+    "health": 5,
+    "move_cost": 3,
+    "traits": {},
+    "tags": [
+     "infantry",
+     "france"
+    ],
+    "effects": [
+     {
+      "trigger": "on_deploy",
+      "scope": "friendly",
+      "action": "heal",
+      "amount": {
+       "stat": "move_cost",
+       "of": "event"
+      },
+      "uncapped": true,
+      "target": "friendly_base"
+     }
+    ]
+   }
+  },
+  {
+   "name": "12th INFANTRY REGIMENT",
+   "card_id": "12th_infantry_regiment",
+   "nation": "USA",
+   "kind": "infantry",
+   "kredits": 2,
+   "operation_cost": 1,
+   "attack": 2,
+   "defense": 2,
+   "keywords": [],
+   "paraphrase": "Its arrival burns every kredit you have left, and it grows by +1/+1 per kredit burned.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=12th_infantry_regiment)",
+   "encoding": {
+    "id": "12th_infantry_regiment",
+    "name": "12th INFANTRY REGIMENT",
+    "type": "unit",
+    "nature": "troop",
+    "cost": 2,
+    "attack": 2,
+    "health": 2,
+    "move_cost": 1,
+    "traits": {},
+    "tags": [
+     "infantry",
+     "usa"
+    ],
+    "effects": [
+     {
+      "trigger": "on_deploy",
+      "action": "buff",
+      "atk": {
+       "count": "coins",
+       "side": "friendly"
+      },
+      "hp": {
+       "count": "coins",
+       "side": "friendly"
+      },
+      "target": "self"
+     },
+     {
+      "trigger": "on_deploy",
+      "action": "gain_coins",
+      "amount": -99,
+      "target": "controller"
+     }
+    ]
+   },
+   "notes": "A negative gain_coins empties the kredits (coins never drop below 0)."
+  },
+  {
+   "name": "13e DRAGONS",
+   "card_id": "13e_dragons",
+   "nation": "France",
+   "kind": "infantry",
+   "kredits": 0,
+   "operation_cost": 0,
+   "attack": 1,
+   "defense": 2,
+   "keywords": [
+    "Blitz"
+   ],
+   "paraphrase": "Only playable while no other unit of yours has been deployed this turn.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=13e_dragons)",
+   "unsupported": [
+    "play_restriction"
+   ]
+  },
+  {
+   "name": "KAGOSHIMA REGIMENT",
+   "card_id": "kagoshima_regiment",
+   "nation": "Japan",
+   "kind": "infantry",
+   "kredits": 3,
+   "operation_cost": 1,
+   "attack": 5,
+   "defense": 3,
+   "keywords": [
+    "Ambush"
+   ],
+   "paraphrase": "As long as it is in play, no HQ on either side can gain defense.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=kagoshima_regiment)",
+   "unsupported": [
+    "rule_modifier"
+   ]
+  },
+  {
+   "name": "SENDAI REGIMENT",
+   "card_id": "sendai_regiment",
+   "nation": "Japan",
+   "kind": "infantry",
+   "kredits": 4,
+   "operation_cost": 1,
+   "attack": 2,
+   "defense": 3,
+   "keywords": [
+    "Smokescreen"
+   ],
+   "paraphrase": "Its arrival banishes an enemy unit, which comes back only once this regiment is gone.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=sendai_regiment)",
+   "unsupported": [
+    "take_control_or_remove",
+    "delayed_or_granted_effect"
+   ]
+  },
+  {
+   "name": "BIG RED ONE",
+   "card_id": "big_red_one",
+   "nation": "USA",
+   "kind": "infantry",
+   "kredits": 8,
+   "operation_cost": 4,
+   "attack": 8,
+   "defense": 8,
+   "keywords": [],
+   "paraphrase": "While in play, it fixes the price of every card in your hand at 4 kredits.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=big_red_one)",
+   "unsupported": [
+    "cost_modifier"
+   ]
+  },
+  {
+   "name": "133rd IRONMAN",
+   "card_id": "133rd_ironman",
+   "nation": "USA",
+   "kind": "infantry",
+   "kredits": 3,
+   "operation_cost": 1,
+   "attack": 4,
+   "defense": 4,
+   "keywords": [
+    "Covert"
+   ],
+   "paraphrase": "Covert. When it reveals itself, the enemy HQ takes 3 for each of its turns spent in the frontline.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=133rd_ironman)",
+   "unsupported": [
+    "intel_covert",
+    "per_unit_history"
+   ]
+  },
+  {
+   "name": "50. INFANTRY REGIMENT",
+   "card_id": "50_infantry_regiment",
+   "nation": "Germany",
+   "kind": "infantry",
+   "kredits": 2,
+   "operation_cost": 1,
+   "attack": 3,
+   "defense": 2,
+   "keywords": [
+    "Veteran"
+   ],
+   "paraphrase": "Advancing into the frontline promotes it to its Veteran form, a 4/3 with Ambush.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=50_infantry_regiment)",
+   "unsupported": [
+    "transform_veteran"
+   ]
+  },
+  {
+   "name": "51e RÉGIMENT",
+   "card_id": "51e_rgiment",
+   "nation": "France",
+   "kind": "infantry",
+   "kredits": 3,
+   "operation_cost": 1,
+   "attack": 2,
+   "defense": 3,
+   "keywords": [],
+   "paraphrase": "Arrives in one of two forms of your choice: Blitz with 3 more attack, or Guard with 3 more defense.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=51e_rgiment)",
+   "unsupported": [
+    "choose_one"
+   ]
+  },
+  {
+   "name": "CHESHIRE REGIMENT",
+   "card_id": "cheshire_regiment",
+   "nation": "Britain",
+   "kind": "infantry",
+   "kredits": 2,
+   "operation_cost": 1,
+   "attack": 0,
+   "defense": 5,
+   "keywords": [],
+   "paraphrase": "At your turn start, if nothing attacked it during the opponent's last turn, the enemy HQ suffers 2 damage.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=cheshire_regiment)",
+   "unsupported": [
+    "per_unit_history"
+   ]
+  },
+  {
+   "name": "THE RANGERS",
+   "card_id": "the_rangers",
+   "nation": "Britain",
+   "kind": "infantry",
+   "kredits": 3,
+   "operation_cost": 1,
+   "attack": 2,
+   "defense": 5,
+   "keywords": [
+    "Fury"
+   ],
+   "paraphrase": "Your units' non-combat damage is boosted by 1.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=the_rangers)",
+   "unsupported": [
+    "damage_modifier"
+   ]
+  },
+  {
+   "name": "4. FALLSCHIRMJÄGER",
+   "card_id": "4_fallschirmjger",
+   "nation": "Germany",
+   "kind": "infantry",
+   "kredits": 3,
+   "operation_cost": 1,
+   "attack": 4,
+   "defense": 2,
+   "keywords": [
+    "Blitz",
+    "Fury"
+   ],
+   "paraphrase": "Its arrival makes one unit card of cost 2 or less in your hand free to play.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=4_fallschirmjger)",
+   "unsupported": [
+    "cost_modifier"
+   ]
+  },
+  {
+   "name": "M4 FIREFLY",
+   "card_id": "m4_firefly",
+   "nation": "Britain",
+   "kind": "tank",
+   "kredits": 5,
+   "operation_cost": 2,
+   "attack": 5,
+   "defense": 4,
+   "keywords": [],
+   "paraphrase": "Its arrival hits an enemy tank you pick for 5.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=m4_firefly)",
+   "encoding": {
+    "id": "m4_firefly",
+    "name": "M4 FIREFLY",
+    "type": "unit",
+    "nature": "fast",
+    "cost": 5,
+    "attack": 5,
+    "health": 4,
+    "move_cost": 2,
+    "traits": {},
+    "tags": [
+     "tank",
+     "britain"
+    ],
+    "effects": [
+     {
+      "trigger": "on_deploy",
+      "action": "damage",
+      "amount": 5,
+      "target": {
+       "select": "chosen",
+       "side": "enemy",
+       "kind": "unit",
+       "filter": {
+        "tag": "tank"
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "Sd KFz 222",
+   "card_id": "sd_kfz_222",
+   "nation": "Germany",
+   "kind": "tank",
+   "kredits": 1,
+   "operation_cost": 1,
+   "attack": 1,
+   "defense": 1,
+   "keywords": [
+    "Blitz"
+   ],
+   "paraphrase": "Adjacent friendly ground units hit 1 harder.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=sd_kfz_222)",
+   "encoding": {
+    "id": "sd_kfz_222",
+    "name": "Sd KFz 222",
+    "type": "unit",
+    "nature": "fast",
+    "cost": 1,
+    "attack": 1,
+    "health": 1,
+    "move_cost": 1,
+    "traits": {
+     "blitz": true
+    },
+    "tags": [
+     "tank",
+     "germany"
+    ],
+    "effects": [
+     {
+      "trigger": "static",
+      "action": "buff",
+      "atk": 1,
+      "target": {
+       "select": "adjacent",
+       "side": "friendly",
+       "filter": {
+        "not_tag": "air"
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "FLAMMPANZER",
+   "card_id": "flammpanzer",
+   "nation": "Germany",
+   "kind": "tank",
+   "kredits": 3,
+   "operation_cost": 2,
+   "attack": 4,
+   "defense": 3,
+   "keywords": [],
+   "paraphrase": "On arrival, it burns away a chosen enemy unit costing no more than 1.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=flammpanzer)",
+   "encoding": {
+    "id": "flammpanzer",
+    "name": "FLAMMPANZER",
+    "type": "unit",
+    "nature": "fast",
+    "cost": 3,
+    "attack": 4,
+    "health": 3,
+    "move_cost": 2,
+    "traits": {},
+    "tags": [
+     "tank",
+     "germany"
+    ],
+    "effects": [
+     {
+      "trigger": "on_deploy",
+      "action": "destroy",
+      "target": {
+       "select": "chosen",
+       "side": "enemy",
+       "kind": "unit",
+       "filter": {
+        "max_cost": 1
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "TYPE 95 Ha-Go",
+   "card_id": "type_95_hago",
+   "nation": "Japan",
+   "kind": "tank",
+   "kredits": 2,
+   "operation_cost": 1,
+   "attack": 2,
+   "defense": 2,
+   "keywords": [],
+   "paraphrase": "Any player who plays an order takes 1 damage to their own HQ.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=type_95_hago)",
+   "encoding": {
+    "id": "type_95_hago",
+    "name": "TYPE 95 Ha-Go",
+    "type": "unit",
+    "nature": "fast",
+    "cost": 2,
+    "attack": 2,
+    "health": 2,
+    "move_cost": 1,
+    "traits": {},
+    "tags": [
+     "tank",
+     "japan"
+    ],
+    "effects": [
+     {
+      "trigger": "on_play",
+      "scope": "friendly",
+      "action": "damage",
+      "amount": 1,
+      "target": "friendly_base"
+     },
+     {
+      "trigger": "on_play",
+      "scope": "enemy",
+      "action": "damage",
+      "amount": 1,
+      "target": "enemy_base"
+     }
+    ]
+   }
+  },
+  {
+   "name": "SU-100",
+   "card_id": "su100",
+   "nation": "Soviet Union",
+   "kind": "tank",
+   "kredits": 4,
+   "operation_cost": 1,
+   "attack": 4,
+   "defense": 3,
+   "keywords": [
+    "Blitz"
+   ],
+   "paraphrase": "Gains 4 attack while it is below full defense.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=su100)",
+   "encoding": {
+    "id": "su100",
+    "name": "SU-100",
+    "type": "unit",
+    "nature": "fast",
+    "cost": 4,
+    "attack": 4,
+    "health": 3,
+    "move_cost": 1,
+    "traits": {
+     "blitz": true
+    },
+    "tags": [
+     "tank",
+     "soviet"
+    ],
+    "effects": [
+     {
+      "trigger": "static",
+      "action": "buff",
+      "atk": 4,
+      "target": {
+       "select": "self",
+       "filter": {
+        "damaged": true
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "PANZER III-F",
+   "card_id": "panzer_iiif",
+   "nation": "Germany",
+   "kind": "tank",
+   "kredits": 3,
+   "operation_cost": 2,
+   "attack": 3,
+   "defense": 3,
+   "keywords": [
+    "Blitz"
+   ],
+   "paraphrase": "Gives Blitz to each German tank you control; when it arrives, each of your other tanks gains +1/+1.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=panzer_iiif)",
+   "encoding": {
+    "id": "panzer_iiif",
+    "name": "PANZER III-F",
+    "type": "unit",
+    "nature": "fast",
+    "cost": 3,
+    "attack": 3,
+    "health": 3,
+    "move_cost": 2,
+    "traits": {
+     "blitz": true
+    },
+    "tags": [
+     "tank",
+     "germany"
+    ],
+    "effects": [
+     {
+      "trigger": "static",
+      "action": "add_trait",
+      "trait": "blitz",
+      "target": {
+       "select": "all",
+       "side": "friendly",
+       "filter": {
+        "nature": "fast",
+        "tag": "germany",
+        "not_tag": "infantry"
+       }
+      }
+     },
+     {
+      "trigger": "on_deploy",
+      "action": "buff",
+      "atk": 1,
+      "hp": 1,
+      "target": {
+       "select": "all",
+       "side": "friendly",
+       "filter": {
+        "tag": "tank",
+        "other": true
+       }
+      }
+     }
+    ]
+   },
+   "notes": "'German tank' = fast, tagged germany and not infantry (a filter's tag list means 'any of')."
+  },
+  {
+   "name": "M4 SHERMAN",
+   "card_id": "m4_sherman",
+   "nation": "USA",
+   "kind": "tank",
+   "kredits": 4,
+   "operation_cost": 2,
+   "attack": 4,
+   "defense": 4,
+   "keywords": [],
+   "paraphrase": "Its arrival draws you 2 cards when one of your US units is already in the frontline.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=m4_sherman)",
+   "encoding": {
+    "id": "m4_sherman",
+    "name": "M4 SHERMAN",
+    "type": "unit",
+    "nature": "fast",
+    "cost": 4,
+    "attack": 4,
+    "health": 4,
+    "move_cost": 2,
+    "traits": {},
+    "tags": [
+     "tank",
+     "usa"
+    ],
+    "effects": [
+     {
+      "trigger": "on_deploy",
+      "condition": {
+       "type": "control",
+       "side": "friendly",
+       "zone": "frontline",
+       "filter": {
+        "tag": "usa"
+       }
+      },
+      "action": "draw",
+      "amount": 2,
+      "target": "controller"
+     }
+    ]
+   }
+  },
+  {
+   "name": "M16 HALF-TRACK",
+   "card_id": "m16_halftrack",
+   "nation": "USA",
+   "kind": "tank",
+   "kredits": 3,
+   "operation_cost": 1,
+   "attack": 2,
+   "defense": 2,
+   "keywords": [],
+   "paraphrase": "Its arrival forces one enemy unit of the air or infantry type, picked by you, to pull back.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=m16_halftrack)",
+   "encoding": {
+    "id": "m16_halftrack",
+    "name": "M16 HALF-TRACK",
+    "type": "unit",
+    "nature": "fast",
+    "cost": 3,
+    "attack": 2,
+    "health": 2,
+    "move_cost": 1,
+    "traits": {},
+    "tags": [
+     "tank",
+     "usa"
+    ],
+    "effects": [
+     {
+      "trigger": "on_deploy",
+      "action": "retreat",
+      "target": {
+       "select": "chosen",
+       "side": "enemy",
+       "kind": "unit",
+       "zone": "frontline",
+       "filter": {
+        "tag": [
+         "air",
+         "infantry"
+        ]
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "PANZER III-H",
+   "card_id": "panzer_iiih",
+   "nation": "Germany",
+   "kind": "tank",
+   "kredits": 4,
+   "operation_cost": 1,
+   "attack": 2,
+   "defense": 4,
+   "keywords": [],
+   "paraphrase": "Its arrival lets you pick one of your top 3 cards to draw; the rest go to the bottom.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=panzer_iiih)",
+   "unsupported": [
+    "deck_manipulation"
+   ]
+  },
+  {
+   "name": "TIGER I-E",
+   "card_id": "tiger_ie",
+   "nation": "Germany",
+   "kind": "tank",
+   "kredits": 8,
+   "operation_cost": 3,
+   "attack": 7,
+   "defense": 7,
+   "keywords": [
+    "Heavy Armor 2"
+   ],
+   "paraphrase": "Enemy orders cannot target it.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=tiger_ie)",
+   "unsupported": [
+    "rule_modifier"
+   ]
+  },
+  {
+   "name": "M5 STUART",
+   "card_id": "m5_stuart",
+   "nation": "USA",
+   "kind": "tank",
+   "kredits": 3,
+   "operation_cost": 1,
+   "attack": 2,
+   "defense": 4,
+   "keywords": [],
+   "paraphrase": "Fights infantry with 4 extra attack.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=m5_stuart)",
+   "unsupported": [
+    "damage_modifier"
+   ]
+  },
+  {
+   "name": "KV-1 1941",
+   "card_id": "kv1_1941",
+   "nation": "Soviet Union",
+   "kind": "tank",
+   "kredits": 6,
+   "operation_cost": 2,
+   "attack": 3,
+   "defense": 6,
+   "keywords": [
+    "Heavy Armor 1"
+   ],
+   "paraphrase": "Every card the opponent draws costs their HQ 2 damage.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=kv1_1941)",
+   "unsupported": [
+    "new_trigger"
+   ]
+  },
+  {
+   "name": "MAUS",
+   "card_id": "maus",
+   "nation": "Germany",
+   "kind": "tank",
+   "kredits": 12,
+   "operation_cost": 4,
+   "attack": 12,
+   "defense": 10,
+   "keywords": [
+    "Heavy Armor 3"
+   ],
+   "paraphrase": "Its arrival destroys every unit of cost 3 or less on both sides, then deals 2 damage to an enemy per unit destroyed.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=maus)",
+   "unsupported": [
+    "conditional_repeat"
+   ]
+  },
+  {
+   "name": "17 POUNDER",
+   "card_id": "17_pounder",
+   "nation": "Britain",
+   "kind": "artillery",
+   "kredits": 4,
+   "operation_cost": 1,
+   "attack": 2,
+   "defense": 3,
+   "keywords": [],
+   "paraphrase": "Its arrival pins a chosen enemy unit, and you draw a card when that unit is a tank.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=17_pounder)",
+   "encoding": {
+    "id": "17_pounder",
+    "name": "17 POUNDER",
+    "type": "unit",
+    "nature": "ranged",
+    "cost": 4,
+    "attack": 2,
+    "health": 3,
+    "move_cost": 1,
+    "traits": {},
+    "tags": [
+     "artillery",
+     "britain"
+    ],
+    "effects": [
+     {
+      "trigger": "on_deploy",
+      "action": "pin",
+      "target": {
+       "select": "chosen",
+       "side": "enemy",
+       "kind": "unit"
+      }
+     },
+     {
+      "trigger": "on_deploy",
+      "condition": {
+       "type": "prev",
+       "filter": {
+        "tag": "tank"
+       }
+      },
+      "action": "draw",
+      "amount": 1,
+      "target": "controller"
+     }
+    ]
+   }
+  },
+  {
+   "name": "PAK 36",
+   "card_id": "pak_36",
+   "nation": "Germany",
+   "kind": "artillery",
+   "kredits": 1,
+   "operation_cost": 1,
+   "attack": 1,
+   "defense": 1,
+   "keywords": [],
+   "paraphrase": "Each tank the opponent deploys immediately takes 1 damage.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=pak_36)",
+   "encoding": {
+    "id": "pak_36",
+    "name": "PAK 36",
+    "type": "unit",
+    "nature": "ranged",
+    "cost": 1,
+    "attack": 1,
+    "health": 1,
+    "move_cost": 1,
+    "traits": {},
+    "tags": [
+     "artillery",
+     "germany"
+    ],
+    "effects": [
+     {
+      "trigger": "on_deploy",
+      "scope": "enemy",
+      "event_filter": {
+       "tag": "tank"
+      },
+      "action": "damage",
+      "amount": 1,
+      "target": "event"
+     }
+    ]
+   }
+  },
+  {
+   "name": "LEOPOLD",
+   "card_id": "leopold",
+   "nation": "Germany",
+   "kind": "artillery",
+   "kredits": 10,
+   "operation_cost": 3,
+   "attack": 6,
+   "defense": 4,
+   "keywords": [],
+   "paraphrase": "Its arrival bounces every enemy unit back to hand.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=leopold)",
+   "encoding": {
+    "id": "leopold",
+    "name": "LEOPOLD",
+    "type": "unit",
+    "nature": "ranged",
+    "cost": 10,
+    "attack": 6,
+    "health": 4,
+    "move_cost": 3,
+    "traits": {},
+    "tags": [
+     "artillery",
+     "germany"
+    ],
+    "effects": [
+     {
+      "trigger": "on_deploy",
+      "action": "return_to_hand",
+      "target": {
+       "select": "all",
+       "side": "enemy"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "T19 HOWITZER",
+   "card_id": "t19_howitzer",
+   "nation": "USA",
+   "kind": "artillery",
+   "kredits": 2,
+   "operation_cost": 1,
+   "attack": 1,
+   "defense": 3,
+   "keywords": [],
+   "paraphrase": "Whatever unit it attacks is stripped of Guard until the turn ends.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=t19_howitzer)",
+   "encoding": {
+    "id": "t19_howitzer",
+    "name": "T19 HOWITZER",
+    "type": "unit",
+    "nature": "ranged",
+    "cost": 2,
+    "attack": 1,
+    "health": 3,
+    "move_cost": 1,
+    "traits": {},
+    "tags": [
+     "artillery",
+     "usa"
+    ],
+    "effects": [
+     {
+      "trigger": "on_attack",
+      "action": "remove_trait",
+      "trait": "defense",
+      "duration": "turn",
+      "target": "event"
+     }
+    ]
+   }
+  },
+  {
+   "name": "M8 HOWITZER",
+   "card_id": "m8_howitzer",
+   "nation": "USA",
+   "kind": "artillery",
+   "kredits": 5,
+   "operation_cost": 2,
+   "attack": 2,
+   "defense": 3,
+   "keywords": [],
+   "paraphrase": "Its arrival spreads 3 damage at random across enemy units and the enemy HQ.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=m8_howitzer)",
+   "encoding": {
+    "id": "m8_howitzer",
+    "name": "M8 HOWITZER",
+    "type": "unit",
+    "nature": "ranged",
+    "cost": 5,
+    "attack": 2,
+    "health": 3,
+    "move_cost": 2,
+    "traits": {},
+    "tags": [
+     "artillery",
+     "usa"
+    ],
+    "effects": [
+     {
+      "trigger": "on_deploy",
+      "action": "damage",
+      "amount": 1,
+      "target": {
+       "select": "random",
+       "side": "enemy",
+       "kind": "unit_or_base"
+      },
+      "repeat": 3
+     }
+    ]
+   }
+  },
+  {
+   "name": "3.7 inch MOUNTAIN HOWITZER",
+   "card_id": "3_7_inch_mountain_howitzer",
+   "nation": "ANZAC",
+   "kind": "artillery",
+   "kredits": 2,
+   "operation_cost": 1,
+   "attack": 1,
+   "defense": 2,
+   "keywords": [],
+   "paraphrase": "Attacking a unit also hits the enemy unit standing to that target's left.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=3_7_inch_mountain_howitzer)",
+   "encoding": {
+    "id": "3_7_inch_mountain_howitzer",
+    "name": "3.7 inch MOUNTAIN HOWITZER",
+    "type": "unit",
+    "nature": "ranged",
+    "cost": 2,
+    "attack": 1,
+    "health": 2,
+    "move_cost": 1,
+    "traits": {},
+    "tags": [
+     "artillery",
+     "anzac"
+    ],
+    "effects": [
+     {
+      "trigger": "on_attack",
+      "action": "damage",
+      "amount": {
+       "stat": "atk",
+       "of": "self"
+      },
+      "target": {
+       "select": "adjacent",
+       "of": "event",
+       "position": "left"
+      }
+     }
+    ]
+   },
+   "notes": "Splash damage taken as equal to its attack; applied as the attack starts."
+  },
+  {
+   "name": "25 POUNDER Mk I",
+   "card_id": "25_pounder_mk_i",
+   "nation": "Britain",
+   "kind": "artillery",
+   "kredits": 4,
+   "operation_cost": 2,
+   "attack": 2,
+   "defense": 3,
+   "keywords": [],
+   "paraphrase": "When your turn starts, it buffs itself and each neighbouring ground unit by +1/+1.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=25_pounder_mk_i)",
+   "encoding": {
+    "id": "25_pounder_mk_i",
+    "name": "25 POUNDER Mk I",
+    "type": "unit",
+    "nature": "ranged",
+    "cost": 4,
+    "attack": 2,
+    "health": 3,
+    "move_cost": 2,
+    "traits": {},
+    "tags": [
+     "artillery",
+     "britain"
+    ],
+    "effects": [
+     {
+      "trigger": "start_of_turn",
+      "action": "buff",
+      "atk": 1,
+      "hp": 1,
+      "target": "self"
+     },
+     {
+      "trigger": "start_of_turn",
+      "action": "buff",
+      "atk": 1,
+      "hp": 1,
+      "target": {
+       "select": "adjacent",
+       "side": "friendly",
+       "filter": {
+        "not_tag": "air"
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "PAK 40",
+   "card_id": "pak_40",
+   "nation": "Germany",
+   "kind": "artillery",
+   "kredits": 4,
+   "operation_cost": 1,
+   "attack": 2,
+   "defense": 2,
+   "keywords": [
+    "Ambush"
+   ],
+   "paraphrase": "Its arrival kills a chosen enemy unit with a cost of at most 2; if that unit was a tank, you also draw.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=pak_40)",
+   "encoding": {
+    "id": "pak_40",
+    "name": "PAK 40",
+    "type": "unit",
+    "nature": "ranged",
+    "cost": 4,
+    "attack": 2,
+    "health": 2,
+    "move_cost": 1,
+    "traits": {
+     "ambush": true
+    },
+    "tags": [
+     "artillery",
+     "germany"
+    ],
+    "effects": [
+     {
+      "trigger": "on_deploy",
+      "action": "destroy",
+      "target": {
+       "select": "chosen",
+       "side": "enemy",
+       "kind": "unit",
+       "filter": {
+        "max_cost": 2
+       }
+      }
+     },
+     {
+      "trigger": "on_deploy",
+      "condition": {
+       "type": "prev",
+       "filter": {
+        "tag": "tank"
+       }
+      },
+      "action": "draw",
+      "amount": 1,
+      "target": "controller"
+     }
+    ]
+   }
+  },
+  {
+   "name": "CANNONE DA 47",
+   "card_id": "cannone_da_47",
+   "nation": "Italy",
+   "kind": "artillery",
+   "kredits": 1,
+   "operation_cost": 1,
+   "attack": 1,
+   "defense": 3,
+   "keywords": [],
+   "paraphrase": "When your turn ends it loses 1 defense, except when your units outnumber the enemy's.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=cannone_da_47)",
+   "encoding": {
+    "id": "cannone_da_47",
+    "name": "CANNONE DA 47",
+    "type": "unit",
+    "nature": "ranged",
+    "cost": 1,
+    "attack": 1,
+    "health": 3,
+    "move_cost": 1,
+    "traits": {},
+    "tags": [
+     "artillery",
+     "italy"
+    ],
+    "effects": [
+     {
+      "trigger": "end_of_turn",
+      "condition": {
+       "type": "compare",
+       "left": {
+        "count": "units",
+        "side": "friendly"
+       },
+       "op": "<=",
+       "right": {
+        "count": "units",
+        "side": "enemy"
+       }
+      },
+      "action": "damage",
+      "amount": 1,
+      "target": "self"
+     }
+    ]
+   }
+  },
+  {
+   "name": "KATYUSHA",
+   "card_id": "katyusha",
+   "nation": "Soviet Union",
+   "kind": "artillery",
+   "kredits": 2,
+   "operation_cost": 1,
+   "attack": 1,
+   "defense": 2,
+   "keywords": [
+    "Blitz"
+   ],
+   "paraphrase": "Each of its attacks adds a random bonus of 0 or 1 damage.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=katyusha)",
+   "unsupported": [
+    "random_amount"
+   ]
+  },
+  {
+   "name": "A6M2 ZERO",
+   "card_id": "a6m2_zero",
+   "nation": "Japan",
+   "kind": "fighter",
+   "kredits": 4,
+   "operation_cost": 2,
+   "attack": 4,
+   "defense": 4,
+   "keywords": [
+    "Ambush"
+   ],
+   "paraphrase": "Its arrival hits an enemy unit or the enemy HQ, your pick, for 1.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=a6m2_zero)",
+   "encoding": {
+    "id": "a6m2_zero",
+    "name": "A6M2 ZERO",
+    "type": "unit",
+    "nature": "ranged",
+    "cost": 4,
+    "attack": 4,
+    "health": 4,
+    "move_cost": 2,
+    "traits": {
+     "ambush": true
+    },
+    "tags": [
+     "fighter",
+     "air",
+     "japan"
+    ],
+    "effects": [
+     {
+      "trigger": "on_deploy",
+      "action": "damage",
+      "amount": 1,
+      "target": {
+       "select": "chosen",
+       "side": "enemy",
+       "kind": "unit_or_base"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "ME 262A SCHWALBE",
+   "card_id": "me_262a_schwalbe",
+   "nation": "Germany",
+   "kind": "fighter",
+   "kredits": 9,
+   "operation_cost": 3,
+   "attack": 7,
+   "defense": 5,
+   "keywords": [],
+   "paraphrase": "Its arrival wipes out every enemy air unit.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=me_262a_schwalbe)",
+   "encoding": {
+    "id": "me_262a_schwalbe",
+    "name": "ME 262A SCHWALBE",
+    "type": "unit",
+    "nature": "ranged",
+    "cost": 9,
+    "attack": 7,
+    "health": 5,
+    "move_cost": 3,
+    "traits": {},
+    "tags": [
+     "fighter",
+     "air",
+     "germany"
+    ],
+    "effects": [
+     {
+      "trigger": "on_deploy",
+      "action": "destroy",
+      "target": {
+       "select": "all",
+       "side": "enemy",
+       "filter": {
+        "tag": "air"
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "P-47D THUNDERBOLT",
+   "card_id": "p47d_thunderbolt",
+   "nation": "USA",
+   "kind": "fighter",
+   "kredits": 5,
+   "operation_cost": 2,
+   "attack": 4,
+   "defense": 6,
+   "keywords": [],
+   "paraphrase": "Each enemy unit it destroys earns you a card.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=p47d_thunderbolt)",
+   "encoding": {
+    "id": "p47d_thunderbolt",
+    "name": "P-47D THUNDERBOLT",
+    "type": "unit",
+    "nature": "ranged",
+    "cost": 5,
+    "attack": 4,
+    "health": 6,
+    "move_cost": 2,
+    "traits": {},
+    "tags": [
+     "fighter",
+     "air",
+     "usa"
+    ],
+    "effects": [
+     {
+      "trigger": "on_kill",
+      "action": "draw",
+      "amount": 1,
+      "target": "controller"
+     }
+    ]
+   }
+  },
+  {
+   "name": "P-51 MUSTANG",
+   "card_id": "p51_mustang",
+   "nation": "USA",
+   "kind": "fighter",
+   "kredits": 6,
+   "operation_cost": 2,
+   "attack": 6,
+   "defense": 4,
+   "keywords": [],
+   "paraphrase": "On arrival, one randomly picked enemy air unit suffers 5 damage.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=p51_mustang)",
+   "encoding": {
+    "id": "p51_mustang",
+    "name": "P-51 MUSTANG",
+    "type": "unit",
+    "nature": "ranged",
+    "cost": 6,
+    "attack": 6,
+    "health": 4,
+    "move_cost": 2,
+    "traits": {},
+    "tags": [
+     "fighter",
+     "air",
+     "usa"
+    ],
+    "effects": [
+     {
+      "trigger": "on_deploy",
+      "action": "damage",
+      "amount": 5,
+      "target": {
+       "select": "random",
+       "side": "enemy",
+       "filter": {
+        "tag": "air"
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "FW 190 F-9",
+   "card_id": "fw_190_f9",
+   "nation": "Germany",
+   "kind": "fighter",
+   "kredits": 4,
+   "operation_cost": 2,
+   "attack": 4,
+   "defense": 5,
+   "keywords": [],
+   "paraphrase": "When the enemy ends a turn without having deployed any unit, their HQ suffers 4 damage.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=fw_190_f9)",
+   "encoding": {
+    "id": "fw_190_f9",
+    "name": "FW 190 F-9",
+    "type": "unit",
+    "nature": "ranged",
+    "cost": 4,
+    "attack": 4,
+    "health": 5,
+    "move_cost": 2,
+    "traits": {},
+    "tags": [
+     "fighter",
+     "air",
+     "germany"
+    ],
+    "effects": [
+     {
+      "trigger": "end_of_turn",
+      "scope": "enemy",
+      "condition": {
+       "type": "history",
+       "event": "unit_deployed",
+       "side": "enemy",
+       "window": "turn",
+       "max": 0
+      },
+      "action": "damage",
+      "amount": 4,
+      "target": "enemy_base"
+     }
+    ]
+   }
+  },
+  {
+   "name": "FIAT G.55",
+   "card_id": "fiat_g_55",
+   "nation": "Italy",
+   "kind": "fighter",
+   "kredits": 4,
+   "operation_cost": 2,
+   "attack": 4,
+   "defense": 4,
+   "keywords": [],
+   "paraphrase": "Arrives with +2/+2 when your HQ's defense leads the enemy HQ's by 5 or more.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=fiat_g_55)",
+   "encoding": {
+    "id": "fiat_g_55",
+    "name": "FIAT G.55",
+    "type": "unit",
+    "nature": "ranged",
+    "cost": 4,
+    "attack": 4,
+    "health": 4,
+    "move_cost": 2,
+    "traits": {},
+    "tags": [
+     "fighter",
+     "air",
+     "italy"
+    ],
+    "effects": [
+     {
+      "trigger": "on_deploy",
+      "condition": {
+       "type": "compare",
+       "left": {
+        "count": "base_hp",
+        "side": "friendly"
+       },
+       "op": ">=",
+       "right": {
+        "count": "base_hp",
+        "side": "enemy",
+        "plus": 5
+       }
+      },
+      "action": "buff",
+      "atk": 2,
+      "hp": 2,
+      "target": "self"
+     }
+    ]
+   }
+  },
+  {
+   "name": "LITTLE COBRA",
+   "card_id": "little_cobra",
+   "nation": "Soviet Union",
+   "kind": "fighter",
+   "kredits": 3,
+   "operation_cost": 2,
+   "attack": 4,
+   "defense": 5,
+   "keywords": [
+    "Blitz"
+   ],
+   "paraphrase": "Its arrival kills one of your other units, chosen at random.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=little_cobra)",
+   "encoding": {
+    "id": "little_cobra",
+    "name": "LITTLE COBRA",
+    "type": "unit",
+    "nature": "ranged",
+    "cost": 3,
+    "attack": 4,
+    "health": 5,
+    "move_cost": 2,
+    "traits": {
+     "blitz": true
+    },
+    "tags": [
+     "fighter",
+     "air",
+     "soviet"
+    ],
+    "effects": [
+     {
+      "trigger": "on_deploy",
+      "action": "destroy",
+      "target": {
+       "select": "random",
+       "side": "friendly",
+       "filter": {
+        "other": true
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "I-15 Chaika",
+   "card_id": "i15_chaika",
+   "nation": "Soviet Union",
+   "kind": "fighter",
+   "kredits": 2,
+   "operation_cost": 1,
+   "attack": 1,
+   "defense": 2,
+   "keywords": [],
+   "paraphrase": "When shot down, it is replaced in your support line by an I-16 ISHAK fighter.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=i15_chaika)",
+   "encoding": {
+    "id": "i15_chaika",
+    "name": "I-15 Chaika",
+    "type": "unit",
+    "nature": "ranged",
+    "cost": 2,
+    "attack": 1,
+    "health": 2,
+    "move_cost": 1,
+    "traits": {},
+    "tags": [
+     "fighter",
+     "air",
+     "soviet"
+    ],
+    "effects": [
+     {
+      "trigger": "on_death",
+      "action": "summon",
+      "card": "i16_ishak",
+      "target": "controller"
+     }
+    ]
+   }
+  },
+  {
+   "name": "HEINKEL HE 219",
+   "card_id": "heinkel_he_219",
+   "nation": "Germany",
+   "kind": "fighter",
+   "kredits": 5,
+   "operation_cost": 2,
+   "attack": 5,
+   "defense": 5,
+   "keywords": [],
+   "paraphrase": "On arrival it fights an enemy unit you pick.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=heinkel_he_219)",
+   "unsupported": [
+    "fight"
+   ]
+  },
+  {
+   "name": "Ki-84 FRANK",
+   "card_id": "ki84_frank",
+   "nation": "Japan",
+   "kind": "fighter",
+   "kredits": 5,
+   "operation_cost": 3,
+   "attack": 7,
+   "defense": 5,
+   "keywords": [
+    "Fury"
+   ],
+   "paraphrase": "This fighter is never allowed to strike the opposing HQ.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=ki84_frank)",
+   "unsupported": [
+    "rule_modifier"
+   ]
+  },
+  {
+   "name": "WHIRLWIND",
+   "card_id": "whirlwind",
+   "nation": "Britain",
+   "kind": "fighter",
+   "kredits": 6,
+   "operation_cost": 2,
+   "attack": 6,
+   "defense": 6,
+   "keywords": [],
+   "paraphrase": "Being attacked or targeted by the enemy costs their HQ 3 damage.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=whirlwind)",
+   "unsupported": [
+    "new_trigger"
+   ]
+  },
+  {
+   "name": "C-47 SKYTRAIN",
+   "card_id": "c47_skytrain",
+   "nation": "USA",
+   "kind": "fighter",
+   "kredits": 3,
+   "operation_cost": 2,
+   "attack": 0,
+   "defense": 4,
+   "keywords": [],
+   "paraphrase": "When your turn ends, it brings a random US infantry card of cost 1 onto your support line.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=c47_skytrain)",
+   "unsupported": [
+    "copy_or_random_card"
+   ]
+  },
+  {
+   "name": "RAAF HURRICANE TROP",
+   "card_id": "raaf_hurricane_trop",
+   "nation": "ANZAC",
+   "kind": "fighter",
+   "kredits": 3,
+   "operation_cost": 2,
+   "attack": 3,
+   "defense": 3,
+   "keywords": [],
+   "paraphrase": "Played from the right-most hand slot, it arrives with +1/+1 and Blitz.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=raaf_hurricane_trop)",
+   "unsupported": [
+    "hand_position"
+   ]
+  },
+  {
+   "name": "B-17 FLYING FORTRESS",
+   "card_id": "b17_flying_fortress",
+   "nation": "USA",
+   "kind": "bomber",
+   "kredits": 8,
+   "operation_cost": 3,
+   "attack": 5,
+   "defense": 5,
+   "keywords": [
+    "Heavy Armor 1"
+   ],
+   "paraphrase": "Its arrival kills one enemy unit at random.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=b17_flying_fortress)",
+   "encoding": {
+    "id": "b17_flying_fortress",
+    "name": "B-17 FLYING FORTRESS",
+    "type": "unit",
+    "nature": "ranged",
+    "cost": 8,
+    "attack": 5,
+    "health": 5,
+    "move_cost": 3,
+    "traits": {
+     "armor": 1
+    },
+    "tags": [
+     "bomber",
+     "air",
+     "usa"
+    ],
+    "effects": [
+     {
+      "trigger": "on_deploy",
+      "action": "destroy",
+      "target": {
+       "select": "random",
+       "side": "enemy"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "B-29 SUPERFORTRESS",
+   "card_id": "b29_superfortress",
+   "nation": "USA",
+   "kind": "bomber",
+   "kredits": 12,
+   "operation_cost": 4,
+   "attack": 9,
+   "defense": 9,
+   "keywords": [
+    "Blitz",
+    "Heavy Armor 2"
+   ],
+   "paraphrase": "Its arrival scatters 6 damage randomly over the enemy side.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=b29_superfortress)",
+   "encoding": {
+    "id": "b29_superfortress",
+    "name": "B-29 SUPERFORTRESS",
+    "type": "unit",
+    "nature": "ranged",
+    "cost": 12,
+    "attack": 9,
+    "health": 9,
+    "move_cost": 4,
+    "traits": {
+     "blitz": true,
+     "armor": 2
+    },
+    "tags": [
+     "bomber",
+     "air",
+     "usa"
+    ],
+    "effects": [
+     {
+      "trigger": "on_deploy",
+      "action": "damage",
+      "amount": 1,
+      "target": {
+       "select": "random",
+       "side": "enemy",
+       "kind": "unit_or_base"
+      },
+      "repeat": 6
+     }
+    ]
+   }
+  },
+  {
+   "name": "BREDA Ba.65",
+   "card_id": "breda_ba_65",
+   "nation": "Italy",
+   "kind": "bomber",
+   "kredits": 4,
+   "operation_cost": 2,
+   "attack": 3,
+   "defense": 3,
+   "keywords": [],
+   "paraphrase": "Its arrival hits the enemy HQ and each enemy unit for 1.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=breda_ba_65)",
+   "encoding": {
+    "id": "breda_ba_65",
+    "name": "BREDA Ba.65",
+    "type": "unit",
+    "nature": "ranged",
+    "cost": 4,
+    "attack": 3,
+    "health": 3,
+    "move_cost": 2,
+    "traits": {},
+    "tags": [
+     "bomber",
+     "air",
+     "italy"
+    ],
+    "effects": [
+     {
+      "trigger": "on_deploy",
+      "action": "damage",
+      "amount": 1,
+      "target": {
+       "select": "all",
+       "side": "enemy",
+       "kind": "unit_or_base"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "A-24 BANSHEE",
+   "card_id": "a24_banshee",
+   "nation": "USA",
+   "kind": "bomber",
+   "kredits": 6,
+   "operation_cost": 2,
+   "attack": 3,
+   "defense": 3,
+   "keywords": [
+    "Heavy Armor 1"
+   ],
+   "paraphrase": "Its arrival hits a chosen enemy unit for as many kredits as you have unspent.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=a24_banshee)",
+   "encoding": {
+    "id": "a24_banshee",
+    "name": "A-24 BANSHEE",
+    "type": "unit",
+    "nature": "ranged",
+    "cost": 6,
+    "attack": 3,
+    "health": 3,
+    "move_cost": 2,
+    "traits": {
+     "armor": 1
+    },
+    "tags": [
+     "bomber",
+     "air",
+     "usa"
+    ],
+    "effects": [
+     {
+      "trigger": "on_deploy",
+      "action": "damage",
+      "amount": {
+       "count": "coins",
+       "side": "friendly"
+      },
+      "target": {
+       "select": "chosen",
+       "side": "enemy",
+       "kind": "unit"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "B6N TENZAN",
+   "card_id": "b6n_tenzan",
+   "nation": "Japan",
+   "kind": "bomber",
+   "kredits": 5,
+   "operation_cost": 2,
+   "attack": 3,
+   "defense": 3,
+   "keywords": [],
+   "paraphrase": "Its arrival pins an enemy unit of your choice, or destroys it if it was already pinned.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=b6n_tenzan)",
+   "encoding": {
+    "id": "b6n_tenzan",
+    "name": "B6N TENZAN",
+    "type": "unit",
+    "nature": "ranged",
+    "cost": 5,
+    "attack": 3,
+    "health": 3,
+    "move_cost": 2,
+    "traits": {},
+    "tags": [
+     "bomber",
+     "air",
+     "japan"
+    ],
+    "effects": [
+     {
+      "trigger": "on_deploy",
+      "action": "pin",
+      "target": {
+       "select": "chosen",
+       "side": "enemy",
+       "kind": "unit"
+      },
+      "target_condition": {
+       "pinned": false
+      },
+      "else": {
+       "action": "destroy"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "ALBACORE Mk I",
+   "card_id": "albacore_mk_i",
+   "nation": "Britain",
+   "kind": "bomber",
+   "kredits": 2,
+   "operation_cost": 1,
+   "attack": 1,
+   "defense": 2,
+   "keywords": [],
+   "paraphrase": "On arrival, an enemy ground unit you pick is pinned and takes 1 damage.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=albacore_mk_i)",
+   "encoding": {
+    "id": "albacore_mk_i",
+    "name": "ALBACORE Mk I",
+    "type": "unit",
+    "nature": "ranged",
+    "cost": 2,
+    "attack": 1,
+    "health": 2,
+    "move_cost": 1,
+    "traits": {},
+    "tags": [
+     "bomber",
+     "air",
+     "britain"
+    ],
+    "effects": [
+     {
+      "trigger": "on_deploy",
+      "action": "pin",
+      "target": {
+       "select": "chosen",
+       "side": "enemy",
+       "kind": "unit",
+       "filter": {
+        "not_tag": "air"
+       }
+      }
+     },
+     {
+      "trigger": "on_deploy",
+      "action": "damage",
+      "amount": 1,
+      "target": {
+       "select": "prev"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "JU 87 B STUKA",
+   "card_id": "ju_87_b_stuka",
+   "nation": "Germany",
+   "kind": "bomber",
+   "kredits": 4,
+   "operation_cost": 2,
+   "attack": 3,
+   "defense": 2,
+   "keywords": [],
+   "paraphrase": "Whenever it deals damage to the enemy HQ, the opponent must throw away a card.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=ju_87_b_stuka)",
+   "unsupported": [
+    "new_trigger"
+   ]
+  },
+  {
+   "name": "TUPOLEV TB-3",
+   "card_id": "tupolev_tb3",
+   "nation": "Soviet Union",
+   "kind": "bomber",
+   "kredits": 5,
+   "operation_cost": 2,
+   "attack": 3,
+   "defense": 4,
+   "keywords": [],
+   "paraphrase": "Its arrival places an I-16 ISHAK fighter immediately left and right of it.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=tupolev_tb3)",
+   "unsupported": [
+    "position_placement"
+   ]
+  },
+  {
+   "name": "PETLYAKOV Pe-2FT",
+   "card_id": "petlyakov_pe2ft",
+   "nation": "Soviet Union",
+   "kind": "bomber",
+   "kredits": 3,
+   "operation_cost": 2,
+   "attack": 2,
+   "defense": 4,
+   "keywords": [],
+   "paraphrase": "As long as it is in play, deployment abilities of both players stay silent.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=petlyakov_pe2ft)",
+   "unsupported": [
+    "rule_modifier"
+   ]
+  },
+  {
+   "name": "BLOODY SICKLE",
+   "card_id": "bloody_sickle",
+   "nation": "Soviet Union",
+   "kind": "order",
+   "kredits": 1,
+   "operation_cost": null,
+   "attack": null,
+   "defense": null,
+   "keywords": [],
+   "paraphrase": "Hits a chosen unit for 1 and your own HQ for 1, then you draw one card.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=bloody_sickle)",
+   "encoding": {
+    "id": "bloody_sickle",
+    "name": "BLOODY SICKLE",
+    "type": "operation",
+    "cost": 1,
+    "tags": [
+     "order",
+     "soviet"
+    ],
+    "effects": [
+     {
+      "trigger": "on_play",
+      "action": "damage",
+      "amount": 1,
+      "target": {
+       "select": "chosen",
+       "side": "any",
+       "kind": "unit"
+      }
+     },
+     {
+      "trigger": "on_play",
+      "action": "damage",
+      "amount": 1,
+      "target": "friendly_base"
+     },
+     {
+      "trigger": "on_play",
+      "action": "draw",
+      "amount": 1,
+      "target": "controller"
+     }
+    ]
+   }
+  },
+  {
+   "name": "AIR BLITZ",
+   "card_id": "air_blitz",
+   "nation": "Germany",
+   "kind": "order",
+   "kredits": 3,
+   "operation_cost": null,
+   "attack": null,
+   "defense": null,
+   "keywords": [],
+   "paraphrase": "Hits a chosen HQ for 3.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=air_blitz)",
+   "encoding": {
+    "id": "air_blitz",
+    "name": "AIR BLITZ",
+    "type": "operation",
+    "cost": 3,
+    "tags": [
+     "order",
+     "germany"
+    ],
+    "effects": [
+     {
+      "trigger": "on_play",
+      "action": "damage",
+      "amount": 3,
+      "target": {
+       "select": "chosen",
+       "side": "any",
+       "kind": "base"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "EAGLE CLAWS",
+   "card_id": "eagle_claws",
+   "nation": "Germany",
+   "kind": "order",
+   "kredits": 3,
+   "operation_cost": null,
+   "attack": null,
+   "defense": null,
+   "keywords": [],
+   "paraphrase": "The enemy support line is strafed: each unit there takes 2.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=eagle_claws)",
+   "encoding": {
+    "id": "eagle_claws",
+    "name": "EAGLE CLAWS",
+    "type": "operation",
+    "cost": 3,
+    "tags": [
+     "order",
+     "germany"
+    ],
+    "effects": [
+     {
+      "trigger": "on_play",
+      "action": "damage",
+      "amount": 2,
+      "target": {
+       "select": "all",
+       "side": "enemy",
+       "zone": "backline"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "CARPET BOMBING",
+   "card_id": "carpet_bombing",
+   "nation": "Britain",
+   "kind": "order",
+   "kredits": 7,
+   "operation_cost": null,
+   "attack": null,
+   "defense": null,
+   "keywords": [],
+   "paraphrase": "Hits every enemy unit for 3.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=carpet_bombing)",
+   "encoding": {
+    "id": "carpet_bombing",
+    "name": "CARPET BOMBING",
+    "type": "operation",
+    "cost": 7,
+    "tags": [
+     "order",
+     "britain"
+    ],
+    "effects": [
+     {
+      "trigger": "on_play",
+      "action": "damage",
+      "amount": 3,
+      "target": {
+       "select": "all",
+       "side": "enemy"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "SUPPLY SHIPMENT",
+   "card_id": "supply_shipment",
+   "nation": "USA",
+   "kind": "order",
+   "kredits": 2,
+   "operation_cost": null,
+   "attack": null,
+   "defense": null,
+   "keywords": [],
+   "paraphrase": "Boosts one frontline unit of your choice by 2 attack and 3 defense.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=supply_shipment)",
+   "encoding": {
+    "id": "supply_shipment",
+    "name": "SUPPLY SHIPMENT",
+    "type": "operation",
+    "cost": 2,
+    "tags": [
+     "order",
+     "usa"
+    ],
+    "effects": [
+     {
+      "trigger": "on_play",
+      "action": "buff",
+      "atk": 2,
+      "hp": 3,
+      "target": {
+       "select": "chosen",
+       "side": "any",
+       "kind": "unit",
+       "zone": "frontline"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "FOR THE KING",
+   "card_id": "for_the_king",
+   "nation": "Britain",
+   "kind": "order",
+   "kredits": 2,
+   "operation_cost": null,
+   "attack": null,
+   "defense": null,
+   "keywords": [],
+   "paraphrase": "Hits an enemy tank you choose for 5.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=for_the_king)",
+   "encoding": {
+    "id": "for_the_king",
+    "name": "FOR THE KING",
+    "type": "operation",
+    "cost": 2,
+    "tags": [
+     "order",
+     "britain"
+    ],
+    "effects": [
+     {
+      "trigger": "on_play",
+      "action": "damage",
+      "amount": 5,
+      "target": {
+       "select": "chosen",
+       "side": "enemy",
+       "kind": "unit",
+       "filter": {
+        "tag": "tank"
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "SURPRISE ATTACK",
+   "card_id": "surprise_attack",
+   "nation": "Japan",
+   "kind": "order",
+   "kredits": 1,
+   "operation_cost": null,
+   "attack": null,
+   "defense": null,
+   "keywords": [],
+   "paraphrase": "Targets an enemy unit: an unpinned one becomes pinned, an already pinned one is destroyed.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=surprise_attack)",
+   "encoding": {
+    "id": "surprise_attack",
+    "name": "SURPRISE ATTACK",
+    "type": "operation",
+    "cost": 1,
+    "tags": [
+     "order",
+     "japan"
+    ],
+    "effects": [
+     {
+      "trigger": "on_play",
+      "action": "pin",
+      "target": {
+       "select": "chosen",
+       "side": "enemy",
+       "kind": "unit"
+      },
+      "target_condition": {
+       "pinned": false
+      },
+      "else": {
+       "action": "destroy"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "CRITICAL HIT",
+   "card_id": "critical_hit",
+   "nation": "Soviet Union",
+   "kind": "order",
+   "kredits": 4,
+   "operation_cost": null,
+   "attack": null,
+   "defense": null,
+   "keywords": [],
+   "paraphrase": "Kills any one unit you choose that has already been damaged.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=critical_hit)",
+   "encoding": {
+    "id": "critical_hit",
+    "name": "CRITICAL HIT",
+    "type": "operation",
+    "cost": 4,
+    "tags": [
+     "order",
+     "soviet"
+    ],
+    "effects": [
+     {
+      "trigger": "on_play",
+      "action": "destroy",
+      "target": {
+       "select": "chosen",
+       "side": "any",
+       "kind": "unit",
+       "filter": {
+        "damaged": true
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "EMPIRE OF THE SUN",
+   "card_id": "empire_of_the_sun",
+   "nation": "Japan",
+   "kind": "order",
+   "kredits": 9,
+   "operation_cost": null,
+   "attack": null,
+   "defense": null,
+   "keywords": [],
+   "paraphrase": "Kills a chosen enemy unit; you then draw one card per point of that unit's attack.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=empire_of_the_sun)",
+   "encoding": {
+    "id": "empire_of_the_sun",
+    "name": "EMPIRE OF THE SUN",
+    "type": "operation",
+    "cost": 9,
+    "tags": [
+     "order",
+     "japan"
+    ],
+    "effects": [
+     {
+      "trigger": "on_play",
+      "action": "destroy",
+      "target": {
+       "select": "chosen",
+       "side": "enemy",
+       "kind": "unit"
+      }
+     },
+     {
+      "trigger": "on_play",
+      "action": "draw",
+      "amount": {
+       "stat": "atk",
+       "of": "prev"
+      },
+      "target": "controller"
+     }
+    ]
+   }
+  },
+  {
+   "name": "TO THE LAST MAN",
+   "card_id": "to_the_last_man",
+   "nation": "Japan",
+   "kind": "order",
+   "kredits": 10,
+   "operation_cost": null,
+   "attack": null,
+   "defense": null,
+   "keywords": [],
+   "paraphrase": "Wipes the battlefield: every unit on either side is destroyed.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=to_the_last_man)",
+   "encoding": {
+    "id": "to_the_last_man",
+    "name": "TO THE LAST MAN",
+    "type": "operation",
+    "cost": 10,
+    "tags": [
+     "order",
+     "japan"
+    ],
+    "effects": [
+     {
+      "trigger": "on_play",
+      "action": "destroy",
+      "target": {
+       "select": "all",
+       "side": "any"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "WOLFPACK",
+   "card_id": "wolfpack",
+   "nation": "Germany",
+   "kind": "order",
+   "kredits": 4,
+   "operation_cost": null,
+   "attack": null,
+   "defense": null,
+   "keywords": [],
+   "paraphrase": "A unit you pick returns to its owner's hand; on top of that the opponent loses a random card from hand.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=wolfpack)",
+   "encoding": {
+    "id": "wolfpack",
+    "name": "WOLFPACK",
+    "type": "operation",
+    "cost": 4,
+    "tags": [
+     "order",
+     "germany"
+    ],
+    "effects": [
+     {
+      "trigger": "on_play",
+      "action": "return_to_hand",
+      "target": {
+       "select": "chosen",
+       "side": "any",
+       "kind": "unit"
+      }
+     },
+     {
+      "trigger": "on_play",
+      "action": "discard",
+      "amount": 1,
+      "target": "opponent"
+     }
+    ]
+   }
+  },
+  {
+   "name": "MONTY",
+   "card_id": "monty",
+   "nation": "Britain",
+   "kind": "order",
+   "kredits": 1,
+   "operation_cost": null,
+   "attack": null,
+   "defense": null,
+   "keywords": [],
+   "paraphrase": "Pins the chosen unit along with its neighbours, then you draw a card.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=monty)",
+   "encoding": {
+    "id": "monty",
+    "name": "MONTY",
+    "type": "operation",
+    "cost": 1,
+    "tags": [
+     "order",
+     "britain"
+    ],
+    "effects": [
+     {
+      "trigger": "on_play",
+      "action": "pin",
+      "target": {
+       "select": "chosen",
+       "side": "any",
+       "kind": "unit"
+      }
+     },
+     {
+      "trigger": "on_play",
+      "action": "pin",
+      "target": {
+       "select": "adjacent",
+       "of": "prev"
+      }
+     },
+     {
+      "trigger": "on_play",
+      "action": "draw",
+      "amount": 1,
+      "target": "controller"
+     }
+    ]
+   }
+  },
+  {
+   "name": "FORTIFICATION",
+   "card_id": "fortification",
+   "nation": "Britain",
+   "kind": "order",
+   "kredits": 3,
+   "operation_cost": null,
+   "attack": null,
+   "defense": null,
+   "keywords": [],
+   "paraphrase": "Adds 7 defense to your HQ, ignoring its usual maximum.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=fortification)",
+   "encoding": {
+    "id": "fortification",
+    "name": "FORTIFICATION",
+    "type": "operation",
+    "cost": 3,
+    "tags": [
+     "order",
+     "britain"
+    ],
+    "effects": [
+     {
+      "trigger": "on_play",
+      "action": "heal",
+      "amount": 7,
+      "uncapped": true,
+      "target": "friendly_base"
+     }
+    ]
+   }
+  },
+  {
+   "name": "THE WAR MACHINE",
+   "card_id": "the_war_machine",
+   "nation": "USA",
+   "kind": "order",
+   "kredits": 2,
+   "operation_cost": null,
+   "attack": null,
+   "defense": null,
+   "keywords": [],
+   "paraphrase": "Permanently adds one kredit slot.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=the_war_machine)",
+   "encoding": {
+    "id": "the_war_machine",
+    "name": "THE WAR MACHINE",
+    "type": "operation",
+    "cost": 2,
+    "tags": [
+     "order",
+     "usa"
+    ],
+    "effects": [
+     {
+      "trigger": "on_play",
+      "action": "increase_max_coins",
+      "amount": 1,
+      "target": "controller"
+     }
+    ]
+   }
+  },
+  {
+   "name": "STRATEGIC BOMBING",
+   "card_id": "strategic_bombing",
+   "nation": "USA",
+   "kind": "order",
+   "kredits": 6,
+   "operation_cost": null,
+   "attack": null,
+   "defense": null,
+   "keywords": [],
+   "paraphrase": "Hits the enemy HQ and every enemy support-line unit for 3; the opponent also loses a kredit slot.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=strategic_bombing)",
+   "encoding": {
+    "id": "strategic_bombing",
+    "name": "STRATEGIC BOMBING",
+    "type": "operation",
+    "cost": 6,
+    "tags": [
+     "order",
+     "usa"
+    ],
+    "effects": [
+     {
+      "trigger": "on_play",
+      "action": "damage",
+      "amount": 3,
+      "target": {
+       "select": "all",
+       "side": "enemy",
+       "kind": "unit_or_base",
+       "zone": "backline"
+      }
+     },
+     {
+      "trigger": "on_play",
+      "action": "increase_max_coins",
+      "amount": -1,
+      "target": "opponent"
+     }
+    ]
+   }
+  },
+  {
+   "name": "BLITZKRIEG",
+   "card_id": "blitzkrieg",
+   "nation": "Germany",
+   "kind": "order",
+   "kredits": 3,
+   "operation_cost": null,
+   "attack": null,
+   "defense": null,
+   "keywords": [],
+   "paraphrase": "For this turn only: +3 attack for your frontline units, whose operation costs also drop by 1.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=blitzkrieg)",
+   "encoding": {
+    "id": "blitzkrieg",
+    "name": "BLITZKRIEG",
+    "type": "operation",
+    "cost": 3,
+    "tags": [
+     "order",
+     "germany"
+    ],
+    "effects": [
+     {
+      "trigger": "on_play",
+      "action": "buff",
+      "atk": 3,
+      "move_cost": -1,
+      "duration": "turn",
+      "target": {
+       "select": "all",
+       "side": "friendly",
+       "zone": "frontline"
+      }
+     }
+    ]
+   },
+   "notes": "Operation cost maps to move_cost (attacking costs nothing in this game)."
+  },
+  {
+   "name": "BREAKTHROUGH",
+   "card_id": "breakthrough",
+   "nation": "Germany",
+   "kind": "order",
+   "kredits": 3,
+   "operation_cost": null,
+   "attack": null,
+   "defense": null,
+   "keywords": [],
+   "paraphrase": "Hits a chosen unit for 3; if it dies, your units' operation costs drop by 1 for the rest of the turn.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=breakthrough)",
+   "encoding": {
+    "id": "breakthrough",
+    "name": "BREAKTHROUGH",
+    "type": "operation",
+    "cost": 3,
+    "tags": [
+     "order",
+     "germany"
+    ],
+    "effects": [
+     {
+      "trigger": "on_play",
+      "action": "damage",
+      "amount": 3,
+      "target": {
+       "select": "chosen",
+       "side": "any",
+       "kind": "unit"
+      }
+     },
+     {
+      "trigger": "on_play",
+      "condition": {
+       "type": "prev",
+       "killed": true
+      },
+      "action": "buff",
+      "move_cost": -1,
+      "duration": "turn",
+      "target": {
+       "select": "all",
+       "side": "friendly"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "LAND OF THE FREE",
+   "card_id": "land_of_the_free",
+   "nation": "USA",
+   "kind": "order",
+   "kredits": 1,
+   "operation_cost": null,
+   "attack": null,
+   "defense": null,
+   "keywords": [],
+   "paraphrase": "Lets a chosen unit operate for free from now on.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=land_of_the_free)",
+   "encoding": {
+    "id": "land_of_the_free",
+    "name": "LAND OF THE FREE",
+    "type": "operation",
+    "cost": 1,
+    "tags": [
+     "order",
+     "usa"
+    ],
+    "effects": [
+     {
+      "trigger": "on_play",
+      "action": "buff",
+      "move_cost": -99,
+      "target": {
+       "select": "chosen",
+       "side": "any",
+       "kind": "unit"
+      }
+     }
+    ]
+   },
+   "notes": "Move cost never drops below 0, so a -99 delta sets it to 0."
+  },
+  {
+   "name": "WINTER OFFENSIVE",
+   "card_id": "winter_offensive",
+   "nation": "Soviet Union",
+   "kind": "order",
+   "kredits": 7,
+   "operation_cost": null,
+   "attack": null,
+   "defense": null,
+   "keywords": [],
+   "paraphrase": "Hits every unit on the battlefield for 4.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=winter_offensive)",
+   "encoding": {
+    "id": "winter_offensive",
+    "name": "WINTER OFFENSIVE",
+    "type": "operation",
+    "cost": 7,
+    "tags": [
+     "order",
+     "soviet"
+    ],
+    "effects": [
+     {
+      "trigger": "on_play",
+      "action": "damage",
+      "amount": 4,
+      "target": {
+       "select": "all",
+       "side": "any"
+      }
+     }
+    ]
+   },
+   "notes": "The card says 'all'; read as every unit (HQs not included)."
+  },
+  {
+   "name": "MINORITY RECRUITS",
+   "card_id": "minority_recruits",
+   "nation": "Soviet Union",
+   "kind": "order",
+   "kredits": 10,
+   "operation_cost": null,
+   "attack": null,
+   "defense": null,
+   "keywords": [],
+   "paraphrase": "A chosen enemy unit switches sides for good.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=minority_recruits)",
+   "unsupported": [
+    "take_control_or_remove"
+   ]
+  },
+  {
+   "name": "ENIGMA",
+   "card_id": "enigma",
+   "nation": "Germany",
+   "kind": "order",
+   "kredits": 4,
+   "operation_cost": null,
+   "attack": null,
+   "defense": null,
+   "keywords": [],
+   "paraphrase": "You draw until your hand size matches the opponent's.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=enigma)",
+   "unsupported": [
+    "amount_difference"
+   ]
+  },
+  {
+   "name": "PLAN D",
+   "card_id": "plan_d",
+   "nation": "France",
+   "kind": "order",
+   "kredits": 3,
+   "operation_cost": null,
+   "attack": null,
+   "defense": null,
+   "keywords": [],
+   "paraphrase": "Offers two modes: +2 attack to all your units for this turn, or +2 defense to all of them.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=plan_d)",
+   "unsupported": [
+    "choose_one"
+   ]
+  },
+  {
+   "name": "HONOR",
+   "card_id": "honor",
+   "nation": "Japan",
+   "kind": "order",
+   "kredits": 3,
+   "operation_cost": null,
+   "attack": null,
+   "defense": null,
+   "keywords": [],
+   "paraphrase": "Gives one of your units +4/+4, but it dies when your turn ends.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=honor)",
+   "unsupported": [
+    "delayed_or_granted_effect"
+   ]
+  },
+  {
+   "name": "TACTICAL WITHDRAWAL",
+   "card_id": "tactical_withdrawal",
+   "nation": "Britain",
+   "kind": "order",
+   "kredits": 1,
+   "operation_cost": null,
+   "attack": null,
+   "defense": null,
+   "keywords": [],
+   "paraphrase": "Moves one of your frontline units back to support, restores it fully and lets it act once more this turn.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=tactical_withdrawal)",
+   "unsupported": [
+    "refresh_unit"
+   ]
+  },
+  {
+   "name": "SPOILS OF WAR",
+   "card_id": "spoils_of_war",
+   "nation": "Germany",
+   "kind": "order",
+   "kredits": 2,
+   "operation_cost": null,
+   "attack": null,
+   "defense": null,
+   "keywords": [],
+   "paraphrase": "Shows you your top 3 cards; one goes to your hand, the others to the bottom of the deck.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=spoils_of_war)",
+   "unsupported": [
+    "deck_manipulation"
+   ]
+  },
+  {
+   "name": "NAVAL SUPPORT",
+   "card_id": "naval_support",
+   "nation": "Britain",
+   "kind": "order",
+   "kredits": 2,
+   "operation_cost": null,
+   "attack": null,
+   "defense": null,
+   "keywords": [],
+   "paraphrase": "Raises or lowers a chosen unit's attack until it equals that unit's defense.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=naval_support)",
+   "unsupported": [
+    "set_stat"
+   ]
+  },
+  {
+   "name": "BOMBING RAID",
+   "card_id": "bombing_raid",
+   "nation": "Japan",
+   "kind": "order",
+   "kredits": 4,
+   "operation_cost": null,
+   "attack": null,
+   "defense": null,
+   "keywords": [],
+   "paraphrase": "Hits a chosen enemy for 3 and each unit beside it for 2.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=bombing_raid)",
+   "unsupported": [
+    "splash_after_death"
+   ]
+  },
+  {
+   "name": "PATTON",
+   "card_id": "patton",
+   "nation": "USA",
+   "kind": "order",
+   "kredits": 1,
+   "operation_cost": null,
+   "attack": null,
+   "defense": null,
+   "keywords": [],
+   "paraphrase": "This turn, every unit you deploy is 1 kredit cheaper and gets Blitz.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=patton)",
+   "unsupported": [
+    "cost_modifier",
+    "delayed_or_granted_effect"
+   ]
+  },
+  {
+   "name": "CROSSFIRE",
+   "card_id": "crossfire",
+   "nation": "Germany",
+   "kind": "order",
+   "kredits": 5,
+   "operation_cost": null,
+   "attack": null,
+   "defense": null,
+   "keywords": [],
+   "paraphrase": "Hits each enemy unit for 1, and keeps repeating for as long as the previous pass killed something.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=crossfire)",
+   "unsupported": [
+    "conditional_repeat"
+   ]
+  },
+  {
+   "name": "OVERCAST",
+   "card_id": "overcast",
+   "nation": "USA",
+   "kind": "order",
+   "kredits": 2,
+   "operation_cost": null,
+   "attack": null,
+   "defense": null,
+   "keywords": [],
+   "paraphrase": "Forecast. Afterwards both HQs get 2 defense, and both players gain a kredit slot and one card.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=overcast)",
+   "unsupported": [
+    "forecast"
+   ]
+  },
+  {
+   "name": "PAMS",
+   "card_id": "pams",
+   "nation": "Britain",
+   "kind": "order",
+   "kredits": 1,
+   "operation_cost": null,
+   "attack": null,
+   "defense": null,
+   "keywords": [],
+   "paraphrase": "Develop one of three British orders of cost 4 or less; the pick goes into your deck and costs nothing.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=pams)",
+   "unsupported": [
+    "develop",
+    "deck_manipulation"
+   ]
+  },
+  {
+   "name": "DEPOT RAID",
+   "card_id": "depot_raid",
+   "nation": "Finland",
+   "kind": "order",
+   "kredits": 4,
+   "operation_cost": null,
+   "attack": null,
+   "defense": null,
+   "keywords": [],
+   "paraphrase": "Bounces an enemy unit of your choice to its owner's hand, and a Salvaged duplicate of it lands in yours.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=depot_raid)",
+   "unsupported": [
+    "copy_or_random_card"
+   ]
+  },
+  {
+   "name": "RASPUTITSA",
+   "card_id": "rasputitsa",
+   "nation": "Soviet Union",
+   "kind": "order",
+   "kredits": 2,
+   "operation_cost": null,
+   "attack": null,
+   "defense": null,
+   "keywords": [],
+   "paraphrase": "Every unit is hurt by an amount equal to its own operation cost.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=rasputitsa)",
+   "unsupported": [
+    "per_target_amount"
+   ]
+  },
+  {
+   "name": "INTERCEPTION",
+   "card_id": "interception",
+   "nation": "Britain",
+   "kind": "countermeasure",
+   "kredits": 1,
+   "operation_cost": null,
+   "attack": null,
+   "defense": null,
+   "keywords": [],
+   "paraphrase": "Countermeasure: stops an enemy order aimed at your HQ or one of your units.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=interception)",
+   "unsupported": [
+    "countermeasure"
+   ]
+  },
+  {
+   "name": "CARELESS TALK",
+   "card_id": "careless_talk",
+   "nation": "Germany",
+   "kind": "countermeasure",
+   "kredits": 1,
+   "operation_cost": null,
+   "attack": null,
+   "defense": null,
+   "keywords": [],
+   "paraphrase": "Countermeasure: the next unit the opponent deploys immediately takes 3 damage.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=careless_talk)",
+   "unsupported": [
+    "countermeasure"
+   ]
+  },
+  {
+   "name": "RETALIATION",
+   "card_id": "retaliation",
+   "nation": "Germany",
+   "kind": "countermeasure",
+   "kredits": 2,
+   "operation_cost": null,
+   "attack": null,
+   "defense": null,
+   "keywords": [],
+   "paraphrase": "Countermeasure: whatever damage your HQ just took is dealt back to the enemy HQ.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=retaliation)",
+   "unsupported": [
+    "countermeasure"
+   ]
+  },
+  {
+   "name": "FROM THE DEEP",
+   "card_id": "from_the_deep",
+   "nation": "Germany",
+   "kind": "countermeasure",
+   "kredits": 2,
+   "operation_cost": null,
+   "attack": null,
+   "defense": null,
+   "keywords": [],
+   "paraphrase": "Countermeasure: destroys the next unit the opponent puts onto the battlefield.",
+   "source": "https://herokuapi.kards.com/graphql (cards query behind https://www.kards.com/cards, cardId=from_the_deep)",
+   "unsupported": [
+    "countermeasure"
+   ]
+  }
+ ]
+}

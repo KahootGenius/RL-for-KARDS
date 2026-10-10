@@ -4,14 +4,53 @@ Staged card-game AI.
 
 - **Stage 1** (vanilla units, MLP PPO) is done.
 - **Stage 2** (natures, traits, move costs, 4 decks, per-card entity encoder with attack previews,
-  multiprocess rollouts, matchup cells + scenarios) is done and is the current code.
-  - The desktop runs of 2026-10-09 all pass. Reference model: `models/stage2.pt` (run s2_b,
-    `--attention-layers 1`).
-  - Stage 3 is next. Before its first encoder or card-pool change, the user should tag the
-    Stage 2 commit (`git tag stage2`): Stage 2 checkpoints only load with the Stage 2 code.
+  multiprocess rollouts, matchup cells + scenarios) is done.
+  - The desktop runs of 2026-10-09 all pass. Reference model: `models/stage2/ppo_s2b.pt` (run s2_b).
+  - The Stage 2 commit is tagged `stage2`. Stage 2 checkpoints only load with that code.
+- **Stage 3** (effects, operations, choices, mulligan, random decks, Transformer) is the current
+  code (see below).
 
 `SPEC.md` is the rules and interface contract (keep it in sync with every change); `README.md`
 explains how to run everything.
+
+## Stage 3 build (code complete 2026-10-10; awaiting the desktop runs)
+
+SPEC.md holds the Stage 3 contract and README.md the run plan; the full suite is about 1,915 tests.
+
+Built in phases by workflow agents, each phase tested and adversarially reviewed:
+1. Engine, with an independent black-box rule suite.
+2. KARDS-driven extensions.
+3. Content: 55 cards; the balance gate passes; the KARDS sample encodes 68 of 110 real cards.
+4. Lookahead agent and the v5 encoder.
+5. Transformer, pooled and MLP networks.
+6. Training: micro-batches, belief head, privileged critic, bf16, the §8.1 inference server, and
+   the end-of-run selection pass.
+7. Evaluation: four-part verdict, 20 scenarios, benchmark.
+
+The two reviews confirmed 7 engine findings and 19 pipeline findings, all fixed with regression
+tests (`tests/test_engine_review.py`, `tests/test_pipeline_review.py`). One of them was a bf16
+crash on the first CUDA update.
+
+**Open questions for the desktop runs:**
+- **Inference server:** auto = on with CUDA, policy only. The README's A/B decides on/off.
+- **Time per update:** estimated at collect 3–5 s + learn 3–6 s, plus quick evals.
+- **Scenarios:** whether the PPO bot clears 11 of 20 (lookahead and greedy each solve 9).
+
+**Measured on the Mac (default Transformer):**
+- worker-side CPU inference is about 65% of worker time;
+- `bench_stage3`: engine-only 0.72× Stage 2 games/s;
+- the observation dim is 3,999 floats;
+- activations are about 1.9 MB per sample in fp32, hence micro-batches of 1024.
+
+KARDS card-text research (scratchpad `kards/`) produced the extra primitives:
+- scoped watcher triggers, plus on_move and on_kill;
+- pin, discard, add_card and retreat;
+- filters, amount expressions and conditions;
+- the blitz, smokescreen and fury keywords;
+- armor applies to combat damage only.
+
+Rule fixed by the SPEC: `chosen` targets only on the controller's own action, so the turn player
+always acts.
 
 ## Two-machine workflow
 
@@ -34,11 +73,14 @@ Code is built on this laptop. The user pushes it to GitHub, pulls it on the home
 
 - **After every build:**
   1. Run the test suite: `.venv/bin/python -m pytest -q`.
-  2. Smoke-test training with the real (default) config. Start `.venv/bin/python train.py --run-dir runs/smoke`
-     only after the tests finish, wait until 2 updates are logged in `runs/smoke/metrics.jsonl`,
-     then kill it and delete `runs/smoke/`. On this Mac the default 65k batch takes ~30 s per update
-     on MPS; that is expected. Start the trainer with the Bash tool's background mode, not with `&`
-     inside a script: a job started that way ignores SIGINT, so the Ctrl-C path goes untested.
+  2. Smoke-test training with the default config except the batch: start
+     `.venv/bin/python train.py --run-dir runs/smoke --batch-steps 8192` only after the tests finish,
+     wait until 2 updates are logged in `runs/smoke/metrics.jsonl`, then kill it and delete
+     `runs/smoke/`.
+     - This takes about a minute on MPS (learn about 20–35 s per update).
+     - The full 65k Stage 3 batch swaps this 8 GB Mac: 6–13 minutes per update.
+     - Start the trainer with the Bash tool's background mode, not with `&` inside a script: a job
+       started that way ignores SIGINT, so the Ctrl-C path goes untested.
   3. Finish by giving the user the exact list of files to push, as paths from the repo root,
      grouped into added / modified / deleted. Derive it from `git status --porcelain` when this
      folder is a git repo.
@@ -89,7 +131,7 @@ Code is built on this laptop. The user pushes it to GitHub, pulls it on the home
 ## Stage 2 outcome (inputs for Stage 3)
 
 - **Acceptance (2,016 duplicate games vs greedy, seeds 0–1007).** Full numbers in the README,
-  `feedback/` and `results/stage2_eval.json`.
+  `feedback/` and `results/stage2/stage2_eval.json`.
   - s2_a: 85.4%, worst cell 78.6%, 9/16 scenarios.
   - s2_b: 86.3%, worst cell 82.1%, 12/16.
   - s2_c: 85.4%, worst cell 78.6%, 10/16.

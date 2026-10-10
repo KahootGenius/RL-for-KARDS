@@ -152,11 +152,12 @@ def test_clone_equals_original_and_evolves_identically():
 def test_clone_shares_no_mutable_state():
     g = mid_game_state(1)
     c = g.clone()
-    for name in ("hands", "deck_cards", "played", "backline"):
+    for name in ("hands", "deck_cards", "played", "backline", "discard", "graveyard", "known_hand", "revealed"):
         for p in (0, 1):
             assert getattr(c, name)[p] is not getattr(g, name)[p], name
         assert getattr(c, name) is not getattr(g, name), name
-    for name in ("coins", "base_hp", "burned", "frontline"):
+    for name in ("coins", "base_hp", "burned", "frontline", "coin_bonus", "mulligan_done", "mulligan_marks",
+                 "queue"):
         assert getattr(c, name) is not getattr(g, name), name
     assert c.rng is not g.rng
     assert c.config is g.config and c.action_space is g.action_space  # immutable tables are shared
@@ -181,6 +182,12 @@ def mutate(game: Game) -> None:
     game.coins[p] += 4
     game.base_hp[0] -= 1
     game.burned[1] += 1
+    game.coin_bonus[1] += 1
+    game.mulligan_done[0] = not game.mulligan_done[0]
+    for name in ("discard", "graveyard", "known_hand", "revealed"):
+        getattr(game, name)[p][1] += 1
+    game.turn += 3
+    game.guard_trips += 1
     game.backline[1].pop()
     game.next_uid += 5
     game.rng.random()
@@ -313,15 +320,18 @@ def test_clone_preserves_subclass():
 # ---------------------------------------------------------------- Unit.copy
 def test_unit_copy_covers_every_slot():
     u = Unit(3, 1, atk=4, hp=2, max_hp=5, armor=1, defense=True, nature=2, move_cost=3, uid=17,
-             summoned=True, moved=False, attacked=True)
+             summoned=True, moved=False, attacked=True, blitz=True, smokescreen=True, fury=True, pinned=True,
+             pin_until=9, temp_atk=2, temp_hp=1, temp_armor=1, temp_traits=4, temp_removed=8, base_traits=17,
+             token=True)
     c = u.copy()
     assert c is not u and type(c) is Unit
     assert set(Unit.__slots__) == set(UNIT_FIELDS), "update Unit.copy() and the tests"
     for name in Unit.__slots__:
         assert getattr(c, name) == getattr(u, name), name
+    assert len({getattr(u, n) for n in ("pin_until", "temp_traits", "temp_removed", "base_traits")}) == 4
     c.hp = 9
     c.attacked = False
-    assert (u.hp, u.attacked) == (2, True)
+    assert (u.hp, u.attacked, c.attacks) == (2, True, 0)
 
 
 def test_unit_keyword_defaults_and_from_card():
@@ -330,10 +340,20 @@ def test_unit_keyword_defaults_and_from_card():
     assert (u.summoned, u.moved, u.attacked) == (False, False, False)
     with pytest.raises(TypeError):
         Unit(0, 1, 2, 3)  # keyword-only after owner
+    assert (u.attacks, u.blitz, u.smokescreen, u.fury, u.pinned, u.pin_until, u.token) == (0, False, False, False,
+                                                                                         False, 0, False)
+    assert (u.temp_atk, u.temp_hp, u.temp_armor, u.temp_traits, u.temp_removed, u.base_traits) == (0,) * 6
+    assert Unit(0, 1, atk=1, hp=1, attacked=True).attacks == 1 and Unit(0, 1, atk=1, hp=1, attacks=2).attacked
     for c in CONFIG.cards.cards:
+        if not c.is_unit:
+            with pytest.raises(ValueError):
+                Unit.from_card(c, 1, uid=4)
+            continue
         v = Unit.from_card(c, 1, uid=4)
         assert (v.card, v.owner, v.uid, v.atk, v.hp, v.max_hp, v.armor, v.defense, v.nature, v.move_cost) == (
             c.index, 1, 4, c.attack, c.health, c.health, c.armor, c.defense, c.nature, c.move_cost)
+        assert (v.blitz, v.smokescreen, v.fury, v.token, v.base_traits) == (c.blitz, c.smokescreen, c.fury, c.token,
+                                                                            c.trait_mask)
         assert (v.summoned, v.moved, v.attacked) == (True, False, False)
 
 

@@ -4,6 +4,9 @@ It shares no code with `cardgame.engine`: it reads the documented internal state
 into plain tuples and re-derives setup, legality and transitions from the spec text and tables,
 so the tests compare the engine against a second, deliberately naive implementation.
 Only the card pool and the config numbers are taken from the `GameConfig`.
+
+Scope (SPEC §2.11): effect-free (vanilla) cards with `mulligan=False`, i.e. phase MAIN only. The action
+index formulas cover the whole Stage 3 layout (CHOOSE / MULLIGAN / CONFIRM are appended after ATTACK).
 """
 from __future__ import annotations
 
@@ -16,8 +19,8 @@ DRAW = -1  # SPEC §4: winner() == DRAW (-1) for a draw
 TROOP, FAST, RANGED = 0, 1, 2  # SPEC §4 nature codes
 
 # Action kinds, in SPEC §3 order.
-END_TURN, PLAY, MOVE, ATTACK = range(4)
-KIND_NAMES = ("END_TURN", "PLAY", "MOVE", "ATTACK")
+END_TURN, PLAY, MOVE, ATTACK, CHOOSE, MULLIGAN, CONFIRM = range(7)
+KIND_NAMES = ("END_TURN", "PLAY", "MOVE", "ATTACK", "CHOOSE", "MULLIGAN", "CONFIRM")
 
 UNIT_FIELDS = ("card", "owner", "uid", "atk", "hp", "max_hp", "armor", "defense", "nature", "move_cost",
                "summoned", "moved", "attacked")
@@ -88,11 +91,12 @@ def comparable(s: RefState) -> RefState:
 
 # ---------------------------------------------------------------- action indices (SPEC §3)
 def num_actions(H: int, Z: int) -> int:
-    return 1 + H + Z + (2 * Z) * (2 * Z + 1)
+    return 1 + H + Z + (2 * Z) * (2 * Z + 1) + (3 * Z + 2) + H + 1
 
 
 def action_index(kind: int, a: int, b: int, H: int, Z: int) -> int:
     """Index formula from SPEC §3."""
+    choose0 = 1 + H + Z + (2 * Z) * (2 * Z + 1)
     if kind == END_TURN:
         return 0
     if kind == PLAY:
@@ -101,6 +105,12 @@ def action_index(kind: int, a: int, b: int, H: int, Z: int) -> int:
         return 1 + H + a
     if kind == ATTACK:
         return 1 + H + Z + a * (2 * Z + 1) + b
+    if kind == CHOOSE:
+        return choose0 + a
+    if kind == MULLIGAN:
+        return choose0 + 3 * Z + 2 + a
+    if kind == CONFIRM:
+        return choose0 + 3 * Z + 2 + H
     raise ValueError(kind)
 
 
@@ -117,6 +127,14 @@ def decode_index(index: int, H: int, Z: int) -> tuple:
     i -= Z
     if i < 2 * Z * (2 * Z + 1):
         return ATTACK, i // (2 * Z + 1), i % (2 * Z + 1)
+    i -= 2 * Z * (2 * Z + 1)
+    if i < 3 * Z + 2:
+        return CHOOSE, i, -1
+    i -= 3 * Z + 2
+    if i < H:
+        return MULLIGAN, i, -1
+    if i == H:
+        return CONFIRM, -1, -1
     raise ValueError(index)
 
 

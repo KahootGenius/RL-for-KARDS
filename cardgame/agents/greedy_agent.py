@@ -1,11 +1,12 @@
-"""Rule-based greedy baseline v2 (SPEC.md section 9). One action per call; re-evaluated after every step."""
+"""Rule-based greedy baseline v2 (SPEC.md section 9), kept as a legacy diagnostic. One action per call;
+re-evaluated after every step."""
 from __future__ import annotations
 
 from typing import Optional, Sequence
 
 from ..actions import ActionSpace
 from ..cards import FAST, RANGED, GameConfig, load_ruleset
-from ..engine import Observation, combat_damage
+from ..engine import MAIN, Observation, combat_damage
 
 
 class GreedyAgent:
@@ -25,6 +26,10 @@ class GreedyAgent:
     6. Advance: MOVE a troop/fast unit (higher atk, lower slot); ranged units stay back.
     7. A troop/fast frontline unit hits the base (lowest frontline slot).
     8. END_TURN.
+
+    Stage 3 phases: in the mulligan it keeps its hand (CONFIRM); at a pending choice it takes the
+    first legal option (lowest CHOOSE slot). Operations are plays like any other card (rule 2: by
+    cost; their atk+hp is 0). Card effects are otherwise ignored.
     """
 
     name = "greedy"
@@ -38,6 +43,7 @@ class GreedyAgent:
         self.action_space = sp
         self.Z = sp.zone_capacity
         self.play0, self.move0, self.attack0, self.n = sp.PLAY0, sp.MOVE0, sp.ATTACK0, sp.n
+        self.choose0, self.mulligan0, self.confirm = sp.CHOOSE0, sp.MULLIGAN0, sp.CONFIRM
         self.base_target = sp.BASE_TARGET
         # Per-action slot params (a = hand / backline / attacker slot, b = target slot), decoded once.
         self.arg_a = tuple(act.a for act in sp.actions)
@@ -47,8 +53,13 @@ class GreedyAgent:
         """Deterministic agent: nothing to reset."""
 
     def act(self, obs: Observation, legal_actions: Sequence[int]) -> int:
+        if obs.phase != MAIN:
+            # mulligan: keep the hand; pending choice: the first legal option
+            if self.confirm in legal_actions:
+                return self.confirm
+            return min(a for a in legal_actions if self.choose0 <= a < self.mulligan0)
         cost, Z, base_t = self.cost, self.Z, self.base_target
-        play0, move0, attack0, n = self.play0, self.move0, self.attack0, self.n
+        play0, move0, attack0, attack_end = self.play0, self.move0, self.attack0, self.choose0
         arg_a, arg_b = self.arg_a, self.arg_b
         back, front, opp_back = obs.my_backline, obs.frontline, obs.opp_backline
 
@@ -62,7 +73,7 @@ class GreedyAgent:
                 plays.append(act)
             elif act < attack0:
                 moves.append(act)
-            elif act < n:
+            elif act < attack_end:  # attacks only (CHOOSE/MULLIGAN/CONFIRM are not MAIN actions)
                 a, t = arg_a[act], arg_b[act]
                 att = back[a] if a < Z else front[a - Z]
                 if t == base_t:

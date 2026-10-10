@@ -1,24 +1,38 @@
-"""Rule scenarios from SPEC.md §2 (every item of §2.1 plus setup, turns, winning and compaction),
-built by editing the documented engine state (SPEC §4). Every step is also checked against the
-independent reference model, and units use explicit stats so retuning cards cannot break a test."""
+"""Stage 2 rule scenarios (SPEC §2.11: natures, Defense, armor, move cost, frontline control, plus setup,
+turns, winning and compaction), built by editing the documented engine state (SPEC §4). Every step is
+also checked against the independent Stage 2 reference model, so the games run on the frozen vanilla
+content (`VANILLA_CONFIG`, mulligan off); units use explicit stats so retuning cards cannot break a test."""
 from __future__ import annotations
 
 import dataclasses
+import functools
 from collections import Counter
+from itertools import product
 
 import pytest
 
+import conftest
 from cardgame.cards import FAST, RANGED, TROOP, sample_decks
 from cardgame.engine import DRAW, IllegalActionError, Unit
-from conftest import (BASE, CONFIG, DECK_PAIRS, END, N_CARDS, N_DECKS, NUM_ACTIONS, H, Z, add_unit, attack, back,
-                      blank_game, cards_where, check_invariants, cost, front, move, new_game, play,
+from conftest import (BASE, END, NUM_ACTIONS, H, Z, add_unit, attack, back, check_invariants, front, move, play,
                       set_deck, set_hand)
+from conftest import VANILLA_CONFIG as CONFIG
 from reference_rules import (can_attack as ref_can_attack, can_move as ref_can_move, comparable,
                              extract_state, ref_unit, reference_legal, reference_reset, reference_step)
 from reference_rules import sample_decks as ref_sample_decks
 
 NATURES = (TROOP, FAST, RANGED)
 NATURE_IDS = ("troop", "fast", "ranged")
+N_CARDS = len(CONFIG.cards)
+N_DECKS = CONFIG.n_decks
+DECK_PAIRS = tuple(product(range(N_DECKS), repeat=2))
+blank_game = functools.partial(conftest.blank_game, config=CONFIG)
+new_game = functools.partial(conftest.new_game, config=CONFIG)
+cards_where = functools.partial(conftest.cards_where, config=CONFIG)
+
+
+def cost(card_index: int) -> int:
+    return CONFIG.cards[card_index].cost
 
 
 def assert_legal(game, expected) -> None:

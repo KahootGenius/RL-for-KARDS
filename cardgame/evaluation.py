@@ -1,14 +1,20 @@
-"""Duplicate-game evaluation (SPEC §10): play_game, duplicate matches over deck matchups, MatchResult.
+"""Duplicate-game evaluation (SPEC 10): play_game, duplicate matches over deck matchups, MatchResult.
 
-Every deal (seed + deck pair: deck i in seat 0, deck j in seat 1) is played twice with identical
-shuffles and coin flip: A in seat 0 vs B in seat 1, then with the seats swapped, so A plays both
-decks of every deal. Agent randomness is re-seeded per game and per *seat* (`agent_seed`), so a
-mirror match of identical agents is exactly balanced, and results never depend on the number of
-worker processes.
+Every deal (seed + deck pair: deck 0 in seat 0, deck 1 in seat 1) is played twice with identical
+shuffles and coin flip: A in seat 0 vs B in seat 1, then with the seats swapped (the decks stay with
+the seats), so A plays both decks of every deal. Agent randomness is re-seeded per game and per
+*seat* (`agent_seed`), so a mirror match of identical agents is exactly balanced, and results never
+depend on the number of worker processes. Moves come from `agents.choose_action`, so simulating
+agents (lookahead) get the game (and may only determinize it).
 
-Deck schedules (`decks=`): "all" deals deal k with (i, j) = divmod(k % n², n) and rounds the deal
-count up to a multiple of n² (every ordered deck pair equally often); "sampled" uses
-`sample_decks(seed)` (what `Game.reset(seed)` does); a pair (i, j) fixes one matchup.
+Deck schedules (`decks=`):
+* "random": deal k (seed s = start_seed + k) gives seat 0 and seat 1 the random decks
+  `generate_deck(deck_rng(s, 0))` and `generate_deck(deck_rng(s, 1))` (`random_deal`). Results report
+  overall / per-seat / turn-order numbers only: there are no matchup cells.
+* "all": deal k uses fixed decks (i, j) = divmod(k % n^2, n), and the deal count is rounded up to a
+  multiple of n^2 (every ordered deck pair equally often).
+* "sampled": `sample_decks(seed)` (what `Game.reset(seed)` does).
+* a pair (i, j) fixes one matchup.
 
 Worker processes run on a `concurrent.futures.ProcessPoolExecutor` (spawn context): a worker that dies
 (crash, OOM killer) makes the match raise `BrokenProcessPool` instead of waiting forever.
@@ -26,19 +32,22 @@ from contextlib import contextmanager, suppress
 from dataclasses import dataclass, field
 from typing import Dict, Iterator, List, NamedTuple, Optional, Sequence, Tuple, Union
 
-from .agents import Agent, make_agent
-from .cards import GameConfig, load_ruleset
+from .agents import Agent, choose_action, make_agent
+from .cards import GameConfig, deck_rng, generate_deck, load_ruleset
 from .engine import DRAW, Game, IllegalActionError
 
 Z95 = 1.959963984540054  # two-sided 95% normal quantile
 WARMUP_SEED = 3_000_000_000  # far from eval (0..) and training (1e9..) deal seeds
-DECK_MODES = ("all", "sampled")
+RANDOM_DECKS = "random"
+DECK_MODES = (RANDOM_DECKS, "all", "sampled")
+FIXED_DECK_MODES = ("all", "sampled")
 _MASK64 = (1 << 64) - 1
 _THREAD_ENV = ("OMP_NUM_THREADS", "MKL_NUM_THREADS", "OPENBLAS_NUM_THREADS", "VECLIB_MAXIMUM_THREADS",
                "NUMEXPR_NUM_THREADS")
 
 DeckSpec = Union[str, Tuple[int, int]]
-Deal = Tuple[int, Optional[Tuple[int, int]]]  # (seed, deck pair or None = sample_decks(seed))
+# (seed, deck pair): a fixed pair (i, j), None = sample_decks(seed), or RANDOM_DECKS = random_deal(seed)
+Deal = Tuple[int, Union[None, str, Tuple[int, int]]]
 
 
 class IllegalAgentActionError(IllegalActionError):
@@ -51,7 +60,7 @@ class GameRecord(NamedTuple):
     first_player: int
     rounds: int
     steps: int
-    decks: Tuple[int, int]  # deck index of seat 0, seat 1
+    decks: Tuple[int, int]  # fixed deck index of seat 0, seat 1 (-1 = a random deck)
 
 
 def agent_seed(seed: int, seat: int) -> int:
@@ -62,14 +71,21 @@ def agent_seed(seed: int, seat: int) -> int:
     return (z ^ (z >> 31)) >> 1
 
 
+def random_deal(seed: int, config: GameConfig) -> Tuple[tuple, tuple]:
+    """The random decks of deal `seed` (SPEC 10): `generate_deck(deck_rng(seed, seat))` for seat 0 and 1."""
+    return generate_deck(deck_rng(seed, 0), config), generate_deck(deck_rng(seed, 1), config)
+
+
 def play_game(config: Optional[GameConfig], agents: Sequence[Agent], seed: int,
               agent_seeds: Optional[Sequence[int]] = None, game: Optional[Game] = None,
-              decks: Optional[Sequence[int]] = None) -> GameRecord:
-    """Play one full game with `agents[p]` in seat p; agents see only observe(p) + legal_actions().
+              decks: Optional[Sequence] = None) -> GameRecord:
+    """Play one full game with `agents[p]` in seat p. Moves come from `agents.choose_action`: plain agents
+    see only observe(p) + legal_actions(), simulating agents (`needs_game`, e.g. lookahead) get the game.
 
-    `decks` = (deck of seat 0, deck of seat 1), default `sample_decks(seed)`. `agent_seeds` defaults
-    to (agent_seed(seed, 0), agent_seed(seed, 1)). Pass `game` (built from the same config) to reuse
-    it. Raises IllegalAgentActionError if an agent picks an illegal action.
+    `decks` = (deck spec of seat 0, of seat 1): fixed deck indices or 40-card tuples (SPEC 1.3), default
+    `sample_decks(seed)`. `agent_seeds` defaults to (agent_seed(seed, 0), agent_seed(seed, 1)). Pass
+    `game` (built from the same config) to reuse it. Raises IllegalAgentActionError if an agent picks an
+    illegal action.
     """
     if len(agents) != 2:
         raise ValueError(f"expected 2 agents, got {len(agents)}")
@@ -82,8 +98,8 @@ def play_game(config: Optional[GameConfig], agents: Sequence[Agent], seed: int,
     steps = 0
     while not game.done:
         p = game.current_player()
+        action = choose_action(agents[p], game)
         legal = game.legal_actions()
-        action = agents[p].act(game.observe(p), legal)
         if action not in legal:
             desc = game.describe(action) if isinstance(action, int) else type(action).__name__
             raise IllegalAgentActionError(
@@ -118,7 +134,7 @@ def outcome_for(record: GameRecord, seat: int) -> int:
 
 # ---------------------------------------------------------------------- deck schedules
 def check_decks(decks: DeckSpec, n_decks: int) -> DeckSpec:
-    """Validate a deck schedule: "all", "sampled" or a pair of deck indices."""
+    """Validate a deck schedule: "random", "all", "sampled" or a pair of fixed deck indices."""
     if isinstance(decks, str):
         if decks not in DECK_MODES:
             raise ValueError(f"decks must be one of {DECK_MODES} or a deck pair, got {decks!r}")
@@ -130,7 +146,7 @@ def check_decks(decks: DeckSpec, n_decks: int) -> DeckSpec:
 
 
 def round_deals(n_deals: int, decks: DeckSpec, n_decks: int) -> int:
-    """Deal count actually played: rounded up to a multiple of n² for decks="all"."""
+    """Deal count actually played: rounded up to a multiple of n^2 for decks="all"."""
     if decks == "all":
         block = n_decks * n_decks
         return -(-n_deals // block) * block
@@ -143,14 +159,23 @@ def deals_for_games(games: int, decks: DeckSpec, n_decks: int) -> int:
 
 
 def deal_schedule(start_seed: int, n_deals: int, decks: DeckSpec, n_decks: int) -> List[Deal]:
-    """(seed, deck pair) of every deal; deal k has seed start_seed + k. None = sample_decks(seed)."""
+    """(seed, deck pair) of every deal; deal k has seed start_seed + k. The pair is a fixed (i, j), None
+    (= sample_decks(seed)) or RANDOM_DECKS (= random_deal(seed, config), resolved where the game is played)."""
     decks = check_decks(decks, n_decks)
     n_deals = round_deals(n_deals, decks, n_decks)
     if decks == "all":
         block = n_decks * n_decks
         return [(start_seed + k, divmod(k % block, n_decks)) for k in range(n_deals)]
-    pair = None if decks == "sampled" else decks
+    pair = None if decks == "sampled" else decks  # RANDOM_DECKS stays a marker
     return [(start_seed + k, pair) for k in range(n_deals)]
+
+
+def deal_decks(deal: Deal, config: GameConfig) -> Optional[tuple]:
+    """The deck specs `Game.reset` takes for a scheduled deal (None = sample_decks(seed))."""
+    seed, pair = deal
+    if pair == RANDOM_DECKS:
+        return random_deal(seed, config)
+    return pair
 
 
 # ---------------------------------------------------------------------- results
@@ -212,9 +237,11 @@ def _pct(x: float) -> str:
 class MatchResult:
     """A duplicate match from A's point of view. `deals[i] = (game with A in seat 0, game with A in seat 1)`.
 
-    * `cells[(i, j)]` (i <= j): A's results over every game of deals dealt as (i, j) or (j, i). A plays
-      both decks of each such deal, so deck strength and turn order cancel (the pass/fail numbers).
-    * `matrix[a][b]`: A's results when A holds deck a and B holds deck b (deck-confounded diagnostic).
+    * `overall`, `by_seat`, `first` / `second` (turn order): every deck mode.
+    * Fixed decks only ("all", "sampled", a pair; empty for decks="random"):
+      * `cells[(i, j)]` (i <= j): A's results over every game of deals dealt as (i, j) or (j, i). A plays
+        both decks of each such deal, so deck strength and turn order cancel (the pass/fail numbers).
+      * `matrix[a][b]`: A's results when A holds deck a and B holds deck b (deck-confounded diagnostic).
 
     The Wilson interval treats the games as independent; paired (duplicate) games usually have
     lower variance than that, so the interval is conservative for the A-vs-B comparison.
@@ -242,8 +269,9 @@ class MatchResult:
         if not self.deck_names:
             self.deck_names = tuple(f"deck{i}" for i in range(n))
         self.overall, self.by_seat, self.first, self.second = WDL(), (WDL(), WDL()), WDL(), WDL()
-        self.cells = {(i, j): WDL() for i in range(n) for j in range(i, n)}
-        self.matrix = [[WDL() for _ in range(n)] for _ in range(n)]
+        fixed = self.fixed_decks
+        self.cells = {(i, j): WDL() for i in range(n) for j in range(i, n)} if fixed else {}
+        self.matrix = [[WDL() for _ in range(n)] for _ in range(n)] if fixed else []
         for pair in self.deals:
             for a_seat, rec in enumerate(pair):
                 out = outcome_for(rec, a_seat)
@@ -251,8 +279,14 @@ class MatchResult:
                 self.by_seat[a_seat].add(out)
                 (self.first if rec.first_player == a_seat else self.second).add(out)
                 i, j = rec.decks
-                self.cells[(min(i, j), max(i, j))].add(out)
-                self.matrix[rec.decks[a_seat]][rec.decks[1 - a_seat]].add(out)
+                if fixed and i >= 0 and j >= 0:
+                    self.cells[(min(i, j), max(i, j))].add(out)
+                    self.matrix[rec.decks[a_seat]][rec.decks[1 - a_seat]].add(out)
+
+    @property
+    def fixed_decks(self) -> bool:
+        """True for the fixed-deck schedules (matchup cells and the P matrix exist), False for decks="random"."""
+        return self.decks != RANDOM_DECKS
 
     # -- headline numbers (overall)
     @property
@@ -350,11 +384,20 @@ class MatchResult:
         return out
 
     def to_dict(self, include_games: bool = False) -> dict:
+        """JSON-ready summary. With random decks `matchups` is empty and `min_cell`, `min_ordered_cell` and
+        `deck_matrix` are None (no fixed decks to group by)."""
         names = list(self.deck_names)
         lo, lo_ordered = self.min_cell(), self.min_ordered_cell()
+        matrix = None
+        if self.fixed_decks:
+            matrix = {"rows": "A's deck", "cols": "B's deck", "names": names,
+                      "win_rate": [[w.win_rate if w.games else None for w in row] for row in self.matrix],
+                      "draw_rate": [[w.draw_rate if w.games else None for w in row] for row in self.matrix],
+                      "games": [[w.games for w in row] for row in self.matrix]}
         d = {"agent_a": self.agent_a, "agent_b": self.agent_b, "kwargs_a": dict(self.kwargs_a),
              "kwargs_b": dict(self.kwargs_b), "start_seed": self.start_seed, "n_deals": self.n_deals,
              "decks": self.decks if isinstance(self.decks, str) else list(self.decks), "deck_names": names,
+             "fixed_decks": self.fixed_decks,
              **self.overall.to_dict(),
              "by_seat": {"0": self.by_seat[0].to_dict(), "1": self.by_seat[1].to_dict()},
              "by_turn_order": {"first": self.first.to_dict(), "second": self.second.to_dict()},
@@ -365,10 +408,7 @@ class MatchResult:
              "min_ordered_cell": None if lo_ordered is None else {
                  "decks": list(lo_ordered[0]), "name": self.ordered_cell_name(lo_ordered[0]),
                  "diagnostic": True, **lo_ordered[1].to_dict()},
-             "deck_matrix": {"rows": "A's deck", "cols": "B's deck", "names": names,
-                             "win_rate": [[w.win_rate if w.games else None for w in row] for row in self.matrix],
-                             "draw_rate": [[w.draw_rate if w.games else None for w in row] for row in self.matrix],
-                             "games": [[w.games for w in row] for row in self.matrix]},
+             "deck_matrix": matrix,
              "deals": self.deal_summary(), "avg_rounds": self.avg_rounds, "avg_steps": self.avg_steps,
              "elapsed_s": self.elapsed, "games_per_s": self.games_per_s}
         if include_games:
@@ -378,7 +418,9 @@ class MatchResult:
 
     # -- text
     def format_summary(self) -> str:
-        if self.decks == "all":
+        if self.decks == RANDOM_DECKS:
+            sched = "decks=random (generate_deck(deck_rng(seed, seat)) per deal)"
+        elif self.decks == "all":
             sched = f"decks=all ({self.n_decks ** 2} deck pairs x {self.n_deals // max(1, self.n_decks ** 2)} deals)"
         elif self.decks == "sampled":
             sched = "decks=sampled"
@@ -405,6 +447,8 @@ class MatchResult:
 
     def format_cells(self) -> str:
         """Symmetric table of the unordered matchup cells: win% [95% CI] (games), draws if any."""
+        if not self.fixed_decks:
+            return "(random decks: no matchup cells)"
         n, names = self.n_decks, self.deck_names
         entries = {}
         for (i, j), w in self.cells.items():
@@ -426,6 +470,9 @@ class MatchResult:
     def format_matrix(self, reference: Optional["MatchResult"] = None, reference_label: str = "",
                       label: str = "") -> str:
         """P[a][b] (A holds deck a: rows; B holds deck b: columns) as win%, optionally next to a reference."""
+        if not self.fixed_decks:
+            return "(random decks: no deck matrix)"
+
         def block(r: "MatchResult") -> List[str]:
             names = r.deck_names
             name_w = max(len(x) for x in names)
@@ -449,6 +496,8 @@ class MatchResult:
         return "\n".join(out)
 
     def format(self) -> str:
+        if not self.fixed_decks:
+            return self.format_summary() + "\n  (random decks: no matchup cells or deck matrix)"
         parts = [self.format_summary(), "  matchup cells C{i,j}: A's win% [95% CI] (games)",
                  _indent(self.format_cells()), "  deck-confounded P[a][b]: A's win% holding deck a vs deck b",
                  _indent(self.format_matrix())]
@@ -503,8 +552,11 @@ class _DealRunner:
         # Distinct roles keep A and B separate instances even when spec_a == spec_b.
         a, b = self.agent("a", spec_a, kw_a), self.agent("b", spec_b, kw_b)
         cfg, game = self.config, self.game
-        return [(play_game(cfg, (a, b), s, game=game, decks=d), play_game(cfg, (b, a), s, game=game, decks=d))
-                for s, d in deals]
+        out = []
+        for deal in deals:
+            s, d = deal[0], deal_decks(deal, cfg)  # the same decks per seat in both games of the deal
+            out.append((play_game(cfg, (a, b), s, game=game, decks=d), play_game(cfg, (b, a), s, game=game, decks=d)))
+        return out
 
 
 _RUNNER: Optional[_DealRunner] = None
@@ -561,7 +613,8 @@ class Evaluator:
     def match(self, spec_a: str, spec_b: str, n_deals: int, start_seed: int = 0,
               agent_kwargs_a: Optional[dict] = None, agent_kwargs_b: Optional[dict] = None,
               chunk_size: Optional[int] = None, decks: DeckSpec = "all") -> MatchResult:
-        """Deals start_seed, start_seed + 1, ... x 2 seatings; decks="all" rounds n_deals up to a multiple of n²."""
+        """Deals start_seed, start_seed + 1, ... x 2 seatings; decks="all" rounds n_deals up to a multiple of n^2.
+        `decks`: "random", "all", "sampled" or a fixed pair (see the module docstring)."""
         if n_deals < 1:
             raise ValueError("n_deals must be >= 1")
         if start_seed < 0:
@@ -646,12 +699,12 @@ def duplicate_match(spec_a: str, spec_b: str, n_deals: int, start_seed: int = 0,
                     agent_kwargs_a: Optional[dict] = None, agent_kwargs_b: Optional[dict] = None,
                     decks: DeckSpec = "all") -> MatchResult:
     """A vs B over `n_deals` deals (rounded up for decks="all") x 2 seatings. Agents are built from
-    specs (see make_agent) per worker."""
+    specs (see make_agent: random, greedy, lookahead or a checkpoint) per worker."""
     with Evaluator(min(workers, max(1, n_deals)), config) as ev:
         return ev.match(spec_a, spec_b, n_deals, start_seed, agent_kwargs_a, agent_kwargs_b, decks=decks)
 
 
-__all__ = ["BrokenProcessPool", "DECK_MODES", "DRAW", "Evaluator", "GameRecord", "IllegalAgentActionError",
-           "MatchResult", "WDL", "Z95", "agent_seed", "check_decks", "checkpoint_path", "deal_schedule",
-           "deals_for_games", "default_workers", "duplicate_match", "outcome_for", "play_game", "round_deals",
-           "short_deck_names", "wilson_interval"]
+__all__ = ["BrokenProcessPool", "DECK_MODES", "DRAW", "Evaluator", "FIXED_DECK_MODES", "GameRecord",
+           "IllegalAgentActionError", "MatchResult", "RANDOM_DECKS", "WDL", "Z95", "agent_seed", "check_decks",
+           "checkpoint_path", "deal_decks", "deal_schedule", "deals_for_games", "default_workers", "duplicate_match",
+           "outcome_for", "play_game", "random_deal", "round_deals", "short_deck_names", "wilson_interval"]

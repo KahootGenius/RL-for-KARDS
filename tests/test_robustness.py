@@ -38,7 +38,8 @@ def test_clone_of_never_reset_game_behaves_the_same_and_can_start():
 def test_default_config_is_the_bundled_ruleset():
     g = Game()
     g.reset(0)
-    assert g.config == CONFIG and g.num_actions == NUM_ACTIONS
+    assert g.config == load_ruleset() and g.num_actions == NUM_ACTIONS
+    assert g.config.mulligan and dataclasses.replace(g.config, mulligan=False) == CONFIG
 
 
 # ---------------------------------------------------------------- seeds, decks and action inputs
@@ -238,7 +239,9 @@ def test_move_cost_defaults_to_one(tmp_path):
     {"traits": {"armor": 1.5}}, {"traits": {"armor": "2"}},
     {"traits": ["defense"]}, {"traits": "defense"}, {"traits": None},
     {"effects": [{"type": "on_play_damage"}]}, {"effects": ["charge"]}, {"effects": {}}, {"effects": [1]},
-    {"type": "spell"}, {"type": "operation"},
+    {"type": "spell"}, {"type": "operation"},      # an operation has no unit stats
+    {"traits": {"blitz": 1}}, {"traits": {"fury": "yes"}}, {"traits": {"smokescreen": None}},
+    {"token": 1}, {"token": "yes"},
     {"cost": 1.5}, {"attack": True}, {"health": "3"}, {"move_cost": 1.0}, {"move_cost": True},
     {"move_cost": -1}, {"move_cost": None},
     {"health": 0}, {"cost": -1}, {"attack": -2},
@@ -287,7 +290,7 @@ def test_ruleset_with_n_decks_loads(tmp_path):
     cards = pool14(tmp_path)
     for n in (1, 2, 5):
         decks = write_decks(tmp_path, *[deck_of(LEGAL_COUNTS, name=f"d{i}", style=f"s{i}") for i in range(n)])
-        cfg = load_ruleset(cards, decks)
+        cfg = load_ruleset(cards, decks, mulligan=False)
         assert cfg.n_decks == n == len(cfg.decks) == len(cfg.deck_names) == len(cfg.deck_styles)
         assert cfg.deck_names == tuple(f"d{i}" for i in range(n))
         assert all(d == tuple(sorted(d)) and len(d) == 40 for d in cfg.decks)
@@ -355,7 +358,9 @@ def test_malformed_decks_are_rejected(tmp_path, raw):
 @pytest.mark.parametrize("override", [{"base_hp": 0}, {"max_rounds": 0}, {"zone_capacity": 0},
                                       {"max_hand_size": -1}, {"opening_hand": (-3, 5)}, {"opening_hand": (4,)},
                                       {"coin_cap": -2}, {"coin_cap": 2.5}, {"max_copies": 0}, {"deck_size": 0},
-                                      {"base_hp": True}, {"max_rounds": 10.0}])
+                                      {"base_hp": True}, {"max_rounds": 10.0}, {"mulligan": 1},
+                                      {"mulligan": None}, {"max_effect_events": 0}, {"max_effect_events": 2.0},
+                                      {"max_effect_events": True}])
 def test_invalid_game_config_is_rejected(override):
     with pytest.raises(ValueError):
         load_ruleset(**override)
@@ -369,7 +374,7 @@ def test_game_config_needs_decks_and_matching_names():
 
 
 def test_config_overrides_reach_the_engine():
-    cfg = load_ruleset(base_hp=7, coin_cap=2, max_rounds=3)
+    cfg = load_ruleset(base_hp=7, coin_cap=2, max_rounds=3, mulligan=False)
     g = Game(cfg)
     g.reset(0)
     assert g.base_hp == [7, 7]

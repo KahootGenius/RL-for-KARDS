@@ -1,31 +1,40 @@
 """Illegal actions are never offered: the engine's legal set equals an independent reference derived
 from SPEC.md, every offered action steps exactly as the reference says, and every other index is
-rejected cleanly. States come from seeded, biased self-play over every deck pair."""
+rejected cleanly. States come from seeded, biased self-play over every deck pair of the frozen Stage 2
+content (`VANILLA_CONFIG`, mulligan off), which the Stage 2 reference model covers."""
 from __future__ import annotations
 
+import functools
 from collections import Counter
+from itertools import product
 
 import numpy as np
 import pytest
 
+import conftest
 from cardgame.actions import ActionKind, ActionSpace
 from cardgame.cards import FAST, RANGED, load_ruleset
 from cardgame.engine import Game, IllegalActionError
-from conftest import (CONFIG, DECK_PAIRS, NUM_ACTIONS, PROFILE_PAIRS, SPACE, H, Z, check_invariants,
-                      iter_states, new_game, snapshot, state_key)
+from conftest import (FIXTURES, NUM_ACTIONS, PROFILE_PAIRS, SPACE, H, Z, check_invariants, snapshot, state_key)
+from conftest import VANILLA_CONFIG as CONFIG
 from reference_rules import (KIND_NAMES, action_index, attackers, can_attack, can_move, comparable,
                              decode_index, defense_allows, extract_state, legal_from_state, num_actions,
                              reaches, reference_step, targets)
 
 OUT_OF_RANGE = (-1, -2, -NUM_ACTIONS, NUM_ACTIONS, NUM_ACTIONS + 1, 10**9)
 NOT_INTS = (True, False, 0.0, 1.0, np.float32(0), np.float64(3.0), "0", None, (0,))
+DECK_PAIRS = tuple(product(range(CONFIG.n_decks), repeat=2))
+new_game = functools.partial(conftest.new_game, config=CONFIG)
+iter_states = functools.partial(conftest.iter_states, config=CONFIG)
 
 
 # ---------------------------------------------------------------- action space layout (SPEC §3)
 def test_action_space_matches_spec_layout():
-    assert NUM_ACTIONS == num_actions(H, Z) == 126
+    assert NUM_ACTIONS == num_actions(H, Z) == 154
     assert (SPACE.END_TURN, SPACE.PLAY0, SPACE.MOVE0, SPACE.ATTACK0) == (0, 1, 1 + H, 1 + H + Z)
     assert (SPACE.n_attackers, SPACE.n_targets, SPACE.BASE_TARGET) == (2 * Z, 2 * Z + 1, 2 * Z)
+    assert (SPACE.CHOOSE0, SPACE.MULLIGAN0, SPACE.CONFIRM) == (126, 143, 153)
+    assert (SPACE.n_choose, SPACE.ENEMY_BASE_CHOICE, SPACE.OWN_BASE_CHOICE) == (3 * Z + 2, 2 * Z, 3 * Z + 1)
     assert len(SPACE) == NUM_ACTIONS and new_game(0).action_space.n == NUM_ACTIONS == new_game(0).num_actions
     assert [k.name for k in ActionKind] == list(KIND_NAMES)
     seen = set()
@@ -39,9 +48,16 @@ def test_action_space_matches_spec_layout():
             assert SPACE.attack(a, b) == idx
         seen.add(action)
     assert len(seen) == NUM_ACTIONS
-    assert SPACE.encode(ActionKind.ATTACK, 2 * Z - 1, 2 * Z) == NUM_ACTIONS - 1
+    assert SPACE.encode(ActionKind.ATTACK, 2 * Z - 1, 2 * Z) == SPACE.CHOOSE0 - 1
+    assert SPACE.encode(ActionKind.CONFIRM) == NUM_ACTIONS - 1
     assert SPACE.describe(SPACE.attack(0, Z)) == "ATTACK(back0->front0)"
     assert SPACE.describe(SPACE.attack(Z + 1, 2 * Z)) == "ATTACK(front1->base)"
+    assert SPACE.describe(SPACE.choose(0)) == "CHOOSE(enemy_back0)"
+    assert SPACE.describe(SPACE.choose(Z + 1)) == "CHOOSE(front1)"
+    assert SPACE.describe(SPACE.choose(2 * Z)) == "CHOOSE(enemy_base)"
+    assert SPACE.describe(SPACE.choose(2 * Z + 3)) == "CHOOSE(own_back2)"
+    assert SPACE.describe(SPACE.choose(3 * Z + 1)) == "CHOOSE(own_base)"
+    assert SPACE.describe(SPACE.mulligan(4)) == "MULLIGAN(4)" and SPACE.describe(SPACE.CONFIRM) == "CONFIRM"
 
 
 @pytest.mark.parametrize("hand, zone", [(7, 3), (1, 1), (10, 5), (12, 6)])
@@ -213,8 +229,10 @@ def test_fuzz_every_deck_pair_and_profile_pair():
                    lambda s: PROFILE_PAIRS[s % len(PROFILE_PAIRS)])
     assert cov.states >= 3500 and cov.transitions >= 30_000, (cov.states, cov.transitions)
     front_to_front = {SPACE.attack(Z + a, Z + t) for a in range(Z) for t in range(Z)}
-    missing = [SPACE.describe(a) for a in range(NUM_ACTIONS) if not cov.offered[a] and a not in front_to_front]
+    missing = [SPACE.describe(a) for a in range(SPACE.CHOOSE0)  # Stage 2 blocks (mulligan off, no effects)
+               if not cov.offered[a] and a not in front_to_front]
     assert not missing, f"fuzz never offered {missing}"
+    assert not any(cov.offered[a] for a in range(SPACE.CHOOSE0, NUM_ACTIONS))
     # A frontline attacker means we hold the frontline, so there is never an enemy frontline target.
     assert not any(cov.offered[a] for a in front_to_front)
     unreached = [f for f in REQUIRED_FLAGS if not cov.flags[f]]
@@ -223,13 +241,14 @@ def test_fuzz_every_deck_pair_and_profile_pair():
 
 def test_fuzz_small_zones_and_hands():
     # The engine follows config sizes (and the reference with it): tiny zones fill up constantly.
-    cfg = load_ruleset(zone_capacity=2, max_hand_size=4)
+    cfg = load_ruleset(f"{FIXTURES}/stage2_cards.json", f"{FIXTURES}/stage2_decks.json", zone_capacity=2,
+                       max_hand_size=4, mulligan=False)
     space = ActionSpace(4, 2)
     cov = run_fuzz(range(500, 516), lambda s: DECK_PAIRS[s % len(DECK_PAIRS)],
                    lambda s: PROFILE_PAIRS[(5 * s) % len(PROFILE_PAIRS)], config=cfg)
     assert cov.states >= 800
     front_to_front = {space.attack(2 + a, 2 + t) for a in range(2) for t in range(2)}
-    assert all(cov.offered[a] for a in range(space.n) if a not in front_to_front)
+    assert all(cov.offered[a] for a in range(space.CHOOSE0) if a not in front_to_front)
     for flag in ("hand_full", "burned", "back_full_blocks_play", "front_full_blocks_move"):
         assert cov.flags[flag], flag
 

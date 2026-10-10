@@ -1,12 +1,12 @@
 {
   "decks": [
     {"name": "Blitz", "style": "aggro fast troops",
-     "cards": {"militia": 3, "footman": 2, "shieldbearer": 1, "swordsman": 3, "knight": 2, "scout": 3, "raider": 3, "outrider": 3, "guard_rider": 3, "lancer": 3, "wolf_rider": 3, "cataphract": 3, "paladin": 3, "slinger": 3, "archer": 2}},
+     "cards": {"militia": 1, "footman": 1, "swordsman": 2, "knight": 1, "scout": 3, "raider": 3, "outrider": 2, "guard_rider": 1, "lancer": 3, "wolf_rider": 3, "cataphract": 2, "paladin": 1, "archer": 1, "hussar": 3, "skirmisher": 2, "night_raider": 2, "infiltrator": 2, "sapper": 2, "war_drummer": 1, "dragoon": 2, "armor_piercing_shot": 2}},
     {"name": "Bulwark", "style": "defensive",
-     "cards": {"militia": 3, "footman": 2, "shieldbearer": 3, "pikeman": 3, "knight": 3, "warden": 3, "ogre": 2, "juggernaut": 3, "bastion": 2, "scout": 1, "outrider": 1, "guard_rider": 2, "paladin": 2, "slinger": 2, "archer": 3, "shield_archer": 1, "crossbowman": 2, "siege_tower": 2}},
+     "cards": {"militia": 1, "footman": 1, "shieldbearer": 3, "pikeman": 3, "knight": 2, "warden": 2, "ogre": 1, "juggernaut": 2, "bastion": 2, "outrider": 1, "archer": 2, "shield_archer": 2, "crossbowman": 2, "siege_tower": 2, "halberdier": 3, "field_medic": 2, "chaplain": 2, "quartermaster": 1, "field_marshal": 1, "finishing_blow": 2, "counter_battery": 3}},
     {"name": "Volley", "style": "ranged-heavy",
-     "cards": {"militia": 3, "footman": 3, "shieldbearer": 2, "swordsman": 1, "pikeman": 3, "knight": 3, "warden": 2, "ogre": 2, "outrider": 2, "guard_rider": 1, "slinger": 3, "archer": 3, "shield_archer": 3, "crossbowman": 3, "longbowman": 2, "siege_tower": 3, "ballista": 1}},
+     "cards": {"militia": 3, "footman": 3, "shieldbearer": 2, "swordsman": 2, "pikeman": 3, "knight": 2, "warden": 1, "ogre": 1, "outrider": 1, "slinger": 2, "archer": 2, "shield_archer": 2, "crossbowman": 3, "longbowman": 2, "siege_tower": 2, "ballista": 1, "musketeers": 1, "sniper": 1, "battery_commander": 1, "grenadier": 2, "forward_observer": 1, "shrapnel": 1, "volley_fire": 1}},
     {"name": "Legion", "style": "balanced",
-     "cards": {"militia": 2, "footman": 3, "shieldbearer": 2, "swordsman": 3, "pikeman": 2, "knight": 2, "warden": 1, "ogre": 1, "bastion": 2, "scout": 1, "raider": 2, "outrider": 2, "guard_rider": 1, "lancer": 2, "wolf_rider": 2, "cataphract": 1, "paladin": 1, "slinger": 2, "archer": 3, "crossbowman": 2, "longbowman": 2, "ballista": 1}}
+     "cards": {"militia": 1, "footman": 2, "shieldbearer": 1, "swordsman": 2, "pikeman": 1, "knight": 1, "bastion": 1, "raider": 2, "outrider": 1, "lancer": 2, "wolf_rider": 2, "slinger": 1, "archer": 3, "crossbowman": 1, "longbowman": 1, "ballista": 1, "berserker": 2, "partisan": 2, "bugler": 1, "sapper": 1, "grenadier": 1, "dragoon": 2, "skirmisher": 1, "musketeers": 1, "scouting_report": 2, "rout": 2, "armor_piercing_shot": 1, "fall_back": 1}}
   ]
 }

@@ -1,20 +1,22 @@
 #!/usr/bin/env python
-"""Engine and agent throughput (games per second) and per-call costs (SPEC §11).
+"""Engine and agent throughput (games per second) and per-call costs (SPEC 11).
 
     python bench.py                                   # 1000 games per row, min(8, cpu_count) workers
     python bench.py --games 300 --workers 4
-    python bench.py --checkpoint runs/ppo/best.pt     # also PPO-vs-greedy throughput
-    python bench.py --compare --out                   # side by side with Stage 1 (results/stage1/bench.txt);
-                                                      # writes results/bench_stage2.txt
+    python bench.py --checkpoint runs/s3/best.pt      # also PPO-vs-lookahead throughput
+    python bench.py --compare --out                   # side by side with Stage 2 (results/stage2/bench.txt);
+                                                      # writes results/bench_stage3.txt
 
-Rows: raw engine loop (legal_actions + step with random actions, no observations), full agent
-loops through evaluation.play_game (observe + act every step), and the multiprocess evaluator
-(timed after a warm-up match, so pool start-up and model loading are excluded). Decks are sampled
-per deal seed. Per-call costs are measured on positions sampled from random games; legal_actions /
-legal_mask drop the engine's cache before every call. The report starts with the machine line (Python,
-CPU, CPU count, 1-minute load average); a load average above half the CPU count is flagged, since other
-processes then distort the timings. --compare prints both machine lines and leaves the ratio of rows
-measured with different worker counts blank ("-").
+Rows: raw engine loop (legal_actions + step with random actions, no observations; the mulligan phase
+included), full agent loops through evaluation.play_game (observe + act every step; the lookahead
+agent determinizes and simulates every legal action), and the multiprocess evaluator (timed after a
+warm-up match, so pool start-up and model loading are excluded). Decks are the fixed decks sampled per
+deal seed (as in Stage 2, so rows compare). Per-call costs are measured on positions sampled from random
+games (all phases); legal_actions / legal_mask drop the engine's cache before every call. The report
+starts with the machine line (Python, CPU, CPU count, 1-minute load average); a load average above half
+the CPU count is flagged, since other processes then distort the timings. --compare prints both machine
+lines and leaves the ratio of rows measured with different worker counts blank ("-"). Compare reports
+measured on the same machine.
 """
 from __future__ import annotations
 
@@ -27,15 +29,15 @@ import sys
 import time
 from typing import Callable, Dict, List, Optional, Sequence, Tuple
 
-from cardgame.agents import make_agent
+from cardgame.agents import LookaheadAgent, make_agent
 from cardgame.cards import GameConfig, load_ruleset
 from cardgame.engine import Game
 from cardgame.evaluation import Evaluator, default_workers, play_game
 from cardgame.features import ObservationEncoder
 
 Row = Tuple[str, int, float, int, int]  # name, games, seconds, total steps, total rounds
-DEFAULT_OUT = os.path.join("results", "bench_stage2.txt")
-DEFAULT_COMPARE = os.path.join("results", "stage1", "bench.txt")  # the Stage 1 report
+DEFAULT_OUT = os.path.join("results", "bench_stage3.txt")
+DEFAULT_COMPARE = os.path.join("results", "stage2", "bench.txt")  # the Stage 2 report
 ROW_RE = re.compile(r"^(.*?)\s+(\d+)\s+([\d.]+)\s+([\d.]+)\s+(\d+)\s+([\d.]+)\s+([\d.]+)\s*$")
 CALL_RE = re.compile(r"^(.*?\S)\s+([\d.]+)\s*$")
 MACHINE_RE = re.compile(r"^python (\S+) on (\S+) \((\d+) CPUs(?:; load average ([\d.]+))?\)")
@@ -116,6 +118,8 @@ def bench_calls(config: GameConfig, n_states: int, seed: int) -> List[Tuple[str,
     states = sample_states(config, n_states, seed)
     pairs = [(g.observe(g.current_player()), g.legal_mask()) for g in states]
     enc = ObservationEncoder(config)
+    det_rng = random.Random(seed)
+    look = LookaheadAgent(config, seed=seed)
 
     def legal_uncached(g: Game) -> list:
         g._legal = g._mask = None  # drop the cache only (invalidate() also validates)
@@ -131,6 +135,8 @@ def bench_calls(config: GameConfig, n_states: int, seed: int) -> List[Tuple[str,
         ("Game.legal_actions() (uncached)", per_call_us(legal_uncached, states)),
         ("Game.legal_mask() (uncached)", per_call_us(mask_uncached, states)),
         ("Game.clone()", per_call_us(lambda g: g.clone(), states)),
+        ("Game.determinize(player, rng)", per_call_us(lambda g: g.determinize(g.current_player(), det_rng), states)),
+        ("LookaheadAgent.act_game(game, player)", per_call_us(lambda g: look.act_game(g, g.current_player()), states)),
     ]
 
 
@@ -179,7 +185,7 @@ def parse_machine(header: str) -> Optional[dict]:
 
 # ---------------------------------------------------------------------- comparison with an older output
 def canonical(name: str) -> str:
-    """Row key shared by Stage 1 and Stage 2 outputs (worker counts and the encode signature differ)."""
+    """Row key shared by the stages' outputs (worker counts and the Stage 1 encode signature differ)."""
     name = re.sub(r"\d+ workers", "K workers", name.strip())
     return name.replace("encode(obs, mask)", "encode(obs)")
 
@@ -262,11 +268,11 @@ def main(argv: Optional[List[str]] = None) -> int:
     ap.add_argument("--workers", type=int, default=default_workers(),
                     help=f"processes for the multiprocess rows (default {default_workers()}; 1 = skip them)")
     ap.add_argument("--seed", type=int, default=0, help="first deal seed (default 0)")
-    ap.add_argument("--checkpoint", default=None, metavar="PATH", help="PPO checkpoint for PPO-vs-greedy rows")
+    ap.add_argument("--checkpoint", default=None, metavar="PATH", help="PPO checkpoint for PPO-vs-lookahead rows")
     ap.add_argument("--states", type=int, default=2000, help="sampled positions for per-call costs (default 2000)")
     ap.add_argument("--compare", nargs="?", const=DEFAULT_COMPARE, default=None, metavar="PATH",
                     help=f"an earlier bench.py output to compare against (default when given without a value: "
-                         f"Stage 1's {DEFAULT_COMPARE})")
+                         f"Stage 2's {DEFAULT_COMPARE})")
     ap.add_argument("--out", nargs="?", const=DEFAULT_OUT, default=None, metavar="PATH",
                     help=f"also write the report to PATH (default when given without a value: {DEFAULT_OUT})")
     args = ap.parse_args(argv)
@@ -305,14 +311,17 @@ def main(argv: Optional[List[str]] = None) -> int:
         bench_engine(config, n, s),
         bench_agents(config, "random vs random (play_game)", "random", "random", n, s),
         bench_agents(config, "greedy vs greedy (play_game)", "greedy", "greedy", n, s),
+        bench_agents(config, "lookahead vs random (play_game)", "lookahead", "random", n, s),
+        bench_agents(config, "lookahead vs lookahead (play_game)", "lookahead", "lookahead", n, s),
     ]
     if w > 1:
         rows.append(bench_pool(config, f"random vs random, {w} workers", "random", "random", n, s, w))
+        rows.append(bench_pool(config, f"lookahead vs lookahead, {w} workers", "lookahead", "lookahead", n, s, w))
     if args.checkpoint:
         ckpt = args.checkpoint
-        rows.append(bench_agents(config, "ppo vs greedy (play_game)", ckpt, "greedy", n, s))
+        rows.append(bench_agents(config, "ppo vs lookahead (play_game)", ckpt, "lookahead", n, s))
         if w > 1:
-            rows.append(bench_pool(config, f"ppo vs greedy, {w} workers", ckpt, "greedy", n, s, w))
+            rows.append(bench_pool(config, f"ppo vs lookahead, {w} workers", ckpt, "lookahead", n, s, w))
     emit(format_rows(rows))
     emit()
     calls = bench_calls(config, args.states, s)

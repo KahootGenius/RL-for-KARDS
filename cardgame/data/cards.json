@@ -26,6 +26,73 @@
     {"id": "crossbowman",   "name": "Crossbowman",   "type": "unit", "nature": "ranged", "cost": 4, "attack": 3, "health": 2, "move_cost": 1, "traits": {"armor": 1}, "effects": []},
     {"id": "longbowman",    "name": "Longbowman",    "type": "unit", "nature": "ranged", "cost": 5, "attack": 4, "health": 3, "move_cost": 1, "traits": {}, "effects": []},
     {"id": "siege_tower",   "name": "Siege Tower",   "type": "unit", "nature": "ranged", "cost": 6, "attack": 2, "health": 5, "move_cost": 3, "traits": {"defense": true, "armor": 2}, "effects": []},
-    {"id": "ballista",      "name": "Ballista",      "type": "unit", "nature": "ranged", "cost": 7, "attack": 5, "health": 5, "move_cost": 3, "traits": {"armor": 1}, "effects": []}
+    {"id": "ballista",      "name": "Ballista",      "type": "unit", "nature": "ranged", "cost": 7, "attack": 5, "health": 5, "move_cost": 3, "traits": {"armor": 1}, "effects": []},
+
+    {"id": "recruit", "name": "Recruit", "type": "unit", "nature": "troop", "cost": 1, "attack": 1, "health": 1, "move_cost": 1, "traits": {}, "token": true, "tags": ["infantry"], "effects": []},
+    {"id": "fire_mission", "name": "Fire Mission", "type": "operation", "cost": 1, "token": true, "tags": ["artillery"], "effects": [
+       {"trigger": "on_play", "action": "damage", "amount": 2, "target": {"select": "chosen", "side": "enemy", "kind": "unit"}}]},
+
+    {"id": "bugler", "name": "Bugler", "type": "unit", "nature": "troop", "cost": 2, "attack": 2, "health": 2, "move_cost": 1, "traits": {}, "tags": ["infantry"], "effects": [
+       {"trigger": "on_death", "action": "summon", "card": "recruit", "target": "controller"}]},
+    {"id": "field_medic", "name": "Field Medic", "type": "unit", "nature": "troop", "cost": 2, "attack": 2, "health": 3, "move_cost": 1, "traits": {}, "tags": ["infantry", "medic"], "effects": [
+       {"trigger": "on_deploy", "action": "heal", "amount": 3, "target": {"select": "chosen", "side": "friendly", "kind": "unit_or_base"}}]},
+    {"id": "partisan", "name": "Partisan", "type": "unit", "nature": "troop", "cost": 2, "attack": 2, "health": 3, "move_cost": 1, "traits": {"ambush": true}, "tags": ["infantry", "partisan"], "effects": [
+       {"trigger": "on_kill", "action": "add_trait", "trait": "smokescreen", "target": "self"}]},
+    {"id": "war_drummer", "name": "War Drummer", "type": "unit", "nature": "troop", "cost": 2, "attack": 2, "health": 3, "move_cost": 1, "traits": {}, "tags": ["infantry", "officer"], "effects": [
+       {"trigger": "static", "action": "buff", "atk": 1, "target": {"select": "adjacent", "side": "friendly"}}]},
+    {"id": "grenadier", "name": "Grenadier", "type": "unit", "nature": "troop", "cost": 3, "attack": 2, "health": 3, "move_cost": 1, "traits": {}, "tags": ["infantry"], "effects": [
+       {"trigger": "on_deploy", "action": "damage", "amount": 1, "target": {"select": "chosen", "side": "enemy", "kind": "unit"}},
+       {"trigger": "on_deploy", "action": "damage", "amount": 1, "target": {"select": "adjacent", "of": "prev", "side": "enemy"}}]},
+    {"id": "sapper", "name": "Sapper", "type": "unit", "nature": "troop", "cost": 3, "attack": 3, "health": 3, "move_cost": 1, "traits": {}, "tags": ["infantry", "engineer"], "effects": [
+       {"trigger": "on_deploy", "action": "remove_trait", "trait": ["defense", "armor"], "target": {"select": "chosen", "side": "enemy", "kind": "unit"}}]},
+    {"id": "halberdier", "name": "Halberdier", "type": "unit", "nature": "troop", "cost": 3, "attack": 2, "health": 5, "move_cost": 1, "traits": {"defense": true}, "tags": ["infantry"], "effects": [
+       {"trigger": "on_attacked", "action": "damage", "amount": 1, "target": "event"}]},
+    {"id": "forward_observer", "name": "Forward Observer", "type": "unit", "nature": "troop", "cost": 3, "attack": 2, "health": 2, "move_cost": 1, "traits": {}, "tags": ["infantry", "officer"], "effects": [
+       {"trigger": "on_deploy", "action": "add_card", "card": "fire_mission", "target": "controller"},
+       {"trigger": "on_play", "scope": "friendly", "event_filter": {"tag": "artillery"}, "action": "damage", "amount": 1, "target": "enemy_base"}]},
+    {"id": "quartermaster", "name": "Quartermaster", "type": "unit", "nature": "troop", "cost": 3, "attack": 2, "health": 3, "move_cost": 1, "traits": {}, "tags": ["officer", "supply"], "effects": [
+       {"trigger": "on_deploy", "action": "increase_max_coins", "amount": 1, "target": "controller"}]},
+    {"id": "berserker", "name": "Berserker", "type": "unit", "nature": "troop", "cost": 4, "attack": 3, "health": 4, "move_cost": 1, "traits": {"fury": true}, "tags": ["infantry", "elite"], "effects": [
+       {"trigger": "on_damaged", "action": "buff", "atk": 1, "target": "self"}]},
+    {"id": "chaplain", "name": "Chaplain", "type": "unit", "nature": "troop", "cost": 4, "attack": 3, "health": 5, "move_cost": 1, "traits": {}, "tags": ["infantry", "medic"], "effects": [
+       {"trigger": "start_of_turn", "action": "heal", "amount": 1, "target": {"select": "all", "side": "friendly"}}]},
+    {"id": "field_marshal", "name": "Field Marshal", "type": "unit", "nature": "troop", "cost": 7, "attack": 5, "health": 6, "move_cost": 2, "traits": {}, "tags": ["officer", "elite"], "effects": [
+       {"trigger": "on_deploy", "action": "buff", "atk": 1, "hp": 1, "target": {"select": "all", "side": "friendly", "filter": {"other": true}}}]},
+
+    {"id": "hussar", "name": "Hussar", "type": "unit", "nature": "fast", "cost": 2, "attack": 2, "health": 2, "move_cost": 1, "traits": {"blitz": true}, "tags": ["cavalry"], "effects": [
+       {"trigger": "on_attack", "action": "buff", "atk": 1, "duration": "turn", "target": "self"},
+       {"trigger": "on_kill", "action": "gain_coins", "amount": 1, "target": "controller"}]},
+    {"id": "skirmisher", "name": "Skirmisher", "type": "unit", "nature": "fast", "cost": 2, "attack": 2, "health": 2, "move_cost": 1, "traits": {}, "tags": ["cavalry", "scout"], "effects": [
+       {"trigger": "on_move", "action": "damage", "amount": 1, "target": {"select": "random", "side": "enemy"}}]},
+    {"id": "night_raider", "name": "Night Raider", "type": "unit", "nature": "fast", "cost": 2, "attack": 3, "health": 1, "move_cost": 1, "traits": {"blitz": true, "immune": true}, "tags": ["cavalry", "elite"], "effects": [
+       {"trigger": "end_of_turn", "action": "destroy", "target": "self"}]},
+    {"id": "infiltrator", "name": "Infiltrator", "type": "unit", "nature": "fast", "cost": 3, "attack": 3, "health": 3, "move_cost": 1, "traits": {"smokescreen": true}, "tags": ["cavalry", "scout"], "effects": [
+       {"trigger": "on_deploy", "action": "discard", "amount": 1, "target": "opponent"}]},
+    {"id": "dragoon", "name": "Dragoon", "type": "unit", "nature": "fast", "cost": 5, "attack": 4, "health": 3, "move_cost": 1, "traits": {"shock": true}, "tags": ["cavalry"], "effects": []},
+
+    {"id": "musketeers", "name": "Musketeers", "type": "unit", "nature": "ranged", "cost": 4, "attack": 2, "health": 3, "move_cost": 1, "traits": {}, "tags": ["artillery"], "effects": [
+       {"trigger": "on_deploy", "action": "pin", "target": {"select": "chosen", "side": "enemy", "kind": "unit"}}]},
+    {"id": "sniper", "name": "Sniper", "type": "unit", "nature": "ranged", "cost": 5, "attack": 1, "health": 3, "move_cost": 1, "traits": {}, "tags": ["artillery", "scout"], "effects": [
+       {"trigger": "end_of_turn", "action": "damage", "amount": 1, "target": {"select": "random", "side": "enemy"}}]},
+    {"id": "battery_commander", "name": "Battery Commander", "type": "unit", "nature": "ranged", "cost": 6, "attack": 2, "health": 5, "move_cost": 1, "traits": {}, "tags": ["artillery", "officer"], "effects": [
+       {"trigger": "static", "action": "buff", "atk": 1, "target": {"select": "all", "side": "friendly", "filter": {"nature": "ranged", "other": true}}}]},
+
+    {"id": "fall_back", "name": "Fall Back", "type": "operation", "cost": 1, "tags": ["tactic"], "effects": [
+       {"trigger": "on_play", "action": "retreat", "target": {"select": "chosen", "side": "friendly", "kind": "unit", "zone": "frontline"}},
+       {"trigger": "on_play", "action": "heal", "amount": "full", "target": {"select": "prev"}}]},
+    {"id": "shrapnel", "name": "Shrapnel", "type": "operation", "cost": 2, "tags": ["artillery"], "effects": [
+       {"trigger": "on_play", "action": "damage", "amount": 1, "target": {"select": "random", "side": "enemy"}, "repeat": 2}]},
+    {"id": "armor_piercing_shot", "name": "Armor-Piercing Shot", "type": "operation", "cost": 2, "tags": ["artillery"], "effects": [
+       {"trigger": "on_play", "action": "damage", "amount": 4, "target": {"select": "chosen", "side": "enemy", "kind": "unit"}, "target_condition": {"trait": "armor"}, "else": {"action": "damage", "amount": 2}}]},
+    {"id": "volley_fire", "name": "Volley Fire", "type": "operation", "cost": 4, "tags": ["artillery"], "effects": [
+       {"trigger": "on_play", "action": "damage", "amount": {"count": "units", "side": "friendly", "filter": {"nature": "ranged"}}, "target": {"select": "chosen", "side": "enemy", "kind": "unit"}}]},
+    {"id": "scouting_report", "name": "Scouting Report", "type": "operation", "cost": 1, "tags": ["intel"], "effects": [
+       {"trigger": "on_play", "condition": {"type": "frontline", "owner": "friendly"}, "action": "draw", "amount": 2, "target": "controller", "else": {"action": "draw", "amount": 1}}]},
+    {"id": "finishing_blow", "name": "Finishing Blow", "type": "operation", "cost": 2, "tags": ["tactic"], "effects": [
+       {"trigger": "on_play", "action": "destroy", "target": {"select": "chosen", "side": "enemy", "kind": "unit", "filter": {"damaged": true, "not_tag": "elite"}}}]},
+    {"id": "rout", "name": "Rout", "type": "operation", "cost": 4, "tags": ["tactic"], "effects": [
+       {"trigger": "on_play", "action": "return_to_hand", "target": {"select": "chosen", "side": "enemy", "kind": "unit", "filter": {"max_cost": 5, "not_tag": "elite"}}}]},
+    {"id": "counter_battery", "name": "Counter-Battery Fire", "type": "operation", "cost": 3, "tags": ["artillery"], "effects": [
+       {"trigger": "on_play", "action": "damage", "amount": 2, "target": {"select": "all", "side": "any", "filter": {"nature": "ranged"}}}]}
   ]
 }
