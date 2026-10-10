@@ -1,0 +1,4 @@
+Windows-11-10.0.26200-SP0 | python 3.14.7 | torch 2.11.0+cu128 | GPU NVIDIA GeForce RTX 5080
+s2_a started on the CPU and was resumed on CUDA
+s2_a takes approximately 1 to 1.5 hours to finish
+s2_b and s2_c data are not necessarily recorded
