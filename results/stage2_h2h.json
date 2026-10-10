@@ -1,0 +1,2264 @@
+{
+  "agent": "feedback/s2_b/best.pt",
+  "agent_kwargs": {},
+  "games_requested": 2000,
+  "games_per_opponent": 2016,
+  "decks": "all",
+  "start_seed": 0,
+  "workers": 8,
+  "deck_names": [
+    "Blitz",
+    "Bulwark",
+    "Volley",
+    "Legion"
+  ],
+  "deck_styles": [
+    "aggro fast troops",
+    "defensive",
+    "ranged-heavy",
+    "balanced"
+  ],
+  "target": null,
+  "skipped": [],
+  "results": [
+    {
+      "opponent": "feedback/s2_a/best.pt",
+      "label": "best.pt",
+      "agent_a": "feedback/s2_b/best.pt",
+      "agent_b": "feedback/s2_a/best.pt",
+      "kwargs_a": {},
+      "kwargs_b": {},
+      "start_seed": 0,
+      "n_deals": 1008,
+      "decks": "all",
+      "deck_names": [
+        "Blitz",
+        "Bulwark",
+        "Volley",
+        "Legion"
+      ],
+      "games": 2016,
+      "wins": 1057,
+      "draws": 0,
+      "losses": 959,
+      "win_rate": 0.5243055555555556,
+      "draw_rate": 0.0,
+      "loss_rate": 0.4756944444444444,
+      "score": 0.5243055555555556,
+      "win_rate_ci95": [
+        0.5024798903177463,
+        0.5460387691899253
+      ],
+      "by_seat": {
+        "0": {
+          "games": 1008,
+          "wins": 536,
+          "draws": 0,
+          "losses": 472,
+          "win_rate": 0.5317460317460317,
+          "draw_rate": 0.0,
+          "loss_rate": 0.46825396825396826,
+          "score": 0.5317460317460317,
+          "win_rate_ci95": [
+            0.5008795480641561,
+            0.5623714676380391
+          ]
+        },
+        "1": {
+          "games": 1008,
+          "wins": 521,
+          "draws": 0,
+          "losses": 487,
+          "win_rate": 0.5168650793650794,
+          "draw_rate": 0.0,
+          "loss_rate": 0.48313492063492064,
+          "score": 0.5168650793650794,
+          "win_rate_ci95": [
+            0.48601063160174524,
+            0.5475914704900462
+          ]
+        }
+      },
+      "by_turn_order": {
+        "first": {
+          "games": 1008,
+          "wins": 752,
+          "draws": 0,
+          "losses": 256,
+          "win_rate": 0.746031746031746,
+          "draw_rate": 0.0,
+          "loss_rate": 0.25396825396825395,
+          "score": 0.746031746031746,
+          "win_rate_ci95": [
+            0.7182613358214565,
+            0.7719340358705578
+          ]
+        },
+        "second": {
+          "games": 1008,
+          "wins": 305,
+          "draws": 0,
+          "losses": 703,
+          "win_rate": 0.30257936507936506,
+          "draw_rate": 0.0,
+          "loss_rate": 0.6974206349206349,
+          "score": 0.30257936507936506,
+          "win_rate_ci95": [
+            0.2750142285155219,
+            0.33164351758645055
+          ]
+        }
+      },
+      "matchups": [
+        {
+          "decks": [
+            0,
+            0
+          ],
+          "names": [
+            "Blitz",
+            "Blitz"
+          ],
+          "games": 126,
+          "wins": 70,
+          "draws": 0,
+          "losses": 56,
+          "win_rate": 0.5555555555555556,
+          "draw_rate": 0.0,
+          "loss_rate": 0.4444444444444444,
+          "score": 0.5555555555555556,
+          "win_rate_ci95": [
+            0.4684260632059607,
+            0.6393977407404616
+          ]
+        },
+        {
+          "decks": [
+            0,
+            1
+          ],
+          "names": [
+            "Blitz",
+            "Bulwark"
+          ],
+          "games": 252,
+          "wins": 129,
+          "draws": 0,
+          "losses": 123,
+          "win_rate": 0.5119047619047619,
+          "draw_rate": 0.0,
+          "loss_rate": 0.4880952380952381,
+          "score": 0.5119047619047619,
+          "win_rate_ci95": [
+            0.45047527065250875,
+            0.5729767532206239
+          ]
+        },
+        {
+          "decks": [
+            0,
+            2
+          ],
+          "names": [
+            "Blitz",
+            "Volley"
+          ],
+          "games": 252,
+          "wins": 136,
+          "draws": 0,
+          "losses": 116,
+          "win_rate": 0.5396825396825397,
+          "draw_rate": 0.0,
+          "loss_rate": 0.4603174603174603,
+          "score": 0.5396825396825397,
+          "win_rate_ci95": [
+            0.4780092132711127,
+            0.6001641996393294
+          ]
+        },
+        {
+          "decks": [
+            0,
+            3
+          ],
+          "names": [
+            "Blitz",
+            "Legion"
+          ],
+          "games": 252,
+          "wins": 133,
+          "draws": 0,
+          "losses": 119,
+          "win_rate": 0.5277777777777778,
+          "draw_rate": 0.0,
+          "loss_rate": 0.4722222222222222,
+          "score": 0.5277777777777778,
+          "win_rate_ci95": [
+            0.466186045811322,
+            0.5885353432259874
+          ]
+        },
+        {
+          "decks": [
+            1,
+            1
+          ],
+          "names": [
+            "Bulwark",
+            "Bulwark"
+          ],
+          "games": 126,
+          "wins": 67,
+          "draws": 0,
+          "losses": 59,
+          "win_rate": 0.5317460317460317,
+          "draw_rate": 0.0,
+          "loss_rate": 0.46825396825396826,
+          "score": 0.5317460317460317,
+          "win_rate_ci95": [
+            0.44497262128249504,
+            0.6166409809726036
+          ]
+        },
+        {
+          "decks": [
+            1,
+            2
+          ],
+          "names": [
+            "Bulwark",
+            "Volley"
+          ],
+          "games": 252,
+          "wins": 132,
+          "draws": 0,
+          "losses": 120,
+          "win_rate": 0.5238095238095238,
+          "draw_rate": 0.0,
+          "loss_rate": 0.47619047619047616,
+          "score": 0.5238095238095238,
+          "win_rate_ci95": [
+            0.4622526347008184,
+            0.5846514130454471
+          ]
+        },
+        {
+          "decks": [
+            1,
+            3
+          ],
+          "names": [
+            "Bulwark",
+            "Legion"
+          ],
+          "games": 252,
+          "wins": 125,
+          "draws": 0,
+          "losses": 127,
+          "win_rate": 0.49603174603174605,
+          "draw_rate": 0.0,
+          "loss_rate": 0.503968253968254,
+          "score": 0.49603174603174605,
+          "win_rate_ci95": [
+            0.434825380895952,
+            0.5573572778130038
+          ]
+        },
+        {
+          "decks": [
+            2,
+            2
+          ],
+          "names": [
+            "Volley",
+            "Volley"
+          ],
+          "games": 126,
+          "wins": 64,
+          "draws": 0,
+          "losses": 62,
+          "win_rate": 0.5079365079365079,
+          "draw_rate": 0.0,
+          "loss_rate": 0.49206349206349204,
+          "score": 0.5079365079365079,
+          "win_rate_ci95": [
+            0.42170965005414923,
+            0.5936937505096254
+          ]
+        },
+        {
+          "decks": [
+            2,
+            3
+          ],
+          "names": [
+            "Volley",
+            "Legion"
+          ],
+          "games": 252,
+          "wins": 134,
+          "draws": 0,
+          "losses": 118,
+          "win_rate": 0.5317460317460317,
+          "draw_rate": 0.0,
+          "loss_rate": 0.46825396825396826,
+          "score": 0.5317460317460317,
+          "win_rate_ci95": [
+            0.4701232755860387,
+            0.592415454742315
+          ]
+        },
+        {
+          "decks": [
+            3,
+            3
+          ],
+          "names": [
+            "Legion",
+            "Legion"
+          ],
+          "games": 126,
+          "wins": 67,
+          "draws": 0,
+          "losses": 59,
+          "win_rate": 0.5317460317460317,
+          "draw_rate": 0.0,
+          "loss_rate": 0.46825396825396826,
+          "score": 0.5317460317460317,
+          "win_rate_ci95": [
+            0.44497262128249504,
+            0.6166409809726036
+          ]
+        }
+      ],
+      "min_cell": {
+        "decks": [
+          1,
+          3
+        ],
+        "name": "Bulwark-Legion",
+        "games": 252,
+        "wins": 125,
+        "draws": 0,
+        "losses": 127,
+        "win_rate": 0.49603174603174605,
+        "draw_rate": 0.0,
+        "loss_rate": 0.503968253968254,
+        "score": 0.49603174603174605,
+        "win_rate_ci95": [
+          0.434825380895952,
+          0.5573572778130038
+        ]
+      },
+      "min_ordered_cell": {
+        "decks": [
+          0,
+          3
+        ],
+        "name": "P[Blitz][Legion]",
+        "diagnostic": true,
+        "games": 126,
+        "wins": 48,
+        "draws": 0,
+        "losses": 78,
+        "win_rate": 0.38095238095238093,
+        "draw_rate": 0.0,
+        "loss_rate": 0.6190476190476191,
+        "score": 0.38095238095238093,
+        "win_rate_ci95": [
+          0.3008709848998441,
+          0.4680780066435364
+        ]
+      },
+      "deck_matrix": {
+        "rows": "A's deck",
+        "cols": "B's deck",
+        "names": [
+          "Blitz",
+          "Bulwark",
+          "Volley",
+          "Legion"
+        ],
+        "win_rate": [
+          [
+            0.5555555555555556,
+            0.5476190476190477,
+            0.4523809523809524,
+            0.38095238095238093
+          ],
+          [
+            0.47619047619047616,
+            0.5317460317460317,
+            0.38095238095238093,
+            0.42063492063492064
+          ],
+          [
+            0.626984126984127,
+            0.6666666666666666,
+            0.5079365079365079,
+            0.626984126984127
+          ],
+          [
+            0.6746031746031746,
+            0.5714285714285714,
+            0.4365079365079365,
+            0.5317460317460317
+          ]
+        ],
+        "draw_rate": [
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        ],
+        "games": [
+          [
+            126,
+            126,
+            126,
+            126
+          ],
+          [
+            126,
+            126,
+            126,
+            126
+          ],
+          [
+            126,
+            126,
+            126,
+            126
+          ],
+          [
+            126,
+            126,
+            126,
+            126
+          ]
+        ]
+      },
+      "deals": {
+        "a_won_both": 107,
+        "split": 843,
+        "b_won_both": 58,
+        "with_draw": 0
+      },
+      "avg_rounds": 9.126488095238095,
+      "avg_steps": 67.3735119047619,
+      "elapsed_s": 15.975153708997823,
+      "games_per_s": 126.19596886035038
+    },
+    {
+      "opponent": "feedback/s2_c/best.pt",
+      "label": "best.pt",
+      "agent_a": "feedback/s2_b/best.pt",
+      "agent_b": "feedback/s2_c/best.pt",
+      "kwargs_a": {},
+      "kwargs_b": {},
+      "start_seed": 0,
+      "n_deals": 1008,
+      "decks": "all",
+      "deck_names": [
+        "Blitz",
+        "Bulwark",
+        "Volley",
+        "Legion"
+      ],
+      "games": 2016,
+      "wins": 1054,
+      "draws": 0,
+      "losses": 962,
+      "win_rate": 0.5228174603174603,
+      "draw_rate": 0.0,
+      "loss_rate": 0.4771825396825397,
+      "score": 0.5228174603174603,
+      "win_rate_ci95": [
+        0.5009915695443038,
+        0.5445565597894287
+      ],
+      "by_seat": {
+        "0": {
+          "games": 1008,
+          "wins": 535,
+          "draws": 0,
+          "losses": 473,
+          "win_rate": 0.5307539682539683,
+          "draw_rate": 0.0,
+          "loss_rate": 0.46924603174603174,
+          "score": 0.5307539682539683,
+          "win_rate_ci95": [
+            0.49988743759723825,
+            0.5613869838642636
+          ]
+        },
+        "1": {
+          "games": 1008,
+          "wins": 519,
+          "draws": 0,
+          "losses": 489,
+          "win_rate": 0.5148809523809523,
+          "draw_rate": 0.0,
+          "loss_rate": 0.4851190476190476,
+          "score": 0.5148809523809523,
+          "win_rate_ci95": [
+            0.48403016908193564,
+            0.5456187445284683
+          ]
+        }
+      },
+      "by_turn_order": {
+        "first": {
+          "games": 1008,
+          "wins": 745,
+          "draws": 0,
+          "losses": 263,
+          "win_rate": 0.7390873015873016,
+          "draw_rate": 0.0,
+          "loss_rate": 0.26091269841269843,
+          "score": 0.7390873015873016,
+          "win_rate_ci95": [
+            0.7111069058038657,
+            0.7652523062032932
+          ]
+        },
+        "second": {
+          "games": 1008,
+          "wins": 309,
+          "draws": 0,
+          "losses": 699,
+          "win_rate": 0.30654761904761907,
+          "draw_rate": 0.0,
+          "loss_rate": 0.6934523809523809,
+          "score": 0.30654761904761907,
+          "win_rate_ci95": [
+            0.27886401390378374,
+            0.3357001091609632
+          ]
+        }
+      },
+      "matchups": [
+        {
+          "decks": [
+            0,
+            0
+          ],
+          "names": [
+            "Blitz",
+            "Blitz"
+          ],
+          "games": 126,
+          "wins": 68,
+          "draws": 0,
+          "losses": 58,
+          "win_rate": 0.5396825396825397,
+          "draw_rate": 0.0,
+          "loss_rate": 0.4603174603174603,
+          "score": 0.5396825396825397,
+          "win_rate_ci95": [
+            0.45276918332225385,
+            0.6242478194966192
+          ]
+        },
+        {
+          "decks": [
+            0,
+            1
+          ],
+          "names": [
+            "Blitz",
+            "Bulwark"
+          ],
+          "games": 252,
+          "wins": 135,
+          "draws": 0,
+          "losses": 117,
+          "win_rate": 0.5357142857142857,
+          "draw_rate": 0.0,
+          "loss_rate": 0.4642857142857143,
+          "score": 0.5357142857142857,
+          "win_rate_ci95": [
+            0.47406432937848353,
+            0.5962917422409143
+          ]
+        },
+        {
+          "decks": [
+            0,
+            2
+          ],
+          "names": [
+            "Blitz",
+            "Volley"
+          ],
+          "games": 252,
+          "wins": 137,
+          "draws": 0,
+          "losses": 115,
+          "win_rate": 0.5436507936507936,
+          "draw_rate": 0.0,
+          "loss_rate": 0.45634920634920634,
+          "score": 0.5436507936507936,
+          "win_rate_ci95": [
+            0.4819579340810704,
+            0.6040328201204157
+          ]
+        },
+        {
+          "decks": [
+            0,
+            3
+          ],
+          "names": [
+            "Blitz",
+            "Legion"
+          ],
+          "games": 252,
+          "wins": 129,
+          "draws": 0,
+          "losses": 123,
+          "win_rate": 0.5119047619047619,
+          "draw_rate": 0.0,
+          "loss_rate": 0.4880952380952381,
+          "score": 0.5119047619047619,
+          "win_rate_ci95": [
+            0.45047527065250875,
+            0.5729767532206239
+          ]
+        },
+        {
+          "decks": [
+            1,
+            1
+          ],
+          "names": [
+            "Bulwark",
+            "Bulwark"
+          ],
+          "games": 126,
+          "wins": 65,
+          "draws": 0,
+          "losses": 61,
+          "win_rate": 0.5158730158730159,
+          "draw_rate": 0.0,
+          "loss_rate": 0.48412698412698413,
+          "score": 0.5158730158730159,
+          "win_rate_ci95": [
+            0.4294429012176768,
+            0.6013638999098725
+          ]
+        },
+        {
+          "decks": [
+            1,
+            2
+          ],
+          "names": [
+            "Bulwark",
+            "Volley"
+          ],
+          "games": 252,
+          "wins": 130,
+          "draws": 0,
+          "losses": 122,
+          "win_rate": 0.5158730158730159,
+          "draw_rate": 0.0,
+          "loss_rate": 0.48412698412698413,
+          "score": 0.5158730158730159,
+          "win_rate_ci95": [
+            0.4543972506735337,
+            0.5768721144906432
+          ]
+        },
+        {
+          "decks": [
+            1,
+            3
+          ],
+          "names": [
+            "Bulwark",
+            "Legion"
+          ],
+          "games": 252,
+          "wins": 127,
+          "draws": 0,
+          "losses": 125,
+          "win_rate": 0.503968253968254,
+          "draw_rate": 0.0,
+          "loss_rate": 0.49603174603174605,
+          "score": 0.503968253968254,
+          "win_rate_ci95": [
+            0.44264272218699624,
+            0.565174619104048
+          ]
+        },
+        {
+          "decks": [
+            2,
+            2
+          ],
+          "names": [
+            "Volley",
+            "Volley"
+          ],
+          "games": 126,
+          "wins": 66,
+          "draws": 0,
+          "losses": 60,
+          "win_rate": 0.5238095238095238,
+          "draw_rate": 0.0,
+          "loss_rate": 0.47619047619047616,
+          "score": 0.5238095238095238,
+          "win_rate_ci95": [
+            0.4371972120523062,
+            0.6090129896390177
+          ]
+        },
+        {
+          "decks": [
+            2,
+            3
+          ],
+          "names": [
+            "Volley",
+            "Legion"
+          ],
+          "games": 252,
+          "wins": 134,
+          "draws": 0,
+          "losses": 118,
+          "win_rate": 0.5317460317460317,
+          "draw_rate": 0.0,
+          "loss_rate": 0.46825396825396826,
+          "score": 0.5317460317460317,
+          "win_rate_ci95": [
+            0.4701232755860387,
+            0.592415454742315
+          ]
+        },
+        {
+          "decks": [
+            3,
+            3
+          ],
+          "names": [
+            "Legion",
+            "Legion"
+          ],
+          "games": 126,
+          "wins": 63,
+          "draws": 0,
+          "losses": 63,
+          "win_rate": 0.5,
+          "draw_rate": 0.0,
+          "loss_rate": 0.5,
+          "score": 0.5,
+          "win_rate_ci95": [
+            0.4139974353838817,
+            0.5860025646161183
+          ]
+        }
+      ],
+      "min_cell": {
+        "decks": [
+          3,
+          3
+        ],
+        "name": "Legion-Legion",
+        "games": 126,
+        "wins": 63,
+        "draws": 0,
+        "losses": 63,
+        "win_rate": 0.5,
+        "draw_rate": 0.0,
+        "loss_rate": 0.5,
+        "score": 0.5,
+        "win_rate_ci95": [
+          0.4139974353838817,
+          0.5860025646161183
+        ]
+      },
+      "min_ordered_cell": {
+        "decks": [
+          1,
+          2
+        ],
+        "name": "P[Bulwark][Volley]",
+        "diagnostic": true,
+        "games": 126,
+        "wins": 48,
+        "draws": 0,
+        "losses": 78,
+        "win_rate": 0.38095238095238093,
+        "draw_rate": 0.0,
+        "loss_rate": 0.6190476190476191,
+        "score": 0.38095238095238093,
+        "win_rate_ci95": [
+          0.3008709848998441,
+          0.4680780066435364
+        ]
+      },
+      "deck_matrix": {
+        "rows": "A's deck",
+        "cols": "B's deck",
+        "names": [
+          "Blitz",
+          "Bulwark",
+          "Volley",
+          "Legion"
+        ],
+        "win_rate": [
+          [
+            0.5396825396825397,
+            0.5476190476190477,
+            0.48412698412698413,
+            0.3888888888888889
+          ],
+          [
+            0.5238095238095238,
+            0.5158730158730159,
+            0.38095238095238093,
+            0.42857142857142855
+          ],
+          [
+            0.6031746031746031,
+            0.6507936507936508,
+            0.5238095238095238,
+            0.6507936507936508
+          ],
+          [
+            0.6349206349206349,
+            0.5793650793650794,
+            0.4126984126984127,
+            0.5
+          ]
+        ],
+        "draw_rate": [
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        ],
+        "games": [
+          [
+            126,
+            126,
+            126,
+            126
+          ],
+          [
+            126,
+            126,
+            126,
+            126
+          ],
+          [
+            126,
+            126,
+            126,
+            126
+          ],
+          [
+            126,
+            126,
+            126,
+            126
+          ]
+        ]
+      },
+      "deals": {
+        "a_won_both": 108,
+        "split": 838,
+        "b_won_both": 62,
+        "with_draw": 0
+      },
+      "avg_rounds": 9.044642857142858,
+      "avg_steps": 66.37996031746032,
+      "elapsed_s": 15.940801707998617,
+      "games_per_s": 126.46791779540371
+    },
+    {
+      "opponent": "models/stage2_mac.pt",
+      "label": "stage2_mac.pt",
+      "agent_a": "feedback/s2_b/best.pt",
+      "agent_b": "models/stage2_mac.pt",
+      "kwargs_a": {},
+      "kwargs_b": {},
+      "start_seed": 0,
+      "n_deals": 1008,
+      "decks": "all",
+      "deck_names": [
+        "Blitz",
+        "Bulwark",
+        "Volley",
+        "Legion"
+      ],
+      "games": 2016,
+      "wins": 1392,
+      "draws": 0,
+      "losses": 624,
+      "win_rate": 0.6904761904761905,
+      "draw_rate": 0.0,
+      "loss_rate": 0.30952380952380953,
+      "score": 0.6904761904761905,
+      "win_rate_ci95": [
+        0.6699497341204873,
+        0.7102781281437148
+      ],
+      "by_seat": {
+        "0": {
+          "games": 1008,
+          "wins": 706,
+          "draws": 0,
+          "losses": 302,
+          "win_rate": 0.7003968253968254,
+          "draw_rate": 0.0,
+          "loss_rate": 0.2996031746031746,
+          "score": 0.7003968253968254,
+          "win_rate_ci95": [
+            0.6714005587759748,
+            0.7278714778441333
+          ]
+        },
+        "1": {
+          "games": 1008,
+          "wins": 686,
+          "draws": 0,
+          "losses": 322,
+          "win_rate": 0.6805555555555556,
+          "draw_rate": 0.0,
+          "loss_rate": 0.3194444444444444,
+          "score": 0.6805555555555556,
+          "win_rate_ci95": [
+            0.6511328457740375,
+            0.7086073060321987
+          ]
+        }
+      },
+      "by_turn_order": {
+        "first": {
+          "games": 1008,
+          "wins": 883,
+          "draws": 0,
+          "losses": 125,
+          "win_rate": 0.8759920634920635,
+          "draw_rate": 0.0,
+          "loss_rate": 0.12400793650793651,
+          "score": 0.8759920634920635,
+          "win_rate_ci95": [
+            0.8542065243711708,
+            0.8949226928517057
+          ]
+        },
+        "second": {
+          "games": 1008,
+          "wins": 509,
+          "draws": 0,
+          "losses": 499,
+          "win_rate": 0.5049603174603174,
+          "draw_rate": 0.0,
+          "loss_rate": 0.49503968253968256,
+          "score": 0.5049603174603174,
+          "win_rate_ci95": [
+            0.4741351126369129,
+            0.5357478585665552
+          ]
+        }
+      },
+      "matchups": [
+        {
+          "decks": [
+            0,
+            0
+          ],
+          "names": [
+            "Blitz",
+            "Blitz"
+          ],
+          "games": 126,
+          "wins": 97,
+          "draws": 0,
+          "losses": 29,
+          "win_rate": 0.7698412698412699,
+          "draw_rate": 0.0,
+          "loss_rate": 0.23015873015873015,
+          "score": 0.7698412698412699,
+          "win_rate_ci95": [
+            0.6890161339806872,
+            0.8346994851876502
+          ]
+        },
+        {
+          "decks": [
+            0,
+            1
+          ],
+          "names": [
+            "Blitz",
+            "Bulwark"
+          ],
+          "games": 252,
+          "wins": 172,
+          "draws": 0,
+          "losses": 80,
+          "win_rate": 0.6825396825396826,
+          "draw_rate": 0.0,
+          "loss_rate": 0.31746031746031744,
+          "score": 0.6825396825396826,
+          "win_rate_ci95": [
+            0.6226941148705978,
+            0.7369035845174361
+          ]
+        },
+        {
+          "decks": [
+            0,
+            2
+          ],
+          "names": [
+            "Blitz",
+            "Volley"
+          ],
+          "games": 252,
+          "wins": 174,
+          "draws": 0,
+          "losses": 78,
+          "win_rate": 0.6904761904761905,
+          "draw_rate": 0.0,
+          "loss_rate": 0.30952380952380953,
+          "score": 0.6904761904761905,
+          "win_rate_ci95": [
+            0.6308961141042743,
+            0.744336267865848
+          ]
+        },
+        {
+          "decks": [
+            0,
+            3
+          ],
+          "names": [
+            "Blitz",
+            "Legion"
+          ],
+          "games": 252,
+          "wins": 181,
+          "draws": 0,
+          "losses": 71,
+          "win_rate": 0.7182539682539683,
+          "draw_rate": 0.0,
+          "loss_rate": 0.28174603174603174,
+          "score": 0.7182539682539683,
+          "win_rate_ci95": [
+            0.6597568502907601,
+            0.7701969207166716
+          ]
+        },
+        {
+          "decks": [
+            1,
+            1
+          ],
+          "names": [
+            "Bulwark",
+            "Bulwark"
+          ],
+          "games": 126,
+          "wins": 86,
+          "draws": 0,
+          "losses": 40,
+          "win_rate": 0.6825396825396826,
+          "draw_rate": 0.0,
+          "loss_rate": 0.31746031746031744,
+          "score": 0.6825396825396826,
+          "win_rate_ci95": [
+            0.5968908173836057,
+            0.7573873955832108
+          ]
+        },
+        {
+          "decks": [
+            1,
+            2
+          ],
+          "names": [
+            "Bulwark",
+            "Volley"
+          ],
+          "games": 252,
+          "wins": 166,
+          "draws": 0,
+          "losses": 86,
+          "win_rate": 0.6587301587301587,
+          "draw_rate": 0.0,
+          "loss_rate": 0.3412698412698413,
+          "score": 0.6587301587301587,
+          "win_rate_ci95": [
+            0.598199402861068,
+            0.7144942487807004
+          ]
+        },
+        {
+          "decks": [
+            1,
+            3
+          ],
+          "names": [
+            "Bulwark",
+            "Legion"
+          ],
+          "games": 252,
+          "wins": 173,
+          "draws": 0,
+          "losses": 79,
+          "win_rate": 0.6865079365079365,
+          "draw_rate": 0.0,
+          "loss_rate": 0.3134920634920635,
+          "score": 0.6865079365079365,
+          "win_rate_ci95": [
+            0.6267927435070484,
+            0.7406222971720298
+          ]
+        },
+        {
+          "decks": [
+            2,
+            2
+          ],
+          "names": [
+            "Volley",
+            "Volley"
+          ],
+          "games": 126,
+          "wins": 76,
+          "draws": 0,
+          "losses": 50,
+          "win_rate": 0.6031746031746031,
+          "draw_rate": 0.0,
+          "loss_rate": 0.3968253968253968,
+          "score": 0.6031746031746031,
+          "win_rate_ci95": [
+            0.5159151060445828,
+            0.6843291012844872
+          ]
+        },
+        {
+          "decks": [
+            2,
+            3
+          ],
+          "names": [
+            "Volley",
+            "Legion"
+          ],
+          "games": 252,
+          "wins": 178,
+          "draws": 0,
+          "losses": 74,
+          "win_rate": 0.7063492063492064,
+          "draw_rate": 0.0,
+          "loss_rate": 0.29365079365079366,
+          "score": 0.7063492063492064,
+          "win_rate_ci95": [
+            0.6473580252987666,
+            0.7591437218355327
+          ]
+        },
+        {
+          "decks": [
+            3,
+            3
+          ],
+          "names": [
+            "Legion",
+            "Legion"
+          ],
+          "games": 126,
+          "wins": 89,
+          "draws": 0,
+          "losses": 37,
+          "win_rate": 0.7063492063492064,
+          "draw_rate": 0.0,
+          "loss_rate": 0.29365079365079366,
+          "score": 0.7063492063492064,
+          "win_rate_ci95": [
+            0.6216697176328737,
+            0.7788186970252667
+          ]
+        }
+      ],
+      "min_cell": {
+        "decks": [
+          2,
+          2
+        ],
+        "name": "Volley-Volley",
+        "games": 126,
+        "wins": 76,
+        "draws": 0,
+        "losses": 50,
+        "win_rate": 0.6031746031746031,
+        "draw_rate": 0.0,
+        "loss_rate": 0.3968253968253968,
+        "score": 0.6031746031746031,
+        "win_rate_ci95": [
+          0.5159151060445828,
+          0.6843291012844872
+        ]
+      },
+      "min_ordered_cell": {
+        "decks": [
+          1,
+          2
+        ],
+        "name": "P[Bulwark][Volley]",
+        "diagnostic": true,
+        "games": 126,
+        "wins": 70,
+        "draws": 0,
+        "losses": 56,
+        "win_rate": 0.5555555555555556,
+        "draw_rate": 0.0,
+        "loss_rate": 0.4444444444444444,
+        "score": 0.5555555555555556,
+        "win_rate_ci95": [
+          0.4684260632059607,
+          0.6393977407404616
+        ]
+      },
+      "deck_matrix": {
+        "rows": "A's deck",
+        "cols": "B's deck",
+        "names": [
+          "Blitz",
+          "Bulwark",
+          "Volley",
+          "Legion"
+        ],
+        "win_rate": [
+          [
+            0.7698412698412699,
+            0.6666666666666666,
+            0.626984126984127,
+            0.5952380952380952
+          ],
+          [
+            0.6984126984126984,
+            0.6825396825396826,
+            0.5555555555555556,
+            0.6746031746031746
+          ],
+          [
+            0.753968253968254,
+            0.7619047619047619,
+            0.6031746031746031,
+            0.8253968253968254
+          ],
+          [
+            0.8412698412698413,
+            0.6984126984126984,
+            0.5873015873015873,
+            0.7063492063492064
+          ]
+        ],
+        "draw_rate": [
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        ],
+        "games": [
+          [
+            126,
+            126,
+            126,
+            126
+          ],
+          [
+            126,
+            126,
+            126,
+            126
+          ],
+          [
+            126,
+            126,
+            126,
+            126
+          ],
+          [
+            126,
+            126,
+            126,
+            126
+          ]
+        ]
+      },
+      "deals": {
+        "a_won_both": 387,
+        "split": 618,
+        "b_won_both": 3,
+        "with_draw": 0
+      },
+      "avg_rounds": 9.113095238095237,
+      "avg_steps": 67.39930555555556,
+      "elapsed_s": 15.857653082995967,
+      "games_per_s": 127.13104451513954
+    },
+    {
+      "opponent": "random",
+      "label": "random",
+      "agent_a": "feedback/s2_b/best.pt",
+      "agent_b": "random",
+      "kwargs_a": {},
+      "kwargs_b": {},
+      "start_seed": 0,
+      "n_deals": 1008,
+      "decks": "all",
+      "deck_names": [
+        "Blitz",
+        "Bulwark",
+        "Volley",
+        "Legion"
+      ],
+      "games": 2016,
+      "wins": 2015,
+      "draws": 0,
+      "losses": 1,
+      "win_rate": 0.9995039682539683,
+      "draw_rate": 0.0,
+      "loss_rate": 0.000496031746031746,
+      "score": 0.9995039682539683,
+      "win_rate_ci95": [
+        0.9971955288691029,
+        0.9999124328497814
+      ],
+      "by_seat": {
+        "0": {
+          "games": 1008,
+          "wins": 1007,
+          "draws": 0,
+          "losses": 1,
+          "win_rate": 0.9990079365079365,
+          "draw_rate": 0.0,
+          "loss_rate": 0.000992063492063492,
+          "score": 0.9990079365079365,
+          "win_rate_ci95": [
+            0.994402048106029,
+            0.9998248549628546
+          ]
+        },
+        "1": {
+          "games": 1008,
+          "wins": 1008,
+          "draws": 0,
+          "losses": 0,
+          "win_rate": 1.0,
+          "draw_rate": 0.0,
+          "loss_rate": 0.0,
+          "score": 1.0,
+          "win_rate_ci95": [
+            0.9962034973095771,
+            1.0
+          ]
+        }
+      },
+      "by_turn_order": {
+        "first": {
+          "games": 1008,
+          "wins": 1008,
+          "draws": 0,
+          "losses": 0,
+          "win_rate": 1.0,
+          "draw_rate": 0.0,
+          "loss_rate": 0.0,
+          "score": 1.0,
+          "win_rate_ci95": [
+            0.9962034973095771,
+            1.0
+          ]
+        },
+        "second": {
+          "games": 1008,
+          "wins": 1007,
+          "draws": 0,
+          "losses": 1,
+          "win_rate": 0.9990079365079365,
+          "draw_rate": 0.0,
+          "loss_rate": 0.000992063492063492,
+          "score": 0.9990079365079365,
+          "win_rate_ci95": [
+            0.994402048106029,
+            0.9998248549628546
+          ]
+        }
+      },
+      "matchups": [
+        {
+          "decks": [
+            0,
+            0
+          ],
+          "names": [
+            "Blitz",
+            "Blitz"
+          ],
+          "games": 126,
+          "wins": 126,
+          "draws": 0,
+          "losses": 0,
+          "win_rate": 1.0,
+          "draw_rate": 0.0,
+          "loss_rate": 0.0,
+          "score": 1.0,
+          "win_rate_ci95": [
+            0.9704142355178014,
+            1.0
+          ]
+        },
+        {
+          "decks": [
+            0,
+            1
+          ],
+          "names": [
+            "Blitz",
+            "Bulwark"
+          ],
+          "games": 252,
+          "wins": 252,
+          "draws": 0,
+          "losses": 0,
+          "win_rate": 1.0,
+          "draw_rate": 0.0,
+          "loss_rate": 0.0,
+          "score": 1.0,
+          "win_rate_ci95": [
+            0.984985002671571,
+            1.0
+          ]
+        },
+        {
+          "decks": [
+            0,
+            2
+          ],
+          "names": [
+            "Blitz",
+            "Volley"
+          ],
+          "games": 252,
+          "wins": 252,
+          "draws": 0,
+          "losses": 0,
+          "win_rate": 1.0,
+          "draw_rate": 0.0,
+          "loss_rate": 0.0,
+          "score": 1.0,
+          "win_rate_ci95": [
+            0.984985002671571,
+            1.0
+          ]
+        },
+        {
+          "decks": [
+            0,
+            3
+          ],
+          "names": [
+            "Blitz",
+            "Legion"
+          ],
+          "games": 252,
+          "wins": 252,
+          "draws": 0,
+          "losses": 0,
+          "win_rate": 1.0,
+          "draw_rate": 0.0,
+          "loss_rate": 0.0,
+          "score": 1.0,
+          "win_rate_ci95": [
+            0.984985002671571,
+            1.0
+          ]
+        },
+        {
+          "decks": [
+            1,
+            1
+          ],
+          "names": [
+            "Bulwark",
+            "Bulwark"
+          ],
+          "games": 126,
+          "wins": 126,
+          "draws": 0,
+          "losses": 0,
+          "win_rate": 1.0,
+          "draw_rate": 0.0,
+          "loss_rate": 0.0,
+          "score": 1.0,
+          "win_rate_ci95": [
+            0.9704142355178014,
+            1.0
+          ]
+        },
+        {
+          "decks": [
+            1,
+            2
+          ],
+          "names": [
+            "Bulwark",
+            "Volley"
+          ],
+          "games": 252,
+          "wins": 252,
+          "draws": 0,
+          "losses": 0,
+          "win_rate": 1.0,
+          "draw_rate": 0.0,
+          "loss_rate": 0.0,
+          "score": 1.0,
+          "win_rate_ci95": [
+            0.984985002671571,
+            1.0
+          ]
+        },
+        {
+          "decks": [
+            1,
+            3
+          ],
+          "names": [
+            "Bulwark",
+            "Legion"
+          ],
+          "games": 252,
+          "wins": 251,
+          "draws": 0,
+          "losses": 1,
+          "win_rate": 0.996031746031746,
+          "draw_rate": 0.0,
+          "loss_rate": 0.003968253968253968,
+          "score": 0.996031746031746,
+          "win_rate_ci95": [
+            0.9778684994350533,
+            0.9992991619454734
+          ]
+        },
+        {
+          "decks": [
+            2,
+            2
+          ],
+          "names": [
+            "Volley",
+            "Volley"
+          ],
+          "games": 126,
+          "wins": 126,
+          "draws": 0,
+          "losses": 0,
+          "win_rate": 1.0,
+          "draw_rate": 0.0,
+          "loss_rate": 0.0,
+          "score": 1.0,
+          "win_rate_ci95": [
+            0.9704142355178014,
+            1.0
+          ]
+        },
+        {
+          "decks": [
+            2,
+            3
+          ],
+          "names": [
+            "Volley",
+            "Legion"
+          ],
+          "games": 252,
+          "wins": 252,
+          "draws": 0,
+          "losses": 0,
+          "win_rate": 1.0,
+          "draw_rate": 0.0,
+          "loss_rate": 0.0,
+          "score": 1.0,
+          "win_rate_ci95": [
+            0.984985002671571,
+            1.0
+          ]
+        },
+        {
+          "decks": [
+            3,
+            3
+          ],
+          "names": [
+            "Legion",
+            "Legion"
+          ],
+          "games": 126,
+          "wins": 126,
+          "draws": 0,
+          "losses": 0,
+          "win_rate": 1.0,
+          "draw_rate": 0.0,
+          "loss_rate": 0.0,
+          "score": 1.0,
+          "win_rate_ci95": [
+            0.9704142355178014,
+            1.0
+          ]
+        }
+      ],
+      "min_cell": {
+        "decks": [
+          1,
+          3
+        ],
+        "name": "Bulwark-Legion",
+        "games": 252,
+        "wins": 251,
+        "draws": 0,
+        "losses": 1,
+        "win_rate": 0.996031746031746,
+        "draw_rate": 0.0,
+        "loss_rate": 0.003968253968253968,
+        "score": 0.996031746031746,
+        "win_rate_ci95": [
+          0.9778684994350533,
+          0.9992991619454734
+        ]
+      },
+      "min_ordered_cell": {
+        "decks": [
+          1,
+          3
+        ],
+        "name": "P[Bulwark][Legion]",
+        "diagnostic": true,
+        "games": 126,
+        "wins": 125,
+        "draws": 0,
+        "losses": 1,
+        "win_rate": 0.9920634920634921,
+        "draw_rate": 0.0,
+        "loss_rate": 0.007936507936507936,
+        "score": 0.9920634920634921,
+        "win_rate_ci95": [
+          0.9564132000148392,
+          0.9985976349391875
+        ]
+      },
+      "deck_matrix": {
+        "rows": "A's deck",
+        "cols": "B's deck",
+        "names": [
+          "Blitz",
+          "Bulwark",
+          "Volley",
+          "Legion"
+        ],
+        "win_rate": [
+          [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            1.0,
+            1.0,
+            1.0,
+            0.9920634920634921
+          ],
+          [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        ],
+        "draw_rate": [
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        ],
+        "games": [
+          [
+            126,
+            126,
+            126,
+            126
+          ],
+          [
+            126,
+            126,
+            126,
+            126
+          ],
+          [
+            126,
+            126,
+            126,
+            126
+          ],
+          [
+            126,
+            126,
+            126,
+            126
+          ]
+        ]
+      },
+      "deals": {
+        "a_won_both": 1007,
+        "split": 1,
+        "b_won_both": 0,
+        "with_draw": 0
+      },
+      "avg_rounds": 7.909226190476191,
+      "avg_steps": 50.81597222222222,
+      "elapsed_s": 8.677753208001377,
+      "games_per_s": 232.31819938611926
+    }
+  ],
+  "reference": {
+    "agent_a": "greedy",
+    "agent_b": "greedy",
+    "kwargs_a": {},
+    "kwargs_b": {},
+    "start_seed": 0,
+    "n_deals": 1008,
+    "decks": "all",
+    "deck_names": [
+      "Blitz",
+      "Bulwark",
+      "Volley",
+      "Legion"
+    ],
+    "games": 2016,
+    "wins": 1008,
+    "draws": 0,
+    "losses": 1008,
+    "win_rate": 0.5,
+    "draw_rate": 0.0,
+    "loss_rate": 0.5,
+    "score": 0.5,
+    "win_rate_ci95": [
+      0.4781948311376099,
+      0.5218051688623901
+    ],
+    "by_seat": {
+      "0": {
+        "games": 1008,
+        "wins": 504,
+        "draws": 0,
+        "losses": 504,
+        "win_rate": 0.5,
+        "draw_rate": 0.0,
+        "loss_rate": 0.5,
+        "score": 0.5,
+        "win_rate_ci95": [
+          0.46919211671331984,
+          0.5308078832866802
+        ]
+      },
+      "1": {
+        "games": 1008,
+        "wins": 504,
+        "draws": 0,
+        "losses": 504,
+        "win_rate": 0.5,
+        "draw_rate": 0.0,
+        "loss_rate": 0.5,
+        "score": 0.5,
+        "win_rate_ci95": [
+          0.46919211671331984,
+          0.5308078832866802
+        ]
+      }
+    },
+    "by_turn_order": {
+      "first": {
+        "games": 1008,
+        "wins": 701,
+        "draws": 0,
+        "losses": 307,
+        "win_rate": 0.6954365079365079,
+        "draw_rate": 0.0,
+        "loss_rate": 0.30456349206349204,
+        "score": 0.6954365079365079,
+        "win_rate_ci95": [
+          0.6663278770670124,
+          0.7230611883496277
+        ]
+      },
+      "second": {
+        "games": 1008,
+        "wins": 307,
+        "draws": 0,
+        "losses": 701,
+        "win_rate": 0.30456349206349204,
+        "draw_rate": 0.0,
+        "loss_rate": 0.6954365079365079,
+        "score": 0.30456349206349204,
+        "win_rate_ci95": [
+          0.2769388116503721,
+          0.3336721229329875
+        ]
+      }
+    },
+    "matchups": [
+      {
+        "decks": [
+          0,
+          0
+        ],
+        "names": [
+          "Blitz",
+          "Blitz"
+        ],
+        "games": 126,
+        "wins": 63,
+        "draws": 0,
+        "losses": 63,
+        "win_rate": 0.5,
+        "draw_rate": 0.0,
+        "loss_rate": 0.5,
+        "score": 0.5,
+        "win_rate_ci95": [
+          0.4139974353838817,
+          0.5860025646161183
+        ]
+      },
+      {
+        "decks": [
+          0,
+          1
+        ],
+        "names": [
+          "Blitz",
+          "Bulwark"
+        ],
+        "games": 252,
+        "wins": 126,
+        "draws": 0,
+        "losses": 126,
+        "win_rate": 0.5,
+        "draw_rate": 0.0,
+        "loss_rate": 0.5,
+        "score": 0.5,
+        "win_rate_ci95": [
+          0.4387321509100632,
+          0.5612678490899369
+        ]
+      },
+      {
+        "decks": [
+          0,
+          2
+        ],
+        "names": [
+          "Blitz",
+          "Volley"
+        ],
+        "games": 252,
+        "wins": 126,
+        "draws": 0,
+        "losses": 126,
+        "win_rate": 0.5,
+        "draw_rate": 0.0,
+        "loss_rate": 0.5,
+        "score": 0.5,
+        "win_rate_ci95": [
+          0.4387321509100632,
+          0.5612678490899369
+        ]
+      },
+      {
+        "decks": [
+          0,
+          3
+        ],
+        "names": [
+          "Blitz",
+          "Legion"
+        ],
+        "games": 252,
+        "wins": 126,
+        "draws": 0,
+        "losses": 126,
+        "win_rate": 0.5,
+        "draw_rate": 0.0,
+        "loss_rate": 0.5,
+        "score": 0.5,
+        "win_rate_ci95": [
+          0.4387321509100632,
+          0.5612678490899369
+        ]
+      },
+      {
+        "decks": [
+          1,
+          1
+        ],
+        "names": [
+          "Bulwark",
+          "Bulwark"
+        ],
+        "games": 126,
+        "wins": 63,
+        "draws": 0,
+        "losses": 63,
+        "win_rate": 0.5,
+        "draw_rate": 0.0,
+        "loss_rate": 0.5,
+        "score": 0.5,
+        "win_rate_ci95": [
+          0.4139974353838817,
+          0.5860025646161183
+        ]
+      },
+      {
+        "decks": [
+          1,
+          2
+        ],
+        "names": [
+          "Bulwark",
+          "Volley"
+        ],
+        "games": 252,
+        "wins": 126,
+        "draws": 0,
+        "losses": 126,
+        "win_rate": 0.5,
+        "draw_rate": 0.0,
+        "loss_rate": 0.5,
+        "score": 0.5,
+        "win_rate_ci95": [
+          0.4387321509100632,
+          0.5612678490899369
+        ]
+      },
+      {
+        "decks": [
+          1,
+          3
+        ],
+        "names": [
+          "Bulwark",
+          "Legion"
+        ],
+        "games": 252,
+        "wins": 126,
+        "draws": 0,
+        "losses": 126,
+        "win_rate": 0.5,
+        "draw_rate": 0.0,
+        "loss_rate": 0.5,
+        "score": 0.5,
+        "win_rate_ci95": [
+          0.4387321509100632,
+          0.5612678490899369
+        ]
+      },
+      {
+        "decks": [
+          2,
+          2
+        ],
+        "names": [
+          "Volley",
+          "Volley"
+        ],
+        "games": 126,
+        "wins": 63,
+        "draws": 0,
+        "losses": 63,
+        "win_rate": 0.5,
+        "draw_rate": 0.0,
+        "loss_rate": 0.5,
+        "score": 0.5,
+        "win_rate_ci95": [
+          0.4139974353838817,
+          0.5860025646161183
+        ]
+      },
+      {
+        "decks": [
+          2,
+          3
+        ],
+        "names": [
+          "Volley",
+          "Legion"
+        ],
+        "games": 252,
+        "wins": 126,
+        "draws": 0,
+        "losses": 126,
+        "win_rate": 0.5,
+        "draw_rate": 0.0,
+        "loss_rate": 0.5,
+        "score": 0.5,
+        "win_rate_ci95": [
+          0.4387321509100632,
+          0.5612678490899369
+        ]
+      },
+      {
+        "decks": [
+          3,
+          3
+        ],
+        "names": [
+          "Legion",
+          "Legion"
+        ],
+        "games": 126,
+        "wins": 63,
+        "draws": 0,
+        "losses": 63,
+        "win_rate": 0.5,
+        "draw_rate": 0.0,
+        "loss_rate": 0.5,
+        "score": 0.5,
+        "win_rate_ci95": [
+          0.4139974353838817,
+          0.5860025646161183
+        ]
+      }
+    ],
+    "min_cell": {
+      "decks": [
+        0,
+        0
+      ],
+      "name": "Blitz-Blitz",
+      "games": 126,
+      "wins": 63,
+      "draws": 0,
+      "losses": 63,
+      "win_rate": 0.5,
+      "draw_rate": 0.0,
+      "loss_rate": 0.5,
+      "score": 0.5,
+      "win_rate_ci95": [
+        0.4139974353838817,
+        0.5860025646161183
+      ]
+    },
+    "min_ordered_cell": {
+      "decks": [
+        1,
+        3
+      ],
+      "name": "P[Bulwark][Legion]",
+      "diagnostic": true,
+      "games": 126,
+      "wins": 51,
+      "draws": 0,
+      "losses": 75,
+      "win_rate": 0.40476190476190477,
+      "draw_rate": 0.0,
+      "loss_rate": 0.5952380952380952,
+      "score": 0.40476190476190477,
+      "win_rate_ci95": [
+        0.32310457721717,
+        0.4920546160175344
+      ]
+    },
+    "deck_matrix": {
+      "rows": "A's deck",
+      "cols": "B's deck",
+      "names": [
+        "Blitz",
+        "Bulwark",
+        "Volley",
+        "Legion"
+      ],
+      "win_rate": [
+        [
+          0.5,
+          0.5634920634920635,
+          0.5,
+          0.5079365079365079
+        ],
+        [
+          0.4365079365079365,
+          0.5,
+          0.5238095238095238,
+          0.40476190476190477
+        ],
+        [
+          0.5,
+          0.47619047619047616,
+          0.5,
+          0.5714285714285714
+        ],
+        [
+          0.49206349206349204,
+          0.5952380952380952,
+          0.42857142857142855,
+          0.5
+        ]
+      ],
+      "draw_rate": [
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      ],
+      "games": [
+        [
+          126,
+          126,
+          126,
+          126
+        ],
+        [
+          126,
+          126,
+          126,
+          126
+        ],
+        [
+          126,
+          126,
+          126,
+          126
+        ],
+        [
+          126,
+          126,
+          126,
+          126
+        ]
+      ]
+    },
+    "deals": {
+      "a_won_both": 0,
+      "split": 1008,
+      "b_won_both": 0,
+      "with_draw": 0
+    },
+    "avg_rounds": 10.182539682539682,
+    "avg_steps": 73.28373015873017,
+    "elapsed_s": 0.2627859160056687,
+    "games_per_s": 7671.644015946851
+  },
+  "scenarios": null
+}

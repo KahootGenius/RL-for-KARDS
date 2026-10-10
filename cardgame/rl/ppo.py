@@ -64,9 +64,23 @@ def _cuda_error() -> Optional[str]:
     return reason
 
 
+# Two separate commands (no `&&`: Windows PowerShell 5.1 cannot parse it). Uninstall first: pip keeps
+# a same-version CPU build.
+CUDA_TORCH_INSTALL = ("run `python -m pip uninstall -y torch`, then "
+                      "`python -m pip install torch --index-url https://download.pytorch.org/whl/cu128`")
+
+
+def _no_cuda_reason() -> str:
+    """Why torch.cuda.is_available() is False: a CPU-only torch build, or a CUDA build that sees no GPU."""
+    if torch.version.cuda is None and getattr(torch.version, "hip", None) is None:
+        return f"this PyTorch ({torch.__version__}) is a CPU-only build"
+    return (f"this PyTorch ({torch.__version__}) supports GPUs but sees none (`nvidia-smi` should list the GPU; "
+            f"under WSL2 the Windows NVIDIA driver provides CUDA, so update that driver)")
+
+
 def select_device(name: str = "auto") -> torch.device:
-    """`auto` = CUDA if this torch build can run kernels on the GPU, else MPS, else CPU. An explicit
-    name is returned as is."""
+    """`auto` = CUDA if this torch build can run kernels on the GPU, else MPS, else CPU (with a warning
+    saying why). An explicit name is returned as is."""
     if name != "auto":
         return torch.device(name)
     if torch.cuda.is_available():
@@ -76,11 +90,14 @@ def select_device(name: str = "auto") -> torch.device:
         fallback = "mps" if torch.backends.mps.is_available() else "cpu"
         warnings.warn(f"--device auto: CUDA is available but this PyTorch build cannot run on the GPU ({reason}). "
                       f"Falling back to {fallback}. Install a torch build for this GPU (RTX 50-series / sm_120 needs "
-                      f"torch >= 2.7 built for CUDA 12.8: pip install torch --index-url "
-                      f"https://download.pytorch.org/whl/cu128) or pass --device explicitly.", stacklevel=2)
+                      f"torch >= 2.7 built for CUDA 12.8): {CUDA_TORCH_INSTALL}. Or pass --device explicitly.",
+                      stacklevel=2)
         return torch.device(fallback)
     if torch.backends.mps.is_available():
         return torch.device("mps")
+    warnings.warn(f"--device auto: training on the CPU because {_no_cuda_reason()}. For an NVIDIA GPU install a "
+                  f"CUDA build of torch (RTX 50-series needs CUDA 12.8): {CUDA_TORCH_INSTALL}. "
+                  f"--device cpu silences this.", stacklevel=2)
     return torch.device("cpu")
 
 

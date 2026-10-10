@@ -9,6 +9,7 @@ import random
 import subprocess
 import sys
 import time
+import warnings
 from collections import Counter
 from pathlib import Path
 
@@ -189,6 +190,20 @@ def test_select_device(monkeypatch):
     assert select_device("auto").type == "cuda"
 
 
+@pytest.mark.parametrize("cuda_build, reason", [(None, "CPU-only build"), ("12.8", "sees none.*nvidia-smi")])
+def test_select_device_explains_a_cpu_fallback(monkeypatch, cuda_build, reason):
+    """No usable CUDA and no MPS: auto still picks the CPU but says why and how to fix it."""
+    monkeypatch.setattr(torch.cuda, "is_available", lambda: False)
+    monkeypatch.setattr(torch.backends.mps, "is_available", lambda: False)
+    monkeypatch.setattr(torch.version, "cuda", cuda_build)
+    monkeypatch.setattr(torch.version, "hip", None, raising=False)
+    with pytest.warns(UserWarning, match=f"training on the CPU because .*{reason}.*pip uninstall -y torch.*cu128"):
+        assert select_device("auto").type == "cpu"
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        assert select_device("cpu").type == "cpu"  # an explicit --device cpu is silent
+
+
 # ---------------------------------------------------------------- workers
 def test_workers_deal_disjoint_seeds(tmp_path):
     tr = PPOTrainer(tiny(tmp_path))
@@ -351,6 +366,9 @@ def test_close_does_not_wait_for_busy_or_blocked_workers(tmp_path):
         pool.close(force=True)
 
 
+KILLED = -15 if sys.platform == "win32" else -9  # Process.kill() exit code: Windows multiprocessing reports -SIGTERM
+
+
 def test_dead_workers_are_reported_with_their_exit_code(tmp_path):
     tr = PPOTrainer(tiny(tmp_path, workers=2))
     try:
@@ -358,7 +376,7 @@ def test_dead_workers_are_reported_with_their_exit_code(tmp_path):
         procs = list(tr.pool.procs)
         procs[1].kill()  # e.g. the OOM killer between two updates: found when sending the next request
         procs[1].join(10)
-        with pytest.raises(RolloutWorkerError, match=r"rollout worker 1 .*exit code -9"):
+        with pytest.raises(RolloutWorkerError, match=rf"rollout worker 1 .*exit code {KILLED}\b"):
             tr.collect()
         assert not any(p.is_alive() for p in procs)
     finally:
@@ -368,7 +386,7 @@ def test_dead_workers_are_reported_with_their_exit_code(tmp_path):
     try:
         _start_collecting(pool, tr._weights(), (10 ** 9, 10 ** 9))
         procs[0].kill()  # dies mid-collection: found while waiting for the replies
-        with pytest.raises(RolloutWorkerError, match=r"rollout worker 0 .*exit code -9"):
+        with pytest.raises(RolloutWorkerError, match=rf"rollout worker 0 .*exit code {KILLED}\b"):
             pool._gather()
         assert not any(p.is_alive() for p in procs)
     finally:

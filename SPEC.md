@@ -264,7 +264,9 @@ Stage 1 PPO pipeline reused (GAE, clipped objective, LR decay, KL early stop, sn
   exceptions are sent back as tracebacks; any error/death/timeout terminates all workers and
   raises `RolloutWorkerError` (latest.pt stays valid). Workers ignore SIGINT and exit when the
   parent goes away.
-* **Device**: `--device auto` = CUDA, else MPS, else CPU (printed, saved in config.json); tests
+* **Device**: `--device auto` = CUDA (if a test kernel runs), else MPS, else CPU. The choice is
+  printed and saved in config.json. Falling back from an unusable CUDA build, or to the CPU, warns
+  with the reason and the torch reinstall commands. An explicit `--device` is used as given. Tests
   always use cpu.
 * **Defaults**: envs/worker 32, batch_steps 65,536, minibatch 8,192, epochs 4, lr 3e-4 → 3e-5,
   clip 0.2, ent 0.01, vf 0.5, grad-norm 0.5, target_kl 0.03, γ 0.997, λ 0.95, updates 1,000,

@@ -7,56 +7,81 @@ learning). Cards and decks are data (`cardgame/data/*.json`); every rule lives i
 
 * **Stage 1** (done): vanilla units, two fixed decks, MLP policy; PPO beat greedy in 75.7% of 2,000
   duplicate games. Artifacts in `models/stage1/` and `results/stage1/` (they need the Stage 1 code).
-* **Stage 2** (this version): unit natures (troop / fast / ranged), traits (Defense, Armor X),
-  movement costs, 25 cards and 4 decks sampled per game, a feature-based per-card encoder with
-  pointer-style action heads, multiprocess CPU rollouts with CUDA/MPS/CPU learning, TensorBoard,
-  a deck-matchup evaluation and 16 tactical scenarios.
+* **Stage 2** (done): unit natures (troop / fast / ranged), traits (Defense, Armor X), movement
+  costs, 25 cards and 4 decks sampled per game, a feature-based per-card encoder with pointer-style
+  action heads, multiprocess CPU rollouts with CUDA/MPS/CPU learning, TensorBoard, a deck-matchup
+  evaluation and 16 tactical scenarios. All three desktop runs pass the done criterion; the
+  reference model is `models/stage2.pt`.
 
-## Stage 2 results (laptop run; the full run is meant for the desktop)
+## Stage 2 results (desktop runs: PASS)
 
-`models/stage2_mac.pt` was trained on this laptop (M-series, MPS) for 250 updates of 16k decisions
-(~4M decisions, ~1 h) — a sixteenth of the default desktop run. It was chosen *before* the scenario
-results were looked at, by held-out win rate and worst matchup cell (selection seeds 500,000,000+).
-Acceptance test (`python eval.py --agent models/stage2_mac.pt --scenarios`, 2,016 duplicate games on
-seeds 0–1007; `results/stage2_mac_eval.json`):
+Three 1000-update runs on the desktop (RTX 5080, 16 rollout workers, Windows 11, Python 3.14,
+torch 2.11+cu128). Each checkpoint (`best.pt`) was picked by the in-training quick eval (seeds
+2,000,000,000+). Each was then acceptance-tested on held-out deals with
+`python eval.py --agent <best.pt> --scenarios`: 2,016 duplicate games against greedy on seeds 0–1007.
+Run records are in `feedback/s2_{a,b,c}/`. Re-running all three evals on the laptop (macOS,
+Python 3.13) gave identical results.
 
-| criterion | result | |
-|---|---|---|
-| beats greedy overall ≥ 70% | **76.3%** (95% CI 74.4–78.1) | pass |
-| every matchup ≥ 60% | worst cell Blitz-Blitz **70.6%** (all 10 cells 70.6–81.7%) | pass |
-| solves most scenarios (> 50%) | **8/16 = 50%** with argmax play (54% of sampled playouts); greedy 8/16, random 12% | **not yet** |
+| run | vs greedy (95% CI) | worst matchup cell | scenarios (argmax) | wall-clock | s / update |
+|---|---|---|---|---|---|
+| A: defaults | 85.4% (83.8–86.9) | Blitz-Blitz 78.6% | 9/16 | 51 min* | 2.9 |
+| **B: `--attention-layers 1`** | **86.3% (84.7–87.7)** | Blitz-Bulwark 82.1% | **12/16** | 93 min | 5.4 |
+| C: `--gamma 0.99` | 85.4% (83.8–86.8) | Blitz-Blitz 78.6% | 10/16 | 48 min | 2.7 |
 
-Matchup cells vs greedy (duplicate, both seats and decks of every deal):
+\*A's first 15 updates ran on the CPU (13 min) before PyTorch was fixed and the run was resumed on CUDA.
+
+Done criterion (SPEC §10): ≥ 70% overall, ≥ 60% in every matchup cell, > 50% of scenarios solved.
+**All three runs pass** (`conclusive` in each eval.json). Greedy itself solves 8/16 scenarios and
+random averages 12% success. Run A clears the scenario bar by one scenario.
+
+**Reference model: run B** (`models/stage2.pt`, evaluation in `results/stage2_eval.json`). It
+leads on every measure. It was chosen after the results were seen, as the best of three single-seed
+runs, and its lead is small. Head-to-head (duplicate games, `results/stage2_h2h.json`):
+
+| B vs | A | C | laptop model | random |
+|---|---|---|---|---|
+| win rate | 52.4% (50.2–54.6) | 52.3% (50.1–54.5) | 69.0% (67.0–71.0) | 99.95% |
+
+The laptop model is `models/stage2_mac.pt`: 250 updates of 16k decisions; 76.3% vs greedy;
+8/16 scenarios.
+
+B's matchup cells vs greedy (duplicate, both seats and decks of every deal):
 
 | | Blitz | Bulwark | Volley | Legion |
 |---|---|---|---|---|
-| **Blitz** | 70.6 | 75.8 | 75.0 | 72.2 |
-| **Bulwark** | | 75.4 | 79.0 | 77.8 |
-| **Volley** | | | 80.2 | 76.6 |
-| **Legion** | | | | 81.7 |
+| **Blitz** | 84.1 | 82.1 | 85.3 | 82.5 |
+| **Bulwark** | | 90.5 | 90.9 | 87.7 |
+| **Volley** | | | 88.1 | 86.9 |
+| **Legion** | | | | 86.5 |
 
-Against its own training run's older checkpoints it scores 68.7% (update 30), 53.1% (130), 50.3%
-(230) and 48.6% (330, newer), and 99.9% against random (`results/stage2_mac_matches.json`).
+What the desktop runs showed:
 
-What the laptop runs showed:
-
-* **Win rate** keeps rising with training (72% at update 90 → 76–78% by 250–330); every deck
-  matchup is comfortably above 60%.
-* **Scenarios plateau around 8/16.** The bot reliably solves fast-troop lethal, frontline control
-  with move costs, armor trades, sacrifice-to-clear and the ranged/Defense survival puzzle with a
-  melee opener; it misses some lethal lines (ranged chip-lethal, move-budget lethal) and
-  multi-step Defense sequencing under threat. Engine attack previews (+1–2 scenarios) and the
-  pair MLP helped; a lower discount (γ 0.99) and filling the scenario decks did not change the
-  count (γ 0.99 was compared at update 90). The full desktop run (16× more data) is the real
-  test; `--attention-layers 1` is the next architecture lever if it still falls short.
+* **Learning levels off by about update 500.** The quick eval rises from about 80% (updates
+  100–200) to about 86% (updates 900–1000), but only about 0.4 points per 100 updates after
+  update 500. By the end the policy no longer beats its own snapshots from the last 300 updates
+  (50.7%). More strength needs more pressure (stronger or more varied opponents, a slower
+  learning-rate decay, a larger batch), not just more updates.
+* **Moving first is a big advantage.** In self-play the first player wins about 75%. Against
+  greedy, B wins 96.9% going first and 75.6% going second. Duplicate (seat-swapped) evaluation
+  cancels this out, but it caps win rates against strong opponents.
+* **Attention costs 1.9× per update for a small gain.** At equal wall-clock (update 545) B's quick
+  eval was lower than A's, 83.7% vs 85.7%. γ 0.99 did not help.
+* **Known weaknesses, per scenario.**
+  - No desktop model solves fast_attack_then_move, move_cost_hold_frontline or
+    budget_cheap_movers (move costs and holding the frontline), or defense_backline_order (which
+    greedy solves).
+  - The laptop model did solve the first two, so these regressed.
+  - A and C also miss ranged_base_lethal, which greedy solves.
+  - Compare the solved set per scenario between versions, not just the count.
 * **Scenario validity.** Every scenario's "known best move" is checked to be objectively best
   (`scenarios.dominance_violations`, independently re-verified): lethal goals win now; survival
   goals have no lethal alternative and every surviving line makes the intended kills; material
   goals are never dominated by an alternative. Six original positions failed this check (their
-  intended trade competed with face damage) and were rebuilt as survival or lethal puzzles; the
-  bot's count was 8/16 before and after.
+  intended trade competed with face damage) and were rebuilt as survival or lethal puzzles. The
+  laptop model's count was 8/16 before and after.
 
-Stage 1 → Stage 2 speed (same laptop, back-to-back, `results/bench_stage2.txt`): engine-only random
+Stage 1 → Stage 2 speed (same laptop, back-to-back but under load, so approximate;
+`results/bench_stage2.txt`): engine-only random
 games 0.89× (Stage 2 games are 30% shorter, so 0.64× per step), full agent loop 0.70×, clone 1.1×,
 observe 2.8× and encode 4.8× (25 card slots with mask hints and attack previews).
 
@@ -65,21 +90,28 @@ observe 2.8× and encode 4.8× (25 card slots with mask hints and attack preview
 Python 3.10+.
 
 ```bash
-python3 -m venv .venv
-.venv/bin/pip install -r requirements.txt
+python -m venv .venv
+# activate it: source .venv/bin/activate (Mac/Linux) or .venv\Scripts\Activate.ps1 (PowerShell)
+python -m pip install -r requirements.txt
 ```
 
-**Desktop (Windows 11 + WSL2, NVIDIA GPU).** Work inside the WSL2 Linux shell. The Windows NVIDIA
-driver provides CUDA to WSL2 (do not install a Linux GPU driver). The default PyPI torch wheel for
-Linux bundles CUDA; RTX 50-series cards need torch ≥ 2.7 built for CUDA 12.8+. Check:
+**Desktop (Windows 11, NVIDIA GPU).** Native Windows (PowerShell) and WSL2 both work. Every command
+in this README is a plain `python` or `git` call, so it runs in either shell. Avoid `&&`, shell
+loops and `>` redirection: they differ between bash and Windows PowerShell. Under WSL2 the Windows
+NVIDIA driver provides CUDA (do not install a Linux GPU driver). `nvidia-smi` must list the GPU.
+RTX 50-series cards need torch ≥ 2.7 built for CUDA 12.8. `pip install -r requirements.txt` does not
+always give you that: on native Windows PyPI's torch is CPU-only. Install the CUDA build explicitly,
+with the same `python` that runs `train.py` (uninstall first, or pip keeps a same-version CPU build):
 
 ```bash
-.venv/bin/python -c "import torch; print(torch.__version__, torch.cuda.is_available(), torch.cuda.get_device_name(0))"
+python -m pip uninstall -y torch
+python -m pip install torch --index-url https://download.pytorch.org/whl/cu128
+python -c "import torch; print(torch.__version__, torch.cuda.is_available(), torch.cuda.get_device_name(0))"
 ```
 
-If that prints False or warns about the GPU architecture, install a CUDA 12.8 build:
-`.venv/bin/pip install --upgrade torch --index-url https://download.pytorch.org/whl/cu128`.
-`train.py` falls back to CPU (with a warning) when CUDA cannot run.
+The last line should print a `+cu128` version, `True` and the GPU's name. The first line of
+`train.py`'s output must say `device=cuda`. With `--device auto` it falls back to the CPU and warns
+why when CUDA cannot run.
 
 **Moving code between the machines.** Use git on both sides: `git add -A`, `git commit`,
 `git push` on the laptop, then `git clone` once and `git pull` after that on the desktop. Pull
@@ -90,7 +122,7 @@ After each pull, check the checkout before training: `python -m pytest -q`, or t
 
 ## Run
 
-Commands assume the repo root and an active venv (`source .venv/bin/activate`).
+Commands assume the repo root and an active venv (see Setup).
 
 ```bash
 python -m pytest -q                       # full suite (~600 tests, 1–2 min); CARDGAME_SLOW=1 adds a slow deck-balance gate
@@ -130,12 +162,13 @@ matchup cell table, the deck-vs-deck matrix next to greedy-vs-greedy's, older ch
 scenario table (argmax and sampled success, with greedy and random baselines) and a verdict:
 PASS/FAIL only when every part of the done criterion was measured, INDICATIVE otherwise.
 
-### Desktop run plan (Stage 2)
+### Stage 2 desktop runs (done)
 
-Run A is the acceptance run; B and C are the two most promising variants (each about as long as A).
+These are the commands behind the Stage 2 results above. Each run takes 50–95 minutes on the desktop.
 
 ```bash
-git pull && python -m pytest -q                                  # check the checkout first
+git pull
+python -m pytest -q                                              # check the checkout first
 python train.py --run-dir runs/s2_a                              # A: defaults
 python train.py --run-dir runs/s2_b --attention-layers 1         # B: + one transformer layer over card slots
 python train.py --run-dir runs/s2_c --gamma 0.99                 # C: shorter horizon (values faster wins)
@@ -147,6 +180,17 @@ python eval.py --agent runs/s2_a/best.pt --scenarios --json runs/s2_a/eval.json 
 After a desktop run, copy `config.json`, `metrics.jsonl`, `eval.json` and `best.pt` from
 `runs/<name>/` into `feedback/<name>/`, add a short `notes.txt` (OS, Python/torch versions, GPU,
 wall-clock time, anything odd) and push. Whole `runs/` directories stay out of git.
+
+These two lines work in PowerShell and bash alike. The first copies the files; the second starts
+`feedback/notes.txt` with the OS, Python, torch and GPU versions. Edit the run list as needed.
+
+```bash
+python -c "import shutil, os; [(os.makedirs(f'feedback/{r}', exist_ok=True), shutil.copy2(f'runs/{r}/{f}', f'feedback/{r}/{f}')) for r in ('s2_a', 's2_b', 's2_c') for f in ('config.json', 'metrics.jsonl', 'eval.json', 'best.pt')]"
+python -c "import sys, platform, torch; open('feedback/notes.txt', 'w', encoding='utf-8').write(f'{platform.platform()} | python {sys.version.split()[0]} | torch {torch.__version__} | GPU {torch.cuda.get_device_name(0)}\n')"
+```
+
+Then add your notes to `feedback/notes.txt`, and run `git pull`, `git add feedback`, `git commit`
+and `git push` as separate commands.
 
 ## The game (Stage 2)
 
@@ -207,7 +251,8 @@ every checkpoint, so a retuned card pool cannot be loaded into an old model by a
 MLP over all slots and pools every zone (masked mean, max, sum, fill). The policy scores actions
 from the slots involved: PLAY(i) from hand card i, MOVE(j) from backline unit j, ATTACK(a, t) from a
 bilinear attacker-query × target-key term plus a narrow pair MLP that also reads the attack
-preview, and a learned base token built from the enemy base HP. ~1.3M parameters. Optional
+preview, and a learned base token built from the enemy base HP. ~1.3M parameters (1.6M with one
+attention layer). Optional
 transformer layers over slots (`--attention-layers`).
 
 **Training** (`cardgame/rl/ppo.py`, `rollout.py`). The Stage 1 PPO pipeline, now with `--workers`
@@ -256,7 +301,9 @@ cardgame/
   rl/             EntityPolicyNet / PolicyValueNet, rollout workers, PPO learner, PPOAgent
 train.py  eval.py  bench.py  tools/deck_balance.py
 tests/            see above
-models/, results/ trained models and evaluation/benchmark outputs (Stage 1 in */stage1/)
+models/, results/ trained models and evaluation/benchmark outputs (Stage 1 in */stage1/;
+                  Stage 2 reference: models/stage2.pt, results/stage2_eval.json, stage2_h2h.json)
+feedback/         desktop run records (config, metrics, eval, best.pt) sent back for analysis
 SPEC.md           rules + interface contract;   CLAUDE.md   workflow notes for the assistant
 ```
 
