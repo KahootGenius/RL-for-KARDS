@@ -68,3 +68,201 @@ verdict: FAIL
   (4) scenarios: 70% solved, argmax (> 50%) [ok]
   diagnostic only (the verdict uses the unordered cells, SPEC 10): worst ordered cell P[Bulwark][Volley] = 78.6% over 126 games (agent holds Bulwark, lookahead holds Volley; deck-confounded)
 results written to runs\s3\eval.json
+
+S32:
+agent: runs/s3c/best.pt (sampling) [transformer network]
+decks=random: 2000 games per opponent = 1000 deals (seeds 0..999) x 2 seatings; random decks generate_deck(deck_rng(seed, seat)) per deal
+decks=all: 2016 games per opponent (--games 2000 rounded up) = 1008 deals (seeds 0..1007) x 2 seatings; 16 fixed deck pairs x 63 deals
+baseline: runs/s3_pooled/best.pt [pooled network]: 2000 games on random decks
+8 workers
+fixed decks: 0 Blitz (aggro fast troops) | 1 Bulwark (defensive) | 2 Volley (ranged-heavy) | 3 Legion (balanced)
+rates are the agent's; draws count as non-wins; games/s is wall clock after warm-up
+
+opponent             decks  games   win%  draw%  loss%     win 95% CI  seat0%  seat1%  first%  second%             worst cell  games/s
+lookahead           random   2000   91.5    0.0    8.6   [90.1, 92.6]    90.7    92.2    97.7     85.2                      -      139
+lookahead              all   2016   92.3    0.0    7.7   [91.1, 93.4]    92.5    92.2    97.0     87.6    Bulwark-Volley 86.1      125
+best.pt (baseline)  random   2000   49.9    0.0   50.1   [47.7, 52.0]    51.2    48.5    68.8     30.9                      -       99
+
+== decks=all: matchup cells C{i,j} per opponent: agent's win% over both decks of every (i,j)/(j,i) deal (Bl=Blitz, Bu=Bulwark, Vo=Volley, Le=Legion)
+opponent           Bl-Bl Bl-Bu Bl-Vo Bl-Le Bu-Bu Bu-Vo Bu-Le Vo-Vo Vo-Le Le-Le
+lookahead           88.9  93.7  91.7  96.4  92.9  86.1  92.5  91.3  93.7  96.0
+(games)              126   252   252   252   126   252   252   126   252   126
+
+== decks=all, vs lookahead: matchup cells C{i,j} = agent's win% over both decks of every (i,j)/(j,i) deal [95% CI] (games)
+                            Blitz                 Bulwark                  Volley                  Legion
+  Blitz    88.9 [82.2,93.3] (126)  93.7 [89.9,96.1] (252)  91.7 [87.6,94.5] (252)  96.4 [93.4,98.1] (252)
+  Bulwark  93.7 [89.9,96.1] (252)  92.9 [87.0,96.2] (126)  86.1 [81.3,89.8] (252)  92.5 [88.5,95.1] (252)
+  Volley   91.7 [87.6,94.5] (252)  86.1 [81.3,89.8] (252)  91.3 [85.0,95.1] (126)  93.7 [89.9,96.1] (252)
+  Legion   96.4 [93.4,98.1] (252)  92.5 [88.5,95.1] (252)  93.7 [89.9,96.1] (252)  96.0 [91.0,98.3] (126)
+== decks=all, vs lookahead: deck-confounded P[a][b] = agent's win% holding deck a (rows) vs deck b
+  best.pt vs lookahead                       lookahead vs lookahead (reference)
+  A \ B     Blitz Bulwark  Volley  Legion    A \ B     Blitz Bulwark  Volley  Legion
+  Blitz      88.9    95.2    87.3    94.4    Blitz      50.0    49.2    47.6    47.6
+  Bulwark    92.1    92.9    91.3    96.0    Bulwark    50.8    50.0    41.3    47.6
+  Volley     96.0    81.0    91.3    97.6    Volley     52.4    58.7    50.0    43.7
+  Legion     98.4    88.9    89.7    96.0    Legion     52.4    52.4    56.3    50.0
+
+== scenarios: agent = argmax run + sampled % of 100 playouts; lookahead = one seeded run; random = % of 20 seeds; greedy = one run (reference)
+  scenario                     agent  sampled lookahead  random greedy  tags
+  fast_move_attack_lethal        yes     100%        no     20%    yes  fast,lethal,move_cost
+  fast_attack_then_move          yes      85%        no     10%     no  fast,frontline,threat
+  defense_backline_order         yes      99%        no     10%    yes  defense,sequencing,threat
+  defense_frontline_ranged       yes     100%        no     35%     no  defense,ranged,frontline,threat
+  ranged_finish_backline         yes      99%       yes      0%    yes  ranged,armor,threat
+  ranged_base_lethal              no       2%       yes     10%    yes  ranged,lethal,seat1
+  armor_pierce                   yes      96%       yes     25%    yes  armor,trade
+  armor_attacker_survives         no      38%       yes     30%    yes  armor,trade
+  move_cost_hold_frontline        no       0%        no     10%     no  move_cost,frontline,threat
+  clear_frontline_then_lethal    yes      56%        no      0%     no  frontline,defense,fast,lethal
+  stop_lethal_kill_right_unit    yes      91%       yes     20%     no  threat,ranged
+  ranged_no_return               yes      83%       yes      5%    yes  ranged,trade,fast,lethal
+  budget_cheap_movers             no      45%        no     10%     no  move_cost,fast,lethal
+  base_ignores_defense           yes     100%       yes      5%    yes  defense,lethal,seat1
+  sacrifice_to_clear             yes     100%        no      5%     no  frontline,fast,lethal,trade
+  ranged_through_defense          no      27%        no      0%     no  ranged,defense,sequencing,threat
+  operation_lethal               yes      98%        no     10%     no  operation,effects,choice,lethal,sequencing
+  on_death_exploit               yes     100%       yes     50%    yes  on_death,effects,trade,threat,seat1
+  effect_clears_defense          yes      98%        no      0%     no  effects,operation,choice,defense,armor,threat
+  mulligan_sanity                 no       0%       yes      0%     no  mulligan,seat1
+  solved                       14/20      71%      9/20     13%   9/20
+
+verdict: FAIL
+  (1) vs lookahead, random decks: win rate 91.5% (>= 70%) over 2000 duplicate games (95% CI lower bound 90.1%) [ok]
+  (2) vs lookahead, fixed decks (all): worst matchup cell Bulwark-Volley 86.1% (>= 60%) over 252 games; overall 92.3% over 2016 games [ok]
+  (3) head-to-head vs best.pt: win rate 49.9% (<= 50%; score 0.498) over 2000 duplicate games, random decks [MISSED]
+  (4) scenarios: 70% solved, argmax (> 50%) [ok]
+  diagnostic only (the verdict uses the unordered cells, SPEC 10): worst ordered cell P[Volley][Bulwark] = 81.0% over 126 games (agent holds Volley, lookahead holds Bulwark; deck-confounded)
+results written to runs/s3c/eval.json
+agent: runs/s3d/best.pt (sampling) [transformer network]
+decks=random: 2000 games per opponent = 1000 deals (seeds 0..999) x 2 seatings; random decks generate_deck(deck_rng(seed, seat)) per deal
+decks=all: 2016 games per opponent (--games 2000 rounded up) = 1008 deals (seeds 0..1007) x 2 seatings; 16 fixed deck pairs x 63 deals
+baseline: runs/s3_pooled/best.pt [pooled network]: 2000 games on random decks
+8 workers
+fixed decks: 0 Blitz (aggro fast troops) | 1 Bulwark (defensive) | 2 Volley (ranged-heavy) | 3 Legion (balanced)
+rates are the agent's; draws count as non-wins; games/s is wall clock after warm-up
+
+opponent             decks  games   win%  draw%  loss%     win 95% CI  seat0%  seat1%  first%  second%             worst cell  games/s
+lookahead           random   2000   91.5    0.0    8.5   [90.2, 92.7]    91.3    91.8    97.7     85.4                      -      175
+lookahead              all   2016   92.8    0.0    7.2   [91.6, 93.9]    92.7    93.0    97.4     88.2    Bulwark-Volley 86.9      157
+best.pt (baseline)  random   2000   51.3    0.0   48.6   [49.2, 53.5]    53.4    49.3    71.4     31.3                      -      113
+
+== decks=all: matchup cells C{i,j} per opponent: agent's win% over both decks of every (i,j)/(j,i) deal (Bl=Blitz, Bu=Bulwark, Vo=Volley, Le=Legion)
+opponent           Bl-Bl Bl-Bu Bl-Vo Bl-Le Bu-Bu Bu-Vo Bu-Le Vo-Vo Vo-Le Le-Le
+lookahead           92.1  94.0  93.3  97.2  94.4  86.9  90.9  92.1  94.0  93.7
+(games)              126   252   252   252   126   252   252   126   252   126
+
+== decks=all, vs lookahead: matchup cells C{i,j} = agent's win% over both decks of every (i,j)/(j,i) deal [95% CI] (games)
+                            Blitz                 Bulwark                  Volley                  Legion
+  Blitz    92.1 [86.0,95.6] (126)  94.0 [90.4,96.4] (252)  93.3 [89.5,95.7] (252)  97.2 [94.4,98.6] (252)
+  Bulwark  94.0 [90.4,96.4] (252)  94.4 [89.0,97.3] (126)  86.9 [82.2,90.5] (252)  90.9 [86.7,93.8] (252)
+  Volley   93.3 [89.5,95.7] (252)  86.9 [82.2,90.5] (252)  92.1 [86.0,95.6] (126)  94.0 [90.4,96.4] (252)
+  Legion   97.2 [94.4,98.6] (252)  90.9 [86.7,93.8] (252)  94.0 [90.4,96.4] (252)  93.7 [88.0,96.7] (126)
+== decks=all, vs lookahead: deck-confounded P[a][b] = agent's win% holding deck a (rows) vs deck b
+  best.pt vs lookahead                       lookahead vs lookahead (reference)
+  A \ B     Blitz Bulwark  Volley  Legion    A \ B     Blitz Bulwark  Volley  Legion
+  Blitz      92.1    95.2    91.3    96.8    Blitz      50.0    49.2    47.6    47.6
+  Bulwark    92.9    94.4    88.1    93.7    Bulwark    50.8    50.0    41.3    47.6
+  Volley     95.2    85.7    92.1    96.8    Volley     52.4    58.7    50.0    43.7
+  Legion     97.6    88.1    91.3    93.7    Legion     52.4    52.4    56.3    50.0
+
+== scenarios: agent = argmax run + sampled % of 100 playouts; lookahead = one seeded run; random = % of 20 seeds; greedy = one run (reference)
+  scenario                     agent  sampled lookahead  random greedy  tags
+  fast_move_attack_lethal        yes     100%        no     20%    yes  fast,lethal,move_cost
+  fast_attack_then_move           no       0%        no     10%     no  fast,frontline,threat
+  defense_backline_order         yes     100%        no     10%    yes  defense,sequencing,threat
+  defense_frontline_ranged       yes     100%        no     35%     no  defense,ranged,frontline,threat
+  ranged_finish_backline         yes      95%       yes      0%    yes  ranged,armor,threat
+  ranged_base_lethal              no       3%       yes     10%    yes  ranged,lethal,seat1
+  armor_pierce                   yes      99%       yes     25%    yes  armor,trade
+  armor_attacker_survives        yes      74%       yes     30%    yes  armor,trade
+  move_cost_hold_frontline       yes      57%        no     10%     no  move_cost,frontline,threat
+  clear_frontline_then_lethal    yes      35%        no      0%     no  frontline,defense,fast,lethal
+  stop_lethal_kill_right_unit    yes      98%       yes     20%     no  threat,ranged
+  ranged_no_return               yes      74%       yes      5%    yes  ranged,trade,fast,lethal
+  budget_cheap_movers             no      38%        no     10%     no  move_cost,fast,lethal
+  base_ignores_defense           yes      99%       yes      5%    yes  defense,lethal,seat1
+  sacrifice_to_clear             yes      98%        no      5%     no  frontline,fast,lethal,trade
+  ranged_through_defense          no       0%        no      0%     no  ranged,defense,sequencing,threat
+  operation_lethal               yes      99%        no     10%     no  operation,effects,choice,lethal,sequencing
+  on_death_exploit               yes      94%       yes     50%    yes  on_death,effects,trade,threat,seat1
+  effect_clears_defense          yes      89%        no      0%     no  effects,operation,choice,defense,armor,threat
+  mulligan_sanity                 no       0%       yes      0%     no  mulligan,seat1
+  solved                       15/20      68%      9/20     13%   9/20
+
+verdict: PASS
+  (1) vs lookahead, random decks: win rate 91.5% (>= 70%) over 2000 duplicate games (95% CI lower bound 90.2%) [ok]
+  (2) vs lookahead, fixed decks (all): worst matchup cell Bulwark-Volley 86.9% (>= 60%) over 252 games; overall 92.8% over 2016 games [ok]
+  (3) head-to-head vs best.pt: win rate 51.3% (> 50%; score 0.513) over 2000 duplicate games, random decks [ok]
+  (4) scenarios: 75% solved, argmax (> 50%) [ok]
+  diagnostic only (the verdict uses the unordered cells, SPEC 10): worst ordered cell P[Volley][Bulwark] = 85.7% over 126 games (agent holds Volley, lookahead holds Bulwark; deck-confounded)
+results written to runs/s3d/eval.json
+agent: runs/s3c/best.pt (sampling) [transformer network]
+decks=random: 2000 games per opponent = 1000 deals (seeds 0..999) x 2 seatings; random decks generate_deck(deck_rng(seed, seat)) per deal
+8 workers
+fixed decks: 0 Blitz (aggro fast troops) | 1 Bulwark (defensive) | 2 Volley (ranged-heavy) | 3 Legion (balanced)
+rates are the agent's; draws count as non-wins; games/s is wall clock after warm-up
+
+opponent   decks  games   win%  draw%  loss%     win 95% CI  seat0%  seat1%  first%  second%             worst cell  games/s
+best.pt   random   2000   53.1    0.0   46.9   [51.0, 55.3]    53.8    52.5    70.8     35.5                      -       80
+results written to runs/s3c/h2h_nobelief.json
+agent: runs/s3c_nobelief/best.pt (sampling) [transformer network]
+decks=random: 2000 games per opponent = 1000 deals (seeds 0..999) x 2 seatings; random decks generate_deck(deck_rng(seed, seat)) per deal
+decks=all: 2016 games per opponent (--games 2000 rounded up) = 1008 deals (seeds 0..1007) x 2 seatings; 16 fixed deck pairs x 63 deals
+8 workers
+fixed decks: 0 Blitz (aggro fast troops) | 1 Bulwark (defensive) | 2 Volley (ranged-heavy) | 3 Legion (balanced)
+rates are the agent's; draws count as non-wins; games/s is wall clock after warm-up
+
+opponent    decks  games   win%  draw%  loss%     win 95% CI  seat0%  seat1%  first%  second%             worst cell  games/s
+lookahead  random   2000   90.5    0.0    9.6   [89.1, 91.7]    89.5    91.4    97.0     83.9                      -      140
+lookahead     all   2016   92.1    0.0    7.9   [90.9, 93.2]    92.7    91.6    97.2     87.0       Blitz-Blitz 85.7      127
+
+== decks=all: matchup cells C{i,j} per opponent: agent's win% over both decks of every (i,j)/(j,i) deal (Bl=Blitz, Bu=Bulwark, Vo=Volley, Le=Legion)
+opponent  Bl-Bl Bl-Bu Bl-Vo Bl-Le Bu-Bu Bu-Vo Bu-Le Vo-Vo Vo-Le Le-Le
+lookahead  85.7  93.3  93.7  93.7  91.3  86.5  93.7  92.9  93.3  96.0
+(games)     126   252   252   252   126   252   252   126   252   126
+
+== decks=all, vs lookahead: matchup cells C{i,j} = agent's win% over both decks of every (i,j)/(j,i) deal [95% CI] (games)
+                            Blitz                 Bulwark                  Volley                  Legion
+  Blitz    85.7 [78.5,90.8] (126)  93.3 [89.5,95.7] (252)  93.7 [89.9,96.1] (252)  93.7 [89.9,96.1] (252)
+  Bulwark  93.3 [89.5,95.7] (252)  91.3 [85.0,95.1] (126)  86.5 [81.7,90.2] (252)  93.7 [89.9,96.1] (252)
+  Volley   93.7 [89.9,96.1] (252)  86.5 [81.7,90.2] (252)  92.9 [87.0,96.2] (126)  93.3 [89.5,95.7] (252)
+  Legion   93.7 [89.9,96.1] (252)  93.7 [89.9,96.1] (252)  93.3 [89.5,95.7] (252)  96.0 [91.0,98.3] (126)
+== decks=all, vs lookahead: deck-confounded P[a][b] = agent's win% holding deck a (rows) vs deck b
+  best.pt vs lookahead                       lookahead vs lookahead (reference)
+  A \ B     Blitz Bulwark  Volley  Legion    A \ B     Blitz Bulwark  Volley  Legion
+  Blitz      85.7    92.9    92.1    93.7    Blitz      50.0    49.2    47.6    47.6
+  Bulwark    93.7    91.3    86.5    96.8    Bulwark    50.8    50.0    41.3    47.6
+  Volley     95.2    86.5    92.9    98.4    Volley     52.4    58.7    50.0    43.7
+  Legion     93.7    90.5    88.1    96.0    Legion     52.4    52.4    56.3    50.0
+
+== scenarios: agent = argmax run + sampled % of 100 playouts; lookahead = one seeded run; random = % of 20 seeds; greedy = one run (reference)
+  scenario                     agent  sampled lookahead  random greedy  tags
+  fast_move_attack_lethal        yes     100%        no     20%    yes  fast,lethal,move_cost
+  fast_attack_then_move           no       0%        no     10%     no  fast,frontline,threat
+  defense_backline_order         yes      96%        no     10%    yes  defense,sequencing,threat
+  defense_frontline_ranged       yes     100%        no     35%     no  defense,ranged,frontline,threat
+  ranged_finish_backline         yes      91%       yes      0%    yes  ranged,armor,threat
+  ranged_base_lethal             yes      85%       yes     10%    yes  ranged,lethal,seat1
+  armor_pierce                   yes      99%       yes     25%    yes  armor,trade
+  armor_attacker_survives        yes      62%       yes     30%    yes  armor,trade
+  move_cost_hold_frontline        no       0%        no     10%     no  move_cost,frontline,threat
+  clear_frontline_then_lethal    yes      24%        no      0%     no  frontline,defense,fast,lethal
+  stop_lethal_kill_right_unit    yes      93%       yes     20%     no  threat,ranged
+  ranged_no_return               yes      79%       yes      5%    yes  ranged,trade,fast,lethal
+  budget_cheap_movers             no      11%        no     10%     no  move_cost,fast,lethal
+  base_ignores_defense           yes      99%       yes      5%    yes  defense,lethal,seat1
+  sacrifice_to_clear             yes     100%        no      5%     no  frontline,fast,lethal,trade
+  ranged_through_defense          no       0%        no      0%     no  ranged,defense,sequencing,threat
+  operation_lethal               yes      95%        no     10%     no  operation,effects,choice,lethal,sequencing
+  on_death_exploit               yes      91%       yes     50%    yes  on_death,effects,trade,threat,seat1
+  effect_clears_defense          yes      98%        no      0%     no  effects,operation,choice,defense,armor,threat
+  mulligan_sanity                 no       0%       yes      0%     no  mulligan,seat1
+  solved                       15/20      66%      9/20     13%   9/20
+
+verdict: INDICATIVE ((3) not measured: no baseline (--baseline <pooled.pt>))
+  (1) vs lookahead, random decks: win rate 90.5% (>= 70%) over 2000 duplicate games (95% CI lower bound 89.1%) [ok]
+  (2) vs lookahead, fixed decks (all): worst matchup cell Blitz-Blitz 85.7% (>= 60%) over 126 games; overall 92.1% over 2016 games [ok]
+  (3) head-to-head vs the baseline: not measured
+  (4) scenarios: 75% solved, argmax (> 50%) [ok]
+  diagnostic only (the verdict uses the unordered cells, SPEC 10): worst ordered cell P[Blitz][Blitz] = 85.7% over 126 games (agent holds Blitz, lookahead holds Blitz; deck-confounded)
+results written to runs/s3c_nobelief/eval.json
