@@ -30,13 +30,20 @@ token presence (global, base and deck tokens are forced present, so no row is ev
 Each row's present tokens are packed to the front and the batch is truncated to its longest row
 before the encoder (no positional encoding, so this only saves compute and activation memory).
 
+Transformer readout (`readout`, per tower): "global" (default) takes g = the global token output;
+"pooled" takes g = global token output + Linear(ctx), ctx = relu(MLP([fixed output tokens (my base,
+opponent base, pending, deck), masked mean/max/sum/fill of each variable group's output tokens])),
+i.e. the pooled net's context computed over the contextualised tokens (`GroupPooling`, shared with
+the pooled tower). The added Linear starts near zero, so a new net starts close to the global readout.
+
 Pointer scorer: every action index n has a (source token, target token, type) triple fixed by the
 layout (`PointerScorer`), so the whole (B, N) logit row comes out in action-index order:
     score = q(src, g, type) . k(tgt) / sqrt(key_dim) + w . relu(A src + T tgt + C g + E_type + P preview)
             + b(tgt)
 with q(src, g, type) = Q_out relu(Q_src src + Q_g g + Q_type) computed once per distinct (source, type)
-pair and scored against every token with one bmm, g = the global token output (pooled net: the
-context vector), and P a separate linear map for attack and for choose previews.
+pair and scored against every token with one bmm, g = the tower's global vector (Transformer: the
+readout above; pooled net: the context vector), and P a separate linear map for attack and for choose
+previews.
 """
 from __future__ import annotations
 
@@ -58,6 +65,9 @@ NULL_TARGET_TYPES = ("END_TURN", "PLAY", "MOVE", "MULLIGAN", "CONFIRM")  # types
 ALWAYS_PRESENT_GROUPS = ("global", "my_base", "opp_base", "deck")       # SPEC §6: never absent
 POOLED_GROUPS = ("hand", "my_back", "front", "opp_back", "revealed")    # variable-size groups pooled
 SINGLE_TOKENS = ("global", "my_base", "opp_base", "pending", "deck")    # fixed tokens concatenated
+READOUT_SINGLE_TOKENS = SINGLE_TOKENS[1:]  # Transformer "pooled" readout: g already holds the global token
+READOUTS = ("global", "pooled")            # TransformerPolicyNet(readout=...)
+SPEC_DEFAULTS = {"transformer": {"readout": "global"}}  # spec keys added after the first Stage 3 runs
 _LAYOUT_KEYS = ("version", "fingerprint", "G", "T", "F", "S", "P", "PC", "H", "Z", "n_cards", "dim", "n_actions",
                 "offsets", "groups", "attacker_tokens", "attack_target_tokens", "choose_tokens", "END_TURN", "PLAY0",
                 "MOVE0", "ATTACK0", "CHOOSE0", "MULLIGAN0", "CONFIRM", "n_attackers", "n_targets", "n_choose",
@@ -287,18 +297,70 @@ class TokenEmbedder(nn.Module):
         return h + extra
 
 
+class GroupPooling(nn.Module):
+    """Parameter-free context features of a (B, T, d) token tensor: the `single` tokens' rows concatenated,
+    then masked mean, max, sum / capacity and fill fraction of every variable group (POOLED_GROUPS). The
+    pooled tower applies it to the token embeddings, the Transformer's "pooled" readout to the encoder
+    outputs. Output width `n_out` = len(single) * d + len(POOLED_GROUPS) * (3 d + 1)."""
+
+    def __init__(self, enc: _Encoding, d: int, single: Sequence[str]):
+        super().__init__()
+        self.pool_groups = tuple(enc.groups[g] for g in POOLED_GROUPS)
+        for g in single:
+            if enc.groups[g][1] - enc.groups[g][0] != 1:
+                raise ValueError(f"token group {g!r} must be a single token")
+        self.single = [enc.groups[g][0] for g in single]
+        self.n_out = len(self.single) * d + len(self.pool_groups) * (3 * d + 1)
+        self.register_buffer("single_idx", torch.tensor(self.single, dtype=torch.long), persistent=False)
+
+    @staticmethod
+    def pool(h: torch.Tensor, m: torch.Tensor) -> torch.Tensor:
+        """Masked mean, max, sum (scaled by capacity) and fill fraction; empty groups pool to zeros."""
+        mf = m.unsqueeze(-1).to(h.dtype)
+        count = mf.sum(1)
+        total = (h * mf).sum(1)
+        mean = total / count.clamp(min=1.0)
+        mx = h.masked_fill(~m.unsqueeze(-1), -1e4).max(1).values
+        mx = torch.where(count > 0, mx, torch.zeros_like(mx))
+        return torch.cat([mean, mx, total / m.shape[1], count / m.shape[1]], dim=-1)
+
+    def forward(self, h: torch.Tensor, present: torch.Tensor) -> torch.Tensor:
+        """(B, n_out) features of `h` (absent rows must already be zero) with token presence `present`."""
+        B = h.shape[0]
+        singles = h.index_select(1, self.single_idx).reshape(B, -1)
+        pooled = [self.pool(h[:, a:b], present[:, a:b]) for a, b in self.pool_groups]
+        return torch.cat([singles] + pooled, dim=-1)
+
+
+class _PooledReadout(nn.Module):
+    """The Transformer's "pooled" readout term: Linear(relu(MLP(GroupPooling(outputs)))) -> (B, d), added to
+    the global token output. The final Linear starts near zero (orthogonal gain 0.01, zero bias)."""
+
+    def __init__(self, enc: _Encoding, d: int):
+        super().__init__()
+        self.pooling = GroupPooling(enc, d, READOUT_SINGLE_TOKENS)
+        self.ctx = mlp(self.pooling.n_out, (d,), d, out_gain=np.sqrt(2))
+        self.proj = _small(nn.Linear(d, d))
+
+    def forward(self, h: torch.Tensor, present: torch.Tensor) -> torch.Tensor:
+        return self.proj(torch.relu(self.ctx(self.pooling(h, present))))
+
+
 class _TransformerTower(nn.Module):
     """Token embeddings -> pre-norm Transformer encoder (key padding from token presence, no positional
-    encoding) -> (token outputs (B, T, d), global token output (B, d))."""
+    encoding) -> (token outputs (B, T, d), g (B, d)). g = the global token output, plus the pooled
+    readout term of the outputs with readout="pooled"."""
 
     def __init__(self, enc: _Encoding, card_table, d: int, layers: int, heads: int, ff: int, id_dim: int,
-                 privileged: bool):
+                 privileged: bool, readout: str = "global"):
         super().__init__()
         self.embed = TokenEmbedder(enc, card_table, d, id_dim, privileged)
         layer = nn.TransformerEncoderLayer(d, heads, dim_feedforward=ff, dropout=0.0, activation="relu",
                                            batch_first=True, norm_first=True)
         self.encoder = nn.TransformerEncoder(layer, layers, norm=nn.LayerNorm(d), enable_nested_tensor=False)
         self.tok_global = enc.tok_global
+        # created last and only for "pooled": a "global" tower draws exactly the parameters it always did
+        self.readout = _PooledReadout(enc, d) if readout == "pooled" else None
 
     @staticmethod
     def pack_order(present: torch.Tensor) -> torch.Tensor:
@@ -325,7 +387,10 @@ class _TransformerTower(nn.Module):
         # LayerNorm runs in fp32 while the token embedding `x` is bf16, and scatter needs equal dtypes.
         h = out.new_zeros(x.shape).scatter(1, idx, out)
         h = h * present.unsqueeze(-1).to(h.dtype)
-        return h, h[:, self.tok_global]
+        g = h[:, self.tok_global]
+        if self.readout is not None:
+            g = g + self.readout(h, present)
+        return h, g
 
 
 class _PooledTower(nn.Module):
@@ -334,34 +399,14 @@ class _PooledTower(nn.Module):
     def __init__(self, enc: _Encoding, card_table, d: int, ctx_dim: int, id_dim: int, privileged: bool):
         super().__init__()
         self.embed = TokenEmbedder(enc, card_table, d, id_dim, privileged)
-        self.pool_groups = tuple(enc.groups[g] for g in POOLED_GROUPS)
-        self.single = [enc.groups[g][0] for g in SINGLE_TOKENS]
-        for g in SINGLE_TOKENS:
-            if enc.groups[g][1] - enc.groups[g][0] != 1:
-                raise ValueError(f"token group {g!r} must be a single token")
-        n_in = len(self.single) * d + len(self.pool_groups) * (3 * d + 1)
-        self.ctx = mlp(n_in, (ctx_dim,), ctx_dim, out_gain=np.sqrt(2))
-        self.register_buffer("single_idx", torch.tensor(self.single, dtype=torch.long), persistent=False)
-
-    @staticmethod
-    def _pool(h: torch.Tensor, m: torch.Tensor) -> torch.Tensor:
-        """Masked mean, max, sum (scaled by capacity) and fill fraction; empty groups pool to zeros."""
-        mf = m.unsqueeze(-1).to(h.dtype)
-        count = mf.sum(1)
-        total = (h * mf).sum(1)
-        mean = total / count.clamp(min=1.0)
-        mx = h.masked_fill(~m.unsqueeze(-1), -1e4).max(1).values
-        mx = torch.where(count > 0, mx, torch.zeros_like(mx))
-        return torch.cat([mean, mx, total / m.shape[1], count / m.shape[1]], dim=-1)
+        self.pooling = GroupPooling(enc, d, SINGLE_TOKENS)  # no parameters: the state_dict keys are unchanged
+        self.ctx = mlp(self.pooling.n_out, (ctx_dim,), ctx_dim, out_gain=np.sqrt(2))
 
     def forward(self, parts: Parts, priv=None):
         present = parts.present
         h = self.embed(parts, priv)
         h = h * present.unsqueeze(-1).to(h.dtype)
-        B = h.shape[0]
-        singles = h.index_select(1, self.single_idx).reshape(B, -1)
-        pooled = [self._pool(h[:, a:b], present[:, a:b]) for a, b in self.pool_groups]
-        ctx = torch.relu(self.ctx(torch.cat([singles] + pooled, dim=-1)))
+        ctx = torch.relu(self.ctx(self.pooling(h, present)))
         return h, ctx
 
 
@@ -506,24 +551,29 @@ class _PointerNet(_ActMixin, nn.Module):
 class TransformerPolicyNet(_PointerNet):
     """Stage 3 default (SPEC §7): token embeddings -> pre-norm Transformer -> pointer scorer.
 
-    The global token output g conditions the scorer and feeds the value head (value tower) and the
-    belief head (policy tower)."""
+    Each tower's global vector g conditions the scorer and feeds the value head (value tower) and the
+    belief head (policy tower). readout="global" (default): g = the global token output; "pooled": g =
+    the global token output + a near-zero-initialised Linear of the pooled-net context computed over the
+    encoder outputs (`_PooledReadout`). A spec without "readout" (the first Stage 3 runs) means "global"."""
 
     kind = "transformer"
 
     def __init__(self, layout: dict, d_model: int = 128, layers: int = 3, heads: int = 4, ff: int = 256,
                  id_dim: int = 16, belief: bool = True, privileged_critic: bool = False, shared_trunk: bool = False,
-                 key_dim: Optional[int] = None, pair_dim: int = 32):
+                 key_dim: Optional[int] = None, pair_dim: int = 32, readout: str = "global"):
         super().__init__()
         if d_model % heads:
             raise ValueError(f"d_model={d_model} must be divisible by heads={heads}")
         if layers < 1:
             raise ValueError("layers must be >= 1")
+        if readout not in READOUTS:
+            raise ValueError(f"readout must be one of {', '.join(READOUTS)}, got {readout!r}")
         self.d_model, self.layers, self.heads, self.ff, self.id_dim = d_model, layers, heads, ff, id_dim
+        self.readout = readout
         key_dim = d_model if key_dim is None else key_dim
 
         def make_tower(enc, card_table, privileged):
-            return _TransformerTower(enc, card_table, d_model, layers, heads, ff, id_dim, privileged)
+            return _TransformerTower(enc, card_table, d_model, layers, heads, ff, id_dim, privileged, readout)
 
         self._setup(layout, d_model, key_dim, pair_dim, belief, privileged_critic, shared_trunk, make_tower,
                     value_hidden=d_model)
@@ -532,7 +582,7 @@ class TransformerPolicyNet(_PointerNet):
         return {"kind": self.kind, "layout": self.layout, "d_model": self.d_model, "layers": self.layers,
                 "heads": self.heads, "ff": self.ff, "id_dim": self.id_dim, "belief": self.belief,
                 "privileged_critic": self.privileged_critic, "shared_trunk": self.shared_trunk,
-                "key_dim": self.key_dim, "pair_dim": self.pair_dim}
+                "key_dim": self.key_dim, "pair_dim": self.pair_dim, "readout": self.readout}
 
 
 class PooledPolicyNet(_PointerNet):
@@ -573,8 +623,21 @@ class EntityPolicyNet:
                          "TransformerPolicyNet (default) or PooledPolicyNet (baseline)")
 
 
+def normalize_spec(spec):
+    """A copy of a network spec with the keys added since the first Stage 3 runs filled in with the value
+    those runs used (SPEC_DEFAULTS: a transformer spec without "readout" is "global"), so an old
+    checkpoint's spec compares equal to the spec() of the net it builds. Non-dicts are returned as is."""
+    if not isinstance(spec, dict):
+        return spec
+    out = dict(spec)
+    for key, value in SPEC_DEFAULTS.get(out.get("kind"), {}).items():
+        out.setdefault(key, value)
+    return out
+
+
 def build_net(spec: dict) -> nn.Module:
-    """Rebuild a network from `net.spec()` (as stored in checkpoints)."""
+    """Rebuild a network from `net.spec()` (as stored in checkpoints; missing newer keys take the value the
+    older runs used, see normalize_spec)."""
     spec = dict(spec)
     if "kind" not in spec:
         raise ValueError("network spec without 'kind': a Stage 1 checkpoint, not loadable in Stage 3")

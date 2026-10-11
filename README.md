@@ -150,8 +150,15 @@ tensorboard --logdir runs                         # curves (also runs/<name>/met
 Defaults (`python train.py -h` lists every flag): the Transformer policy (`--arch transformer`, 3
 layers, d_model 128, ~1.1M parameters) with the belief head (`--no-belief` turns it off), 32 games
 per worker, 65,536 learner decisions per update, minibatch 8,192 in micro-batches of 1,024, 4
-epochs, lr 3e-4 → 3e-5, γ 0.997, λ 0.95, clip 0.2, entropy 0.01, bf16 autocast on CUDA
-(`--no-amp`). Opponents: 50% latest self, else lookahead 15% / random 5% / frozen snapshots 30%
+epochs, γ 0.997, λ 0.95, clip 0.2, entropy 0.01, bf16 autocast on CUDA (`--no-amp`). The learning
+rate depends on the architecture: 1.5e-4 for the Transformer, 3e-4 for `--arch pooled` and `mlp`,
+decaying linearly to a tenth (`--lr-final-frac 0.1`). An explicit `--lr` always wins, and
+`config.json` records the rate actually used. (In the first Stage 3 round every arch used 3e-4, and
+the Transformer's PPO steps came out about 2.5× the pooled net's.) `--readout pooled` gives the
+Transformer's global vector (read by the value head, the belief head and the action scorer) the
+pooled per-group statistics of its output tokens on top of the global token's output (~1.8M
+parameters, about 10% slower CPU inference). The default `--readout global` uses the global token
+alone. Opponents: 50% latest self, else lookahead 15% / random 5% / frozen snapshots 30%
 (`--opp-weights lookahead=0.3 snapshot=0.2`; space-separated pairs work in PowerShell and bash). Each
 seat gets a random 40-card deck with probability 0.7 (`--random-deck-frac`), else a fixed deck. A
 snapshot every 10 updates (newest 30 kept). With a CUDA learner the workers' policy forward passes
@@ -195,56 +202,79 @@ with the brief's settings, INDICATIVE otherwise (without `--baseline` part 3 is 
 
 ### Stage 3 desktop runs
 
-**Step 1: check the checkout, then a 20-minute inference A/B.** With a CUDA learner the workers'
-policy inference runs batched on the GPU by default (`--inference-server auto`). That was slower
-on the Mac's GPU and is unmeasured on CUDA, so time both settings once:
+**Round 1** (`runs/s3`, `runs/s3_pooled`, `runs/s3_nobelief`, results in `feedback/`): `s3` passed
+criteria (1), (2) and (4) but lost head-to-head (3) to the pooled baseline, 35.0%. It stopped at
+update 489 of 1000, so it had no selection pass and its best.pt is the provisional one from update
+440. The full 1000-update no-belief Transformer also lost, 44.8%. At the shared lr 3e-4 the Transformer's PPO
+updates were about 2.5× the pooled net's (KL 0.022–0.024 vs 0.008–0.010), and its policy stayed more
+random. Round 2 lowers the Transformer's default lr to 1.5e-4 and tries the pooled readout (`runs/s3b` ran
+before that code was pushed, so it repeats the round 1 settings at full length). The
+pooled baseline is not retrained: `runs/s3_pooled/best.pt` stays the reference.
+
+**Before you start.** Set Windows sleep to Never: Settings > System > Power & battery > Screen and
+sleep (on newer builds "Screen, sleep & hibernate timeouts"), with the plugged-in sleep timeout set
+to Never. In round 1 `s3_pooled` paused for about 8 hours at update 101 while the PC slept. Let
+every run finish: the best.pt selection pass runs after the last update (about 2 minutes).
+
+**Step 1: check the checkout.** The second line copies the round 1 baseline back from `feedback/`
+in case `runs/s3_pooled/best.pt` is gone (it skips the copy if the file exists).
 
 ```bash
 git pull
+python -c "import shutil, os; os.makedirs('runs/s3_pooled', exist_ok=True); os.path.exists('runs/s3_pooled/best.pt') or shutil.copy2('feedback/s3_pooled/best.pt', 'runs/s3_pooled/best.pt')"
 python -m pytest -q
-python train.py --run-dir runs/srv_on --updates 30 --snapshot-every 1 --eval-every 0 --select-games 0
-python train.py --run-dir runs/srv_off --updates 30 --snapshot-every 1 --eval-every 0 --select-games 0 --inference-server off
-python -c "import json; [print(r, 'collect %.1fs learn %.1fs per update' % tuple(sum(x[k] for x in rows) / len(rows) for k in ('collect_s', 'learn_s'))) for r in ('srv_on', 'srv_off') for rows in [[json.loads(l) for l in open(f'runs/{r}/metrics.jsonl')][20:]]]"
 ```
 
-If `srv_off` collects faster, add `--inference-server off` to the three training commands below.
-Otherwise leave them as they are.
-
-**Step 2: the three runs, one after another.** Each ends with its selection pass. Then the
-evaluations.
+**Step 2: evaluate `runs/s3b`.** It was trained before this code reached the desktop, so it used
+the round 1 settings: lr 3e-4, global readout, belief head on. Its `config.json` shows lr 0.0003.
+It is the full 1000-update version of round 1's `s3`, which stopped at update 489, and the belief
+partner of round 1's `s3_nobelief`.
 
 ```bash
-python train.py --run-dir runs/s3                                # Transformer (default)
-python train.py --run-dir runs/s3_pooled --arch pooled           # pooled baseline: SPEC 10 criterion (3)
-python train.py --run-dir runs/s3_nobelief --no-belief           # ablation: belief head off
-python eval.py --agent runs/s3/best.pt --baseline runs/s3_pooled/best.pt --scenarios --json runs/s3/eval.json
-python eval.py --agent runs/s3_pooled/best.pt --scenarios --json runs/s3_pooled/eval.json
-python eval.py --agent runs/s3_nobelief/best.pt --scenarios --json runs/s3_nobelief/eval.json
-python eval.py --agent runs/s3/best.pt --opponents runs/s3_nobelief/best.pt --decks random --json runs/s3/h2h_nobelief.json
+python eval.py --agent runs/s3b/best.pt --baseline runs/s3_pooled/best.pt --scenarios --json runs/s3b/eval.json
+python eval.py --agent runs/s3b/best.pt --opponents runs/s3_nobelief/best.pt --decks random --json runs/s3b/h2h_nobelief.json
 ```
 
-The first `eval.py` line is the acceptance verdict. The other three give the ablations:
-* the pooled baseline against lookahead;
-* the no-belief run against lookahead;
-* the Transformer with vs without the belief head.
+**Step 3: three Transformer runs with the new code, one after another.** Each takes about 2.5–3
+hours (round 1: 9.5 s per update). `s3c` goes first, since it combines both changes.
 
-How long a run takes on the desktop is not measured yet; `elapsed_min` in `metrics.jsonl` records it.
+```bash
+python train.py --run-dir runs/s3c --readout pooled                   # lr 1.5e-4 (new default) + pooled readout
+python train.py --run-dir runs/s3d                                    # lr 1.5e-4 alone (global readout)
+python train.py --run-dir runs/s3c_nobelief --readout pooled --no-belief   # belief ablation of s3c
+```
+
+The first line of each run's output shows `readout=` and `lr=`; check them (`lr=0.00015`).
+
+**Step 4: the evaluations.**
+
+```bash
+python eval.py --agent runs/s3c/best.pt --baseline runs/s3_pooled/best.pt --scenarios --json runs/s3c/eval.json
+python eval.py --agent runs/s3d/best.pt --baseline runs/s3_pooled/best.pt --scenarios --json runs/s3d/eval.json
+python eval.py --agent runs/s3c/best.pt --opponents runs/s3c_nobelief/best.pt --decks random --json runs/s3c/h2h_nobelief.json
+python eval.py --agent runs/s3c_nobelief/best.pt --scenarios --json runs/s3c_nobelief/eval.json
+```
+
+All head-to-heads use the round 1 pooled baseline. Comparing them:
+* `s3b` (lr 3e-4) vs `s3d` (lr 1.5e-4): the effect of the lower learning rate;
+* `s3d` vs `s3c`: the effect of the pooled readout;
+* the two `h2h_nobelief` files: the belief ablation at each setting.
 
 The Stage 2 runs behind the results above were `runs/s2_a` (defaults), `runs/s2_b` (the Stage 2
 flag `--attention-layers 1`, which no longer exists) and `runs/s2_c` (`--gamma 0.99`).
 
 ### Desktop → laptop feedback
 
-After a desktop run, copy `config.json`, `metrics.jsonl`, `selection.json`, `eval.json` and `best.pt`
-from `runs/<name>/` into `feedback/<name>/`, add a short `notes.txt` (OS, Python/torch versions, GPU,
+After a desktop run, copy `config.json`, `metrics.jsonl`, `selection.json`, `eval.json`,
+`h2h_nobelief.json` (where present) and `best.pt` from `runs/<name>/` into `feedback/<name>/`, add a short `notes.txt` (OS, Python/torch versions, GPU,
 wall-clock time, anything odd) and push. Whole `runs/` directories stay out of git.
 
-These two lines work in PowerShell and bash alike. The first copies the files; the second starts
-`feedback/notes.txt` with the OS, Python, torch and GPU versions. Edit the run list as needed.
+These two lines work in PowerShell and bash alike. The first copies the files; the second appends
+the OS, Python, torch and GPU versions to `feedback/notes.txt`. Edit the run list as needed.
 
 ```bash
-python -c "import shutil, os; [(os.makedirs(f'feedback/{r}', exist_ok=True), shutil.copy2(f'runs/{r}/{f}', f'feedback/{r}/{f}')) for r in ('s3', 's3_pooled', 's3_nobelief', 'srv_on', 'srv_off') for f in ('config.json', 'metrics.jsonl', 'selection.json', 'eval.json', 'h2h_nobelief.json', 'best.pt') if os.path.exists(f'runs/{r}/{f}')]"
-python -c "import sys, platform, torch; open('feedback/notes.txt', 'w', encoding='utf-8').write(f'{platform.platform()} | python {sys.version.split()[0]} | torch {torch.__version__} | GPU {torch.cuda.get_device_name(0)}\n')"
+python -c "import shutil, os; [(os.makedirs(f'feedback/{r}', exist_ok=True), shutil.copy2(f'runs/{r}/{f}', f'feedback/{r}/{f}')) for r in ('s3b', 's3c', 's3d', 's3c_nobelief') for f in ('config.json', 'metrics.jsonl', 'selection.json', 'eval.json', 'h2h_nobelief.json', 'best.pt') if os.path.exists(f'runs/{r}/{f}')]"
+python -c "import sys, platform, torch; open('feedback/notes.txt', 'a', encoding='utf-8').write(f'\n{platform.platform()} | python {sys.version.split()[0]} | torch {torch.__version__} | GPU {torch.cuda.get_device_name(0)}\n')"
 ```
 
 Then add your notes to `feedback/notes.txt`, and run `git pull`, `git add feedback`, `git commit`
@@ -318,7 +348,9 @@ features and a learned id embedding; a token MLP turns every card slot (hand, bo
 frontline, pending choice, revealed cards) plus global, base and deck tokens into embeddings; a
 pre-norm Transformer encoder (3 layers) runs over the present tokens; one pointer scorer gives every
 action (END_TURN, PLAY, MOVE, ATTACK, CHOOSE, MULLIGAN, CONFIRM) a logit from its source and target
-tokens, with attack and choose previews computed by the engine. The value tower is separate; the
+tokens, with attack and choose previews computed by the engine. The scorer, the value head and the
+belief head read the global token's output; with `--readout pooled` they also read pooled
+per-group statistics of the output tokens. The value tower is separate; the
 belief head predicts the opponent's hand (an auxiliary loss); the optional privileged critic
 (`--privileged-critic`) also feeds the opponent's true hand to the value tower only. The pooled
 baseline (`--arch pooled`) replaces attention with masked pooling per token group.

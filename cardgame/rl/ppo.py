@@ -9,6 +9,11 @@ latest policy (both seats recorded) with probability `self_play_prob`, otherwise
 (newest `max_snapshots` kept). Every game is dealt with `cards.sample_deal(seed, config,
 random_deck_frac)`.
 
+Learning rate: `lr` defaults to None = the architecture's default (`DEFAULT_LR`: 1.5e-4 for the
+Transformer, 3e-4 for the pooled and MLP nets), resolved when the trainer is built; an explicit lr
+always wins. The resolved value is what config.json, checkpoints, the linear decay to
+lr * lr_final_frac and --resume use (a resumed run keeps its saved lr unless one is given).
+
 Loss per PPO minibatch (default 8192 rows):
     PPO clip + vf_coef * value + belief_coef * BCE(belief_logits, opp_hand > 0) - ent_coef * entropy
 The minibatch is sorted by present-token count and processed in micro-batches of `micro_batch`
@@ -43,6 +48,7 @@ from __future__ import annotations
 
 import contextlib
 import copy
+import dataclasses
 import json
 import math
 import numbers
@@ -65,7 +71,8 @@ from ..cards import GameConfig, deck_rng, generate_deck, load_ruleset
 from ..engine import DRAW, Game
 from ..features import ENCODER_VERSION, ObservationEncoder
 from .agent import CheckpointError, spec_encoder_version, spec_fingerprint
-from .network import NET_KINDS, STAGE2_KINDS, PolicyValueNet, PooledPolicyNet, TransformerPolicyNet, build_net
+from .network import (NET_KINDS, READOUTS, STAGE2_KINDS, PolicyValueNet, PooledPolicyNet, TransformerPolicyNet,
+                      build_net, normalize_spec)
 from .rollout import (OPPONENT_KINDS, SCRIPTED_KINDS, TIME_KEYS, InferenceServer, RolloutWorkerError, WorkerInit,
                       WorkerPool, worker_seed)
 
@@ -76,12 +83,16 @@ QUICK_EVAL_SEED_BASE = 2_000_000_000
 BEST_MIN_CELL = 0.6               # best.pt: eligible when every fixed-pair cell vs lookahead is >= this
 EVAL_SAMPLING_SEED = 12345
 INFERENCE_SERVER_MODES = ("auto", "on", "off")
+# Default learning rate per architecture (PPOConfig.lr = None). The first Stage 3 desktop runs shared 3e-4: the
+# Transformer's PPO steps were ~2.5x the pooled net's (KL 0.022-0.024 vs 0.008-0.010, clipfrac 0.17-0.19 vs
+# 0.07-0.10, epochs cut short by target_kl) and it lost head-to-head to the pooled baseline.
+DEFAULT_LR = {"transformer": 1.5e-4, "pooled": 3e-4, "mlp": 3e-4}
 PLANNING_TRANSITIONS_PER_GAME = 35  # seed-budget projection: ~ learner transitions per game of a trained policy
                                     # (Stage 2 desktop: 65,536 / ~1,740 games per update)
 
 __all__ = ["PPOConfig", "PPOTrainer", "RolloutWorkerError", "CheckpointError", "SeedBlockExhausted", "select_device",
            "default_workers", "check_resumable", "best_score", "eligible_probability", "resolve_inference_server",
-           "INFERENCE_SERVER_MODES", "SELECTION_SEED_BASE"]
+           "default_lr", "DEFAULT_LR", "INFERENCE_SERVER_MODES", "SELECTION_SEED_BASE"]
 
 
 class SeedBlockExhausted(RuntimeError):
@@ -148,6 +159,13 @@ def select_device(name: str = "auto") -> torch.device:
     return torch.device("cpu")
 
 
+def default_lr(arch: str) -> float:
+    """The learning rate a run of `arch` gets when PPOConfig.lr is None (DEFAULT_LR)."""
+    if arch not in DEFAULT_LR:
+        raise ValueError(f"unknown arch {arch!r} (expected one of {NET_KINDS})")
+    return DEFAULT_LR[arch]
+
+
 def resolve_inference_server(mode: str, device, n_workers: int) -> bool:
     """Whether the rollout workers use the learner's batched inference (SPEC §8.1): mode "on", or "auto"
     with a CUDA learner device; never with in-process collection (n_workers = 0), which keeps local nets."""
@@ -169,7 +187,7 @@ class PPOConfig:
     epochs: int = 4
     minibatch: int = 8192         # rows per optimizer step
     micro_batch: int = 1024       # rows per forward/backward (gradient accumulation inside a minibatch)
-    lr: float = 3e-4
+    lr: Optional[float] = None    # None = DEFAULT_LR[arch]: 1.5e-4 transformer, 3e-4 pooled / mlp (PPOTrainer resolves)
     lr_final_frac: float = 0.1    # linear LR decay to lr * lr_final_frac
     gamma: float = 0.997
     gae_lambda: float = 0.95
@@ -187,6 +205,7 @@ class PPOConfig:
     id_dim: int = 16
     ctx_dim: int = 256            # pooled only
     pair_dim: int = 32            # width of the pointer scorer's additive pair MLP (token nets)
+    readout: str = "global"       # transformer only: g = global token output | "pooled" (+ pooled stats of the outputs)
     hidden: tuple = (256, 256)    # mlp only
     belief: bool = True           # belief head (opponent-hand prediction) + its loss
     privileged_critic: bool = False
@@ -304,6 +323,12 @@ class PPOTrainer:
                              f"pooled or mlp")
         if cfg.arch not in NET_KINDS:
             raise ValueError(f"unknown arch {cfg.arch!r} (expected one of {NET_KINDS})")
+        if cfg.readout not in READOUTS:
+            raise ValueError(f"readout must be one of {', '.join(READOUTS)}, got {cfg.readout!r}")
+        if cfg.readout != "global" and cfg.arch != "transformer":
+            raise ValueError(f"readout {cfg.readout!r} applies to the transformer only (arch {cfg.arch!r})")
+        if cfg.lr is not None and not (isinstance(cfg.lr, numbers.Real) and math.isfinite(cfg.lr) and cfg.lr > 0):
+            raise ValueError(f"lr must be finite and > 0 (or None for the arch default), got {cfg.lr!r}")
         if cfg.shared_trunk and cfg.privileged_critic:
             raise ValueError("shared_trunk cannot be combined with privileged_critic (the actor would see the "
                              "opponent's hand through the shared trunk)")
@@ -317,6 +342,12 @@ class PPOTrainer:
             raise ValueError(f"inference_server must be one of {', '.join(INFERENCE_SERVER_MODES)}, "
                              f"got {cfg.inference_server!r}")
         _check_opponents(cfg)
+        # lr None = the arch default; from here on cfg.lr is the resolved value (config.json, checkpoints,
+        # the schedule). lr_explicit: on --resume an explicit lr rescales the run's schedule, a default one
+        # gives way to the run's saved lr.
+        self.lr_explicit = cfg.lr is not None
+        if cfg.lr is None:
+            cfg = dataclasses.replace(cfg, lr=default_lr(cfg.arch))
         self.cfg = cfg
         self.config = config if config is not None else load_ruleset()
         torch.set_num_threads(cfg.torch_threads)
@@ -366,7 +397,7 @@ class PPOTrainer:
                                    shared_trunk=cfg.shared_trunk, pair_dim=cfg.pair_dim)
         return TransformerPolicyNet(layout, d_model=cfg.d_model, layers=cfg.layers, heads=cfg.heads, ff=cfg.ff,
                                     id_dim=cfg.id_dim, belief=cfg.belief, privileged_critic=cfg.privileged_critic,
-                                    shared_trunk=cfg.shared_trunk, pair_dim=cfg.pair_dim)
+                                    shared_trunk=cfg.shared_trunk, pair_dim=cfg.pair_dim, readout=cfg.readout)
 
     def _autocast(self):
         """bf16 autocast on the learner device when `amp` is active (only CUDA turns it on; the device type
@@ -868,9 +899,10 @@ class PPOTrainer:
     def resume(self, path: str) -> None:
         state = torch.load(path, map_location="cpu", weights_only=False)
         check_resumable(state, self.encoder)
-        if state.get("net") != self.net.spec():
+        saved_spec = normalize_spec(state.get("net"))  # first Stage 3 runs: no "readout" key = "global"
+        if saved_spec != self.net.spec():
             raise ValueError(f"the architecture is fixed by the checkpoint, but this config differs in "
-                             f"{_spec_diff(state.get('net'), self.net.spec())}: drop those flags to resume (or start "
+                             f"{_spec_diff(saved_spec, self.net.spec())}: drop those flags to resume (or start "
                              f"a new run)")
         self.net.load_state_dict(state["model"])
         self.actor.load_state_dict(state["model"])
@@ -899,8 +931,11 @@ class PPOTrainer:
         if self._games_left_per_worker() < 1:
             raise SeedBlockExhausted(self._exhausted_message("no deal seed is left"))
         self.best_eval = tuple(state.get("best_eval", (-1, -1.0)))
+        saved_base_lr = (state.get("args") or {}).get("lr")
+        if saved_base_lr and not self.lr_explicit:  # no lr given: the run keeps its own (old runs: 3e-4)
+            self.cfg = dataclasses.replace(self.cfg, lr=saved_base_lr)
+            self.lr_anchor = (0, saved_base_lr)
         saved_lr = state.get("lr", self.lr_at(self.update))
-        saved_base_lr = state.get("args", {}).get("lr", self.cfg.lr)
         if saved_base_lr and self.cfg.lr != saved_base_lr:  # --lr given on resume rescales the schedule
             saved_lr *= self.cfg.lr / saved_base_lr
         self.lr_anchor = (self.update, saved_lr)
@@ -1046,7 +1081,8 @@ class PPOTrainer:
 
 _SPEC_FLAGS = {"kind": "--arch", "d_model": "--d-model", "layers": "--layers", "heads": "--heads", "ff": "--ff",
                "id_dim": "--id-dim", "ctx_dim": "--ctx-dim", "pair_dim": "--pair-dim", "hidden": "--hidden",
-               "belief": "--no-belief", "privileged_critic": "--privileged-critic", "shared_trunk": "--shared-trunk"}
+               "belief": "--no-belief", "privileged_critic": "--privileged-critic", "shared_trunk": "--shared-trunk",
+               "readout": "--readout"}
 
 
 def _spec_diff(saved, current) -> str:

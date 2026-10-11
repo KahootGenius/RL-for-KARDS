@@ -378,10 +378,11 @@ def test_belief_off_has_no_belief_loss(tmp_path):
     assert not any(k.startswith("belief") for k in out)
 
 
-@pytest.mark.parametrize("arch, priv", [("transformer", False), ("pooled", False), ("mlp", False),
-                                        ("transformer", True)])
-def test_micro_batch_accumulation_equals_the_full_batch_gradient(tmp_path, arch, priv):
-    cfg = tiny(tmp_path, arch=arch, privileged_critic=priv, micro_batch=4096)
+@pytest.mark.parametrize("arch, priv, readout", [("transformer", False, "global"), ("pooled", False, "global"),
+                                                 ("mlp", False, "global"), ("transformer", True, "global"),
+                                                 ("transformer", True, "pooled")])
+def test_micro_batch_accumulation_equals_the_full_batch_gradient(tmp_path, arch, priv, readout):
+    cfg = tiny(tmp_path, arch=arch, privileged_critic=priv, readout=readout, micro_batch=4096)
     full, micro = PPOTrainer(cfg), PPOTrainer(dataclasses.replace(cfg, micro_batch=24))
     micro.net.load_state_dict(full.net.state_dict())
     trajs, _ = full.collect()
@@ -781,7 +782,10 @@ def test_cli_refuses_a_stage2_checkpoint_clearly(tmp_path):
                                  {"opp_weights": {"lookahead": 0.2, "random": -0.1}},
                                  {"opp_weights": {"lookahead": float("nan")}},
                                  {"opp_weights": {"lookahead": 0.0, "random": 0.0, "greedy": 0.0, "snapshot": 0.5}},
-                                 {"inference_server": "yes"}, {"inference_server": True}])
+                                 {"inference_server": "yes"}, {"inference_server": True},
+                                 {"readout": "attention"}, {"readout": "pooled", "arch": "pooled"},
+                                 {"readout": "pooled", "arch": "mlp"}, {"lr": 0.0}, {"lr": -1e-4},
+                                 {"lr": float("nan")}, {"lr": "3e-4"}])
 def test_config_validation(tmp_path, bad):
     with pytest.raises(ValueError):
         PPOTrainer(tiny(tmp_path, **bad))
@@ -797,6 +801,9 @@ def test_default_config_matches_spec():
     assert cfg.micro_batch == 1024 and cfg.minibatch == 8192 and cfg.amp and cfg.eval_deals == 256
     assert cfg.inference_server == "auto" and cfg.serve_snapshots is False
     assert cfg.select_top == 3 and cfg.select_games == 2000
+    # lr None = per-arch default, resolved by the trainer; the Transformer's g is the global token output
+    assert cfg.lr is None and cfg.lr_final_frac == 0.1 and cfg.readout == "global"
+    assert ppo.DEFAULT_LR == {"transformer": 1.5e-4, "pooled": 3e-4, "mlp": 3e-4}
 
 
 def test_cli_flags_and_merging(tmp_path):
@@ -820,6 +827,79 @@ def test_cli_flags_and_merging(tmp_path):
     assert train.make_config(parser.parse_args(["--serve-snapshots"])).serve_snapshots is True
     with pytest.raises(SystemExit):
         parser.parse_args(["--inference-server", "gpu"])
+    # --lr: None (the arch default) unless given; --readout global | pooled
+    assert train.make_config(parser.parse_args([])).lr is None
+    assert train.make_config(parser.parse_args(["--lr", "2e-4"])).lr == 2e-4
+    cfg = train.make_config(parser.parse_args(["--readout", "pooled", "--no-belief"]))
+    assert (cfg.readout, cfg.arch, cfg.belief, cfg.lr) == ("pooled", "transformer", False, None)
+    with pytest.raises(SystemExit):
+        parser.parse_args(["--readout", "attention"])
+
+
+def test_lr_defaults_per_arch_and_an_explicit_lr_wins(tmp_path):
+    for arch in ARCHS:
+        cfg = tiny(tmp_path, arch=arch, total_updates=10)
+        tr = PPOTrainer(cfg)
+        assert cfg.lr is None  # the caller's config is not modified
+        assert tr.cfg.lr == ppo.DEFAULT_LR[arch] == ppo.default_lr(arch) == tr.lr_at(0)
+        assert tr.opt.param_groups[0]["lr"] == tr.cfg.lr and not tr.lr_explicit
+        assert tr.lr_at(10) == pytest.approx(tr.cfg.lr * cfg.lr_final_frac)  # lr_final_frac keeps its meaning
+        assert tr.lr_at(5) == pytest.approx(tr.cfg.lr * (1 + cfg.lr_final_frac) / 2)
+        explicit = PPOTrainer(tiny(tmp_path, arch=arch, total_updates=10, lr=5e-4))
+        assert explicit.cfg.lr == 5e-4 == explicit.lr_at(0) and explicit.lr_explicit
+        assert explicit.lr_at(10) == pytest.approx(5e-5)
+    assert PPOTrainer(tiny(tmp_path, readout="pooled")).cfg.lr == 1.5e-4
+    assert PPOTrainer(tiny(tmp_path, readout="pooled")).net.spec()["readout"] == "pooled"
+    assert PPOTrainer(tiny(tmp_path)).net.spec()["readout"] == "global"
+
+
+def test_config_json_and_checkpoints_record_the_resolved_lr(tmp_path):
+    tr = PPOTrainer(tiny(tmp_path / "t", total_updates=1, batch_steps=64, minibatch=64, readout="pooled"))
+    tr.train(log=lambda *_: None)
+    info = json.loads((tr.run_dir / "config.json").read_text(encoding="utf-8"))
+    assert info["lr"] == 1.5e-4 and info["readout"] == "pooled" and info["arch"] == "transformer"
+    state = torch.load(tr.run_dir / "latest.pt", weights_only=False)
+    assert state["args"]["lr"] == 1.5e-4 and state["net"]["readout"] == "pooled"
+    assert state["lr"] == pytest.approx(tr.lr_at(1))
+    row = json.loads((tr.run_dir / "metrics.jsonl").read_text(encoding="utf-8").splitlines()[-1])
+    assert row["lr"] == pytest.approx(1.5e-4)  # the rate of update 0
+    mlp = PPOTrainer(tiny(tmp_path / "m", arch="mlp", total_updates=1, batch_steps=64, minibatch=64))
+    mlp.train(log=lambda *_: None)
+    assert json.loads((mlp.run_dir / "config.json").read_text(encoding="utf-8"))["lr"] == 3e-4
+
+
+def test_resume_keeps_an_old_runs_lr(tmp_path):
+    """A run of the first Stage 3 round (lr 3e-4 for every arch, no "readout" in the spec or the args)
+    resumes with its own lr, through the CLI and through the trainer with the default (None) lr; an
+    explicit --lr rescales the schedule as before; --readout pooled is refused (architecture)."""
+    train = importlib.import_module("train")
+    tr = PPOTrainer(tiny(tmp_path, total_updates=2, batch_steps=64, minibatch=64, lr=3e-4))
+    tr.train(log=lambda *_: None)
+    state = torch.load(tr.run_dir / "latest.pt", weights_only=False)
+    del state["net"]["readout"], state["args"]["readout"]  # as the first Stage 3 runs wrote them
+    state["lr"] = 2e-4  # the rate where that run stopped (mid-schedule)
+    old = tr.run_dir / "old.pt"
+    torch.save(state, old)
+    resumed = PPOTrainer(tiny(tmp_path, total_updates=4, batch_steps=64, minibatch=64))  # lr None
+    resumed.resume(str(old))
+    assert resumed.cfg.lr == 3e-4 and resumed.lr_at(2) == pytest.approx(2e-4)
+    assert resumed.lr_at(4) == pytest.approx(3e-5) and resumed.net.spec()["readout"] == "global"
+    cfg = train.make_config(train.build_parser().parse_args(["--resume", str(old), "--updates", "4"]))
+    assert cfg.lr == 3e-4 and cfg.readout == "global"
+    cli = PPOTrainer(cfg)
+    cli.resume(str(old))
+    assert cli.lr_at(2) == pytest.approx(2e-4) and cli.lr_at(4) == pytest.approx(3e-5)
+    cfg = train.make_config(train.build_parser().parse_args(["--resume", str(old), "--updates", "4",
+                                                             "--lr", "1.5e-4"]))
+    rescaled = PPOTrainer(cfg)
+    rescaled.resume(str(old))
+    assert rescaled.lr_at(2) == pytest.approx(1e-4) and rescaled.lr_at(4) == pytest.approx(1.5e-5)
+    with pytest.raises(ValueError, match="readout.*--readout"):
+        PPOTrainer(tiny(tmp_path, readout="pooled")).resume(str(old))
+    resumed.train(log=lambda *_: None)  # continues; the new files carry the run's lr and the full spec
+    assert json.loads((resumed.run_dir / "config.json").read_text(encoding="utf-8"))["lr"] == 3e-4
+    new = torch.load(resumed.run_dir / "latest.pt", weights_only=False)
+    assert new["update"] == 4 and new["args"]["lr"] == 3e-4 and new["net"]["readout"] == "global"
 
 
 def test_cli_help_lists_the_stage3_flags():
@@ -829,8 +909,9 @@ def test_cli_help_lists_the_stage3_flags():
     for flag in ("--arch", "--layers", "--heads", "--ff", "--id-dim", "--ctx-dim", "--hidden", "--no-belief",
                  "--belief-coef", "--privileged-critic", "--shared-trunk", "--random-deck-frac", "--micro-batch",
                  "--no-amp", "--no-tensorboard", "--opp-weights", "--eval-deals", "--resume", "--updates",
-                 "--inference-server", "--serve-snapshots"):
+                 "--inference-server", "--serve-snapshots", "--readout", "--lr"):
         assert flag in proc.stdout, flag
+    assert "1.5e-4 for --arch transformer" in proc.stdout  # the per-arch lr rule
     assert "--belief " not in proc.stdout and "--amp " not in proc.stdout  # on by default: only --no-<name>
 
 

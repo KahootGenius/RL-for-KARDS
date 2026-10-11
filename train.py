@@ -6,6 +6,11 @@
     python train.py --resume runs/ppo/latest.pt --updates 1500
     python train.py --run-dir runs/pooled --arch pooled    # pooled baseline (SPEC 10, criterion 3)
     python train.py --run-dir runs/nobelief --no-belief    # belief-head ablation
+    python train.py --run-dir runs/s3c --readout pooled    # Transformer g + pooled stats of its outputs
+
+Learning rate: --lr defaults to the architecture's rate, 1.5e-4 for --arch transformer and 3e-4 for
+pooled and mlp; an explicit --lr always wins. The resolved rate is what config.json and the
+checkpoints record; it decays linearly to lr * --lr-final-frac over the run.
 
 Rollouts run in `--workers` CPU processes (default: cpu_count - 2, at most 16; 0 = in-process);
 network updates run on `--device auto` (CUDA, else MPS, else CPU), in micro-batches of
@@ -29,8 +34,9 @@ unquoted comma splits the argument) commas: --opp-weights lookahead=0.3 snapshot
 
 On --resume the run's saved hyperparameters are restored and output continues in the resumed
 file's directory; only flags given explicitly on the command line override them. The learning
-rate continues from where the run stopped (rescaled if --lr is given) and decays linearly to
-lr * lr_final_frac over the remaining updates. The architecture is fixed by the checkpoint.
+rate continues from where the run stopped (with the run's saved lr, e.g. 3e-4 for the first
+Stage 3 runs; rescaled if --lr is given) and decays linearly to lr * lr_final_frac over the
+remaining updates. The architecture (--arch, --readout, sizes) is fixed by the checkpoint.
 Stage 1 and Stage 2 checkpoints cannot be resumed (different rules, encoding and network). Each
 --seed owns 10,000,000 training deal seeds; when a long run uses them up it stops cleanly and
 continues with --resume <run>/latest.pt --seed <another seed>. Refused resumes and invalid
@@ -47,21 +53,28 @@ from pathlib import Path
 import torch
 
 from cardgame.cards import load_ruleset
+from cardgame.rl.network import READOUTS
 from cardgame.rl.ppo import (INFERENCE_SERVER_MODES, CheckpointError, PPOConfig, PPOTrainer, SeedBlockExhausted,
                              check_resumable)
 
 RENAMED = {"updates": "total_updates"}  # CLI flag -> PPOConfig field
-CHOICES = {"inference_server": INFERENCE_SERVER_MODES}  # string options with a fixed set of values
+CHOICES = {"inference_server": INFERENCE_SERVER_MODES, "readout": READOUTS}  # string options with fixed values
+TYPES = {"lr": float}  # options whose default (None) does not give the type
 HELP = {
     "run_dir": "output directory", "seed": "run seed in [0, 100)", "total_updates": "total PPO updates",
     "workers": "rollout processes (-1 = auto, 0 = in-process)", "envs_per_worker": "games per rollout worker",
     "batch_steps": "learner transitions per update", "minibatch": "rows per optimizer step",
     "micro_batch": "rows per forward/backward pass (gradient accumulation; bounds GPU memory)",
     "target_kl": "early-stop epochs above this KL (0 = off)",
+    "lr": ("learning rate at the start of the run (default: per arch, 1.5e-4 for --arch transformer, 3e-4 for "
+           "pooled and mlp; an explicit --lr always wins; on --resume the run's saved lr)"),
+    "lr_final_frac": "the learning rate decays linearly to lr * this by the last update",
     "belief_coef": "weight of the belief-head BCE loss",
     "arch": "transformer | pooled | mlp", "layers": "transformer layers", "heads": "attention heads",
     "ff": "transformer feed-forward width", "id_dim": "card id embedding width",
     "ctx_dim": "context width (pooled arch)", "pair_dim": "pointer scorer pair-MLP width (token nets)",
+    "readout": ("transformer global vector g (value, belief, scorer): global = the global token's output; pooled = "
+                "that plus a learned map of the pooled per-group statistics of the output tokens"),
     "hidden": "MLP widths (mlp arch)", "belief": "belief head: predict the opponent's hand (auxiliary loss)",
     "privileged_critic": "the value tower also sees the opponent's true hand (the actor never does)",
     "shared_trunk": "share the policy/value towers", "self_play_prob": "P(opponent = latest self)",
@@ -105,7 +118,7 @@ def build_parser() -> argparse.ArgumentParser:
     for f in fields(PPOConfig):
         flag = "--" + inverse.get(f.name, f.name).replace("_", "-")
         default = defaults[f.name]
-        help_text = f"{HELP.get(f.name, '')} (default {default})".strip()
+        help_text = HELP.get(f.name, "") if default is None else f"{HELP.get(f.name, '')} (default {default})".strip()
         if isinstance(default, bool):
             if default:
                 ap.add_argument("--no-" + flag[2:], dest=f.name, action="store_false", default=None, help=help_text)
@@ -117,8 +130,8 @@ def build_parser() -> argparse.ArgumentParser:
             ap.add_argument(flag, dest=f.name, type=parse_weights, nargs="+", default=None, metavar="KIND=W",
                             help=help_text)
         else:
-            ap.add_argument(flag, dest=f.name, type=type(default), default=None, choices=CHOICES.get(f.name),
-                            help=help_text)
+            ap.add_argument(flag, dest=f.name, type=TYPES.get(f.name, type(default)), default=None,
+                            choices=CHOICES.get(f.name), help=help_text)
     ap.add_argument("--resume", default=None, help="latest.pt of a previous (Stage 3) run")
     return ap
 
@@ -178,7 +191,9 @@ def main(argv=None) -> None:
     budget = trainer.seed_budget()
     print(f"device={trainer.device} amp={'bf16' if trainer.amp else 'off'} workers={trainer.n_workers} "
           f"inference_server={'on' if trainer.inference_server else 'off'} "
-          f"envs={max(1, trainer.n_workers) * cfg.envs_per_worker} arch={cfg.arch} obs_dim={trainer.encoder.dim} "
+          f"envs={max(1, trainer.n_workers) * cfg.envs_per_worker} arch={cfg.arch}"
+          f"{' readout=' + cfg.readout if cfg.arch == 'transformer' else ''} lr={trainer.cfg.lr:g} "
+          f"obs_dim={trainer.encoder.dim} "
           f"n_actions={trainer.n_actions} params={sum(p.numel() for p in trainer.net.parameters()):,} "
           f"run_dir={cfg.run_dir}", flush=True)
     print(f"training deal seeds (--seed {cfg.seed}): {budget['used']:,} of {budget['used'] + budget['remaining']:,} "

@@ -42,6 +42,33 @@ crash on the first CUDA update.
 - the observation dim is 3,999 floats;
 - activations are about 1.9 MB per sample in fp32, hence micro-batches of 1024.
 
+**Desktop round 1 (2026-10-10/11, feedback/s3*, srv_*):**
+- **Verdict for `s3`** (belief Transformer): FAIL on criterion 3 only.
+  - 86.5% vs lookahead on random decks; worst fixed cell 81.3%; scenarios 14/20.
+  - It lost 35.0% to the pooled baseline. But `s3` stopped at update 489 of 1000 (cause unknown,
+    ask the user), so it had no selection pass.
+- **Fair test, run on the Mac:** the full 1000-update no-belief Transformer vs pooled is **44.8%**
+  (CI 42.6–46.9); vs `s3` 57.8%; vs lookahead 89.9%.
+- **Selection pass** (held out, 4,016 games): pooled 92.0% on random decks, no-belief Transformer
+  90.4%.
+- **Diagnosis:** at lr 3e-4 the Transformer's updates are about 2.5× larger.
+  - KL 0.022 vs 0.009; clipfrac 0.18 vs 0.09.
+  - KL early stops: 109 of 1000 updates vs 0.
+  - Entropy stays higher (0.70 vs 0.56–0.62).
+- **Fix for round 2:**
+  - default lr 1.5e-4 for the Transformer;
+  - a `--readout pooled` option (pooled zone statistics added to the global token);
+  - runs s3c / s3d / s3c_nobelief against the existing `s3_pooled/best.pt`.
+  - `runs/s3b` was trained before the round 2 code was pushed, so it used the round 1
+    settings (lr 3e-4, global readout, belief on). It is the full-length repeat of `s3` and
+    the belief partner of `s3_nobelief`.
+- **Timing (CUDA):**
+  - Transformer about 9 s per update (collect 3.1 + learn 5.8), about 2.6 h per 1000-update run
+    including quick evals and selection;
+  - pooled about 7 s per update.
+  - The pooled run paused 500 minutes after update 101 (PC sleep).
+- **Inference A/B:** server on collects 3.2 s vs off 4.0 s, so the auto default is right.
+
 KARDS card-text research (scratchpad `kards/`) produced the extra primitives:
 - scoped watcher triggers, plus on_move and on_kill;
 - pin, discard, add_card and retreat;

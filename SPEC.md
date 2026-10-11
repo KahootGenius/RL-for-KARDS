@@ -921,8 +921,8 @@ every size, offset, group range, action offset and slot→token map, plus the ca
 ## 7. Model (`cardgame.rl.network`)
 
 * **`TransformerPolicyNet(layout, d_model=128, layers=3, heads=4, ff=256, belief=True,
-  privileged_critic=False, shared_trunk=False)`** — the Stage 3 default. 2–4 layers, no positional
-  encoding.
+  privileged_critic=False, shared_trunk=False, readout="global")`** — the Stage 3 default. 2–4
+  layers, no positional encoding.
   * **Token input:** each token's input is `MLP([card_table[id], features, Embedding(id)])`.
   * **Global and deck tokens:** the global token is `Linear(globals)`. The deck token is
     `Linear(Σ_c counts_c · cardvec_c / 40)`, where `cardvec` is the same card MLP applied to every
@@ -930,9 +930,21 @@ every size, offset, group range, action offset and slot→token map, plus the ca
   * **Trunk:** a pre-norm `nn.TransformerEncoder` with a key-padding mask.
   * **Towers:** separate policy and value towers (`shared_trunk` shares them; it cannot be
     combined with `privileged_critic`).
+  * **Readout (each tower's global vector g, read by the scorer, the value head and the belief
+    head).** `readout="global"` (default): g = the global token's output. `readout="pooled"`: g is
+    still the global token's output, augmented with pooled statistics of the contextualised tokens:
+    `g = global output + Linear(ctx)`, `ctx = ReLU(MLP([my base, opponent base, pending and deck
+    outputs, masked mean/max/sum/fill of each variable group's outputs]))` (the pooled baseline's
+    pooling, applied to the encoder outputs; MLP `n_in → d_model → d_model`). **[clarified]** In the
+    first Stage 3 desktop runs the Transformer lost head-to-head to the pooled baseline; besides its
+    larger PPO steps at the shared lr (§8), it reads the whole state through one attention-averaged
+    token, while the pooled net's context sees per-group mean/max/sum/fill statistics plus the fixed
+    tokens. The added `Linear` starts near zero (orthogonal gain 0.01, zero bias), so a new net starts
+    close to the global readout. A spec without `readout` (the first Stage 3 checkpoints) means
+    `"global"`, whose parameters, initialisation and outputs are unchanged.
 * **Policy (pointer-style, one scorer for every action type).** `score(src, tgt, type) =
   q_type(src, g) · k(tgt) / √k + w · ReLU(A src + T tgt + C g + E_type + P preview) + b(tgt)`,
-  where g is the global token output.
+  where g is the policy tower's global vector (the readout above).
 
   | action | source | target |
   |---|---|---|
@@ -944,10 +956,10 @@ every size, offset, group range, action offset and slot→token map, plus the ca
   | END_TURN, CONFIRM | global token | learned null target of that type |
 
   Illegal actions get logit −1e9.
-* **Value** = `MLP(global output)` of the value tower. With `privileged_critic`, the value tower's
+* **Value** = `MLP(g)` of the value tower. With `privileged_critic`, the value tower's
   global token also receives `Linear(Σ_c opp_hand_c · cardvec_c / 10)` (the opponent's true hand
   counts). The actor never sees them.
-* **Belief head** (`belief=True`) = `Linear(global output of the policy tower) → n_cards`, a
+* **Belief head** (`belief=True`) = `Linear(g of the policy tower) → n_cards`, a
   multi-label prediction of which cards are in the opponent's hand. It is trained with BCE against
   engine labels (`count > 0`).
 * **`PooledPolicyNet(layout, d_model=128, ctx_dim=256, belief=True, ...)`** — the Stage 2 pooled
@@ -960,7 +972,9 @@ every size, offset, group range, action offset and slot→token map, plus the ca
   * `policy_logits(x, mask)`, `value(x, priv=None)`, `belief_logits(x)`;
   * `act(x, mask, deterministic, generator)`;
   * `evaluate(x, mask, actions, priv=None) -> (logp, entropy, value, belief_logits)`;
-  * `spec()`; `build_net(spec)` dispatches on `kind` (`"transformer"`, `"pooled"`, `"mlp"`).
+  * `spec()`; `build_net(spec)` dispatches on `kind` (`"transformer"`, `"pooled"`, `"mlp"`). The
+    transformer spec includes `readout`; `normalize_spec` fills it in (`"global"`) for older specs,
+    and `--resume` compares the normalised spec.
   * Stage 2 checkpoints raise `CheckpointError` (encoder version / fingerprint).
 * **Acting** (workers, snapshots, quick eval, `PPOAgent`) uses a CPU copy under
   `torch.inference_mode()`, except that rollout workers in server mode get their logits from the
@@ -984,7 +998,9 @@ every size, offset, group range, action offset and slot→token map, plus the ca
   * Separate attack/choose preview maps.
   * Policy and belief output layers use orthogonal gain 0.01; the value output uses gain 1.0.
 * **Pooled baseline.** The fixed tokens (global, bases, pending, deck) are concatenated; the
-  variable groups (hand, my backline, frontline, opponent backline, revealed) are pooled.
+  variable groups (hand, my backline, frontline, opponent backline, revealed) are pooled. The
+  Transformer's `readout="pooled"` reuses the same pooling module (`GroupPooling`) on its outputs,
+  without the global token (g already holds it).
 * **Specs and checkpoints.**
   * `card_table` is rebuilt from the layout in `spec()` (it is not in the state_dict).
   * The MLP's privileged input is `priv / 3` concatenated to the value input.
@@ -1002,6 +1018,16 @@ The Stage 2 pipeline is reused; changes:
   and privileged critic input.
 * **Loss:** PPO + `vf_coef`·value + `belief_coef`·BCE(belief, opp_hand > 0) − `ent_coef`·entropy.
   The default `belief_coef` is 0.25; `--no-belief` disables the head.
+* **Learning rate per architecture.** `lr` defaults to None, resolved when the trainer is built:
+  1.5e-4 for `arch="transformer"`, 3e-4 for `"pooled"` and `"mlp"` (`DEFAULT_LR`); an explicit
+  `--lr` always wins. It decays linearly to `lr · lr_final_frac` (0.1). The resolved value is what
+  config.json, the checkpoints' `args`, the schedule and `--resume` use; a resumed run keeps its
+  saved lr (3e-4 for the first Stage 3 runs) unless `--lr` is given, which rescales the schedule.
+  **[clarified]** In the first Stage 3 desktop runs, at the shared 3e-4, the Transformer's PPO
+  updates were about 2.5× the pooled net's (KL 0.022–0.024 vs 0.008–0.010, clipfrac 0.17–0.19 vs
+  0.07–0.10, 74 of 489 and 109 of 1000 updates cut short by `target_kl` vs 0 of 1000), its policy
+  stayed more random (entropy about 0.70–0.75 vs 0.56–0.62), and it lost head-to-head to the pooled
+  baseline (44.8% for the full 1000-update no-belief run).
 * **Quick eval** (every `eval_every` updates, vs lookahead): `eval_deals` deals, half on random
   decks (seeds `QUICK_EVAL_SEED_BASE + d`) and half cycling all fixed deck pairs. It reports the
   cells with their [wins, games]; `min_cell` is None unless every unordered cell was played (that
@@ -1020,7 +1046,8 @@ The Stage 2 pipeline is reused; changes:
     `best.pt`; `selection.json` records every candidate. `select_games = 0` skips the pass.
     Resuming a finished run with the same `total_updates` runs only the pass.
 * **New config fields:** `arch` ("transformer" | "pooled" | "mlp"), `layers`, `heads`, `ff`,
-  `id_dim`, `ctx_dim`, `pair_dim` (the pointer scorer's pair-MLP width, 32), `belief`,
+  `id_dim`, `ctx_dim`, `pair_dim` (the pointer scorer's pair-MLP width, 32), `readout` ("global" |
+  "pooled", transformer only, `--readout`; other archs refuse "pooled"), `belief`,
   `belief_coef`, `privileged_critic`, `random_deck_frac`, `micro_batch` (1024), `amp`
   (bf16 autocast, CUDA only), `inference_server` ("auto" | "on" | "off"), `serve_snapshots`
   (False; §8.1), `select_top` (3), `select_games` (2000).

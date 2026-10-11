@@ -1,5 +1,7 @@
 """Stage 3 networks (SPEC §7): masking, shapes, gradients, token wiring of every action block
-(permutation tests), previews, privileged critic, belief head, checkpoints.
+(permutation tests), previews, privileged critic, belief head, checkpoints, and the Transformer's two
+readouts ("global": g = the global token output, unchanged since the first Stage 3 runs; "pooled": g +
+pooled statistics of the output tokens).
 
 Inputs are real v5 encodings: random games on the shipped content (mulligan on and off, fixed and
 random decks), random games on a `build_ruleset` effect pool (CHOICE states with a pending token and
@@ -11,6 +13,7 @@ from __future__ import annotations
 import inspect
 import json
 import random
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -20,8 +23,8 @@ from cardgame.cards import build_ruleset, load_ruleset, sample_deal
 from cardgame.engine import CHOICE, MAIN, MULLIGAN, Game
 from cardgame.features import ENCODER_VERSION, GLOBAL_FEATURES, ObservationEncoder
 from cardgame.rl.agent import CheckpointError, PPOAgent, net_from_checkpoint
-from cardgame.rl.network import (MASK_VALUE, PolicyValueNet, PooledPolicyNet, TransformerPolicyNet,
-                                 build_net)
+from cardgame.rl.network import (MASK_VALUE, READOUT_SINGLE_TOKENS, PolicyValueNet, PooledPolicyNet,
+                                 TransformerPolicyNet, build_net, normalize_spec)
 from conftest import add_unit, blank_game, set_hand
 
 CONFIG_M = load_ruleset()                 # shipped content, mulligan on (the training config)
@@ -133,6 +136,9 @@ def make(kind, layout=LAY, **kw):
     if kind == "transformer_shared":
         return TransformerPolicyNet(layout, d_model=32, layers=1, heads=2, ff=64, id_dim=8, pair_dim=16,
                                     shared_trunk=True, **kw)
+    if kind == "transformer_pooled":  # readout="pooled": g = global token output + pooled stats of the outputs
+        return TransformerPolicyNet(layout, d_model=32, layers=2, heads=4, ff=64, id_dim=8, pair_dim=16,
+                                    readout="pooled", **kw)
     if kind == "pooled":
         return PooledPolicyNet(layout, d_model=32, ctx_dim=64, id_dim=8, pair_dim=16, **kw)
     if kind == "mlp":
@@ -140,8 +146,8 @@ def make(kind, layout=LAY, **kw):
     raise KeyError(kind)
 
 
-KINDS = ("transformer", "transformer_shared", "pooled", "mlp")
-TOKEN_KINDS = ("transformer", "pooled")
+KINDS = ("transformer", "transformer_shared", "transformer_pooled", "pooled", "mlp")
+TOKEN_KINDS = ("transformer", "transformer_pooled", "pooled")
 
 
 def perturbed(kind, layout=LAY, seed=0, **kw):
@@ -284,10 +290,12 @@ def test_absent_tokens_are_invisible(kind):
     assert torch.allclose(net.belief_logits(x), net.belief_logits(y), atol=1e-5)
 
 
-def test_token_packing_matches_the_dense_encoder():
+@pytest.mark.parametrize("kind", ("transformer", "transformer_pooled"))
+def test_token_packing_matches_the_dense_encoder(kind):
     """The Transformer tower packs each row's present tokens to the front and truncates the batch to its
-    longest row; outputs equal the dense key-padded encoder over all T tokens."""
-    net = perturbed("transformer", LAY_R)
+    longest row; outputs equal the dense key-padded encoder over all T tokens. g is the global token
+    output, plus the pooled readout of the outputs with readout="pooled"."""
+    net = perturbed(kind, LAY_R)
     tower = net.policy_tower
     x = torch.cat([XR[:100], HB_XR])
     parts = net._parts(x)
@@ -303,7 +311,11 @@ def test_token_packing_matches_the_dense_encoder():
         with torch.set_grad_enabled(grad):
             h, g = tower(parts)
             dense = tower.encoder(tower.embed(parts), src_key_padding_mask=~present) * present.unsqueeze(-1)
-        assert torch.allclose(h, dense, atol=1e-5) and torch.equal(g, h[:, G_TOK])
+        assert torch.allclose(h, dense, atol=1e-5)
+        if kind == "transformer":
+            assert tower.readout is None and torch.equal(g, h[:, G_TOK])
+        else:
+            assert torch.allclose(g, dense[:, G_TOK] + tower.readout(dense, present), atol=1e-5)
 
 
 @pytest.mark.parametrize("kind", TOKEN_KINDS)
@@ -592,7 +604,7 @@ def test_choose_previews_reach_their_choose_logit_only(kind):
 
 
 # ================================================================ privileged critic and belief head
-@pytest.mark.parametrize("kind", ("transformer", "pooled", "mlp"))
+@pytest.mark.parametrize("kind", ("transformer", "transformer_pooled", "pooled", "mlp"))
 def test_privileged_critic_sees_the_opponent_hand_and_the_actor_never_does(kind):
     net = perturbed(kind, LAY_R, privileged_critic=True)
     x, m, opp = XR[:80], MR[:80], OPPR[:80]
@@ -624,7 +636,7 @@ def test_privileged_critic_sees_the_opponent_hand_and_the_actor_never_does(kind)
     assert torch.equal(plain.value(x, opp), plain.value(x))
 
 
-@pytest.mark.parametrize("kind", ("transformer", "pooled", "mlp"))
+@pytest.mark.parametrize("kind", ("transformer", "transformer_pooled", "pooled", "mlp"))
 def test_belief_head(kind):
     net = perturbed(kind, LAY_R)
     b = net.belief_logits(XR[:50])
@@ -656,6 +668,100 @@ def test_card_vectors_follow_the_card_table():
     before = net.value(x)
     x[:, off] += 2.0
     assert (net.value(x) - before).abs().max() > 0
+
+
+# ================================================================ Transformer readouts
+GOLDEN = Path(__file__).resolve().parent / "fixtures" / "transformer_global_golden.npz"
+
+
+def test_global_readout_is_unchanged():
+    """readout="global" (the default) is the Transformer of the first Stage 3 desktop runs: for a fixed seed
+    it draws the same parameters and gives the same outputs as before the readout option existed.
+    Golden outputs: made with the pre-readout code (commit 8d68a57) on its own stored layout and
+    encodings, so content changes do not touch this test. The tolerance only absorbs platform / torch
+    version rounding; a changed initialisation or forward pass moves the outputs by orders more."""
+    z = np.load(GOLDEN, allow_pickle=False)
+    lay = json.loads(str(z["layout"]))
+    x, m, opp = torch.from_numpy(z["x"].astype(np.float32)), torch.from_numpy(z["mask"]), torch.from_numpy(z["opp"])
+    for name, kw in (("plain", {}), ("priv", {"privileged_critic": True})):
+        nets = []
+        for extra in ({}, {"readout": "global"}):
+            torch.manual_seed(0)
+            nets.append(TransformerPolicyNet(lay, d_model=32, layers=2, heads=4, ff=64, id_dim=8, pair_dim=16,
+                                             **kw, **extra))
+        default, explicit = nets
+        assert default.readout == "global" and default.spec() == explicit.spec()
+        assert {k: list(v.shape) for k, v in default.state_dict().items()} == json.loads(str(z[f"{name}_keys"]))
+        for k, v in default.state_dict().items():  # bit-identical between the default and readout="global"
+            assert torch.equal(v, explicit.state_dict()[k]), k
+        with torch.no_grad():
+            got = {"logits": default.policy_logits(x, m), "value": default.value(x, opp if kw else None),
+                   "belief": default.belief_logits(x), "g": default.policy_tower(default._parts(x))[1]}
+        for key, value in got.items():
+            want = torch.from_numpy(z[f"{name}_{key}"])
+            assert torch.allclose(value, want, rtol=1e-5, atol=1e-6), (name, key, (value - want).abs().max())
+
+
+def test_old_specs_without_readout_load():
+    """Checkpoints of the first Stage 3 runs have no "readout" in their spec: it means "global"."""
+    net = perturbed("transformer", LAY_R)
+    old = net.spec()
+    del old["readout"]
+    clone = build_net(old)
+    assert clone.readout == "global" and clone.spec() == net.spec() == normalize_spec(old)
+    clone.load_state_dict(net.state_dict())  # same parameter set
+    assert torch.equal(clone.policy_logits(XR[:20], MR[:20]), net.policy_logits(XR[:20], MR[:20]))
+    path_ckpt = {"model": net.state_dict(), "net": old, "update": 1, "args": {}}
+    assert net_from_checkpoint(path_ckpt, ENC_R).readout == "global"
+    # normalize_spec fills only the transformer's key and leaves other specs and non-dicts alone
+    pooled = make("pooled", LAY_R).spec()
+    assert normalize_spec(pooled) == pooled and "readout" not in pooled and normalize_spec(None) is None
+    # a pooled-readout checkpoint does not load into a global net, and vice versa
+    with pytest.raises(CheckpointError, match="do not fit"):
+        net_from_checkpoint({"model": make("transformer_pooled", LAY_R).state_dict(), "net": old}, ENC_R)
+    with pytest.raises(ValueError, match="readout"):
+        TransformerPolicyNet(LAY, readout="attention")
+
+
+def test_pooled_readout_reads_the_contextualised_tokens():
+    """readout="pooled": g = global token output + readout(outputs), and the readout term reads the
+    encoder outputs of the present variable-group tokens (pooled) and of the fixed tokens other than the
+    global one (concatenated)."""
+    net = perturbed("transformer_pooled", LAY_R, seed=5)
+    groups = LAY_R["groups"]
+    x = torch.cat([HB_XR, XR[:60]])
+    for tower in (net.policy_tower, net.value_tower):
+        parts = net._parts(x)
+        h, g = tower(parts)
+        term = tower.readout(h, parts.present)
+        assert torch.allclose(g, h[:, G_TOK] + term, atol=1e-6) and term.abs().max() > 1e-3
+        # gradient wiring: exactly the present pooled-group tokens plus the fixed non-global tokens
+        hh = h.detach().clone().requires_grad_(True)
+        fixed = {groups[k][0] for k in READOUT_SINGLE_TOKENS}
+        pooled_groups = [range(*groups[k]) for k in ("hand", "my_back", "front", "opp_back", "revealed")]
+        for r in range(len(x)):
+            (grad,) = torch.autograd.grad(tower.readout(hh[r:r + 1], parts.present[r:r + 1]).sum(), hh)
+            touched = set(grad[r].abs().sum(-1).nonzero().flatten().tolist())
+            want = fixed | {t for grp in pooled_groups for t in grp if parts.present[r, t]}
+            assert G_TOK not in touched and touched == want, (r, touched ^ want)
+    # changing a hand token changes g through the readout term (not only through attention)
+    rows = ENC_R.split(x).present[:, HAND0]
+    assert rows.sum() > 5
+    y = x.clone()
+    off, T, F = LAY_R["offsets"], LAY_R["T"], LAY_R["F"]
+    y[:, off["features"]:off["ids"]].view(len(x), T, F)[:, HAND0] += 0.5
+    tower = net.policy_tower
+    hx, gx = tower(net._parts(x))
+    hy, gy = tower(net._parts(y))
+    tx, ty = gx - hx[:, G_TOK], gy - hy[:, G_TOK]
+    assert ((tx - ty).abs().amax(1)[rows] > 1e-4).all() and torch.allclose(tx[~rows], ty[~rows], atol=1e-5)
+    # the added projection starts near zero: a new net starts close to the global readout
+    fresh = make("transformer_pooled", LAY_R)
+    h0, g0 = fresh.policy_tower(fresh._parts(x))
+    assert (g0 - h0[:, G_TOK]).abs().max() < 0.05 * h0[:, G_TOK].abs().max()
+    n_global = sum(p.numel() for p in make("transformer", LAY_R).parameters())
+    assert sum(p.numel() for p in fresh.parameters()) > n_global
+    assert fresh.spec()["readout"] == "pooled" and build_net(fresh.spec()).readout == "pooled"
 
 
 # ================================================================ checkpoints and PPOAgent
