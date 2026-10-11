@@ -2,3 +2,69 @@ Windows-11-10.0.26200-SP0 | python 3.14.7 | torch 2.11.0+cu128 | GPU NVIDIA GeFo
 s2_a started on the CPU and was resumed on CUDA
 s2_a takes approximately 1 to 1.5 hours to finish
 s2_b and s2_c data are not necessarily recorded
+
+
+S3: "python eval.py --agent runs\s3\best.pt --baseline runs\s3_pooled\best.pt --scenarios --json runs\s3\eval.json" print outs:
+agent: runs\s3\best.pt (sampling) [transformer network]
+decks=random: 2000 games per opponent = 1000 deals (seeds 0..999) x 2 seatings; random decks generate_deck(deck_rng(seed, seat)) per deal
+decks=all: 2016 games per opponent (--games 2000 rounded up) = 1008 deals (seeds 0..1007) x 2 seatings; 16 fixed deck pairs x 63 deals
+baseline: runs\s3_pooled\best.pt [pooled network]: 2000 games on random decks
+8 workers
+fixed decks: 0 Blitz (aggro fast troops) | 1 Bulwark (defensive) | 2 Volley (ranged-heavy) | 3 Legion (balanced)
+rates are the agent's; draws count as non-wins; games/s is wall clock after warm-up
+
+opponent             decks  games   win%  draw%  loss%     win 95% CI  seat0%  seat1%  first%  second%             worst cell  games/s
+lookahead           random   2000   86.5    0.0   13.6   [84.9, 87.9]    85.6    87.3    95.7     77.2                      -      176
+lookahead              all   2016   86.4    0.0   13.6   [84.8, 87.8]    85.4    87.4    94.5     78.3    Bulwark-Volley 81.3      145
+best.pt (baseline)  random   2000   35.0    0.0   65.0   [33.0, 37.2]    35.9    34.2    52.7     17.4                      -       80
+
+== decks=all: matchup cells C{i,j} per opponent: agent's win% over both decks of every (i,j)/(j,i) deal (Bl=Blitz, Bu=Bulwark, Vo=Volley, Le=Legion)
+opponent           Bl-Bl Bl-Bu Bl-Vo Bl-Le Bu-Bu Bu-Vo Bu-Le Vo-Vo Vo-Le Le-Le
+lookahead           82.5  86.5  88.9  84.9  85.7  81.3  85.7  90.5  86.9  95.2
+(games)              126   252   252   252   126   252   252   126   252   126
+
+== decks=all, vs lookahead: matchup cells C{i,j} = agent's win% over both decks of every (i,j)/(j,i) deal [95% CI] (games)
+                            Blitz                 Bulwark                  Volley                  Legion
+  Blitz    82.5 [75.0,88.2] (126)  86.5 [81.7,90.2] (252)  88.9 [84.4,92.2] (252)  84.9 [80.0,88.8] (252)
+  Bulwark  86.5 [81.7,90.2] (252)  85.7 [78.5,90.8] (126)  81.3 [76.1,85.7] (252)  85.7 [80.9,89.5] (252)
+  Volley   88.9 [84.4,92.2] (252)  81.3 [76.1,85.7] (252)  90.5 [84.1,94.5] (126)  86.9 [82.2,90.5] (252)
+  Legion   84.9 [80.0,88.8] (252)  85.7 [80.9,89.5] (252)  86.9 [82.2,90.5] (252)  95.2 [90.0,97.8] (126)
+== decks=all, vs lookahead: deck-confounded P[a][b] = agent's win% holding deck a (rows) vs deck b
+  best.pt vs lookahead                       lookahead vs lookahead (reference)
+  A \ B     Blitz Bulwark  Volley  Legion    A \ B     Blitz Bulwark  Volley  Legion
+  Blitz      82.5    84.9    82.5    81.7    Blitz      50.0    49.2    47.6    47.6
+  Bulwark    88.1    85.7    78.6    90.5    Bulwark    50.8    50.0    41.3    47.6
+  Volley     95.2    84.1    90.5    92.1    Volley     52.4    58.7    50.0    43.7
+  Legion     88.1    81.0    81.7    95.2    Legion     52.4    52.4    56.3    50.0
+
+== scenarios: agent = argmax run + sampled % of 100 playouts; lookahead = one seeded run; random = % of 20 seeds; greedy = one run (reference)
+  scenario                     agent  sampled lookahead  random greedy  tags
+  fast_move_attack_lethal        yes      99%        no     20%    yes  fast,lethal,move_cost
+  fast_attack_then_move           no       3%        no     10%     no  fast,frontline,threat
+  defense_backline_order         yes      99%        no     10%    yes  defense,sequencing,threat
+  defense_frontline_ranged       yes     100%        no     35%     no  defense,ranged,frontline,threat
+  ranged_finish_backline         yes      97%       yes      0%    yes  ranged,armor,threat
+  ranged_base_lethal             yes      97%       yes     10%    yes  ranged,lethal,seat1
+  armor_pierce                   yes      97%       yes     25%    yes  armor,trade
+  armor_attacker_survives        yes      55%       yes     30%    yes  armor,trade
+  move_cost_hold_frontline        no       1%        no     10%     no  move_cost,frontline,threat
+  clear_frontline_then_lethal    yes      64%        no      0%     no  frontline,defense,fast,lethal
+  stop_lethal_kill_right_unit    yes      97%       yes     20%     no  threat,ranged
+  ranged_no_return                no      20%       yes      5%    yes  ranged,trade,fast,lethal
+  budget_cheap_movers            yes      88%        no     10%     no  move_cost,fast,lethal
+  base_ignores_defense           yes     100%       yes      5%    yes  defense,lethal,seat1
+  sacrifice_to_clear             yes     100%        no      5%     no  frontline,fast,lethal,trade
+  ranged_through_defense          no      23%        no      0%     no  ranged,defense,sequencing,threat
+  operation_lethal                no      41%        no     10%     no  operation,effects,choice,lethal,sequencing
+  on_death_exploit               yes      98%       yes     50%    yes  on_death,effects,trade,threat,seat1
+  effect_clears_defense          yes      84%        no      0%     no  effects,operation,choice,defense,armor,threat
+  mulligan_sanity                 no       1%       yes      0%     no  mulligan,seat1
+  solved                       14/20      68%      9/20     13%   9/20
+
+verdict: FAIL
+  (1) vs lookahead, random decks: win rate 86.5% (>= 70%) over 2000 duplicate games (95% CI lower bound 84.9%) [ok]
+  (2) vs lookahead, fixed decks (all): worst matchup cell Bulwark-Volley 81.3% (>= 60%) over 252 games; overall 86.4% over 2016 games [ok]
+  (3) head-to-head vs best.pt: win rate 35.0% (<= 50%; score 0.350) over 2000 duplicate games, random decks [MISSED]
+  (4) scenarios: 70% solved, argmax (> 50%) [ok]
+  diagnostic only (the verdict uses the unordered cells, SPEC 10): worst ordered cell P[Bulwark][Volley] = 78.6% over 126 games (agent holds Bulwark, lookahead holds Volley; deck-confounded)
+results written to runs\s3\eval.json
