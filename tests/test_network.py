@@ -678,8 +678,9 @@ def test_global_readout_is_unchanged():
     """readout="global" (the default) is the Transformer of the first Stage 3 desktop runs: for a fixed seed
     it draws the same parameters and gives the same outputs as before the readout option existed.
     Golden outputs: made with the pre-readout code (commit 8d68a57) on its own stored layout and
-    encodings, so content changes do not touch this test. The tolerance only absorbs platform / torch
-    version rounding; a changed initialisation or forward pass moves the outputs by orders more."""
+    encodings, so content changes do not touch this test. The tolerance (1e-4) only absorbs platform /
+    torch / BLAS rounding (Windows torch 2.11 vs macOS torch 2.14 differ by about 2e-6); a changed
+    initialisation or forward pass moves the outputs by about 1e-2 or more."""
     z = np.load(GOLDEN, allow_pickle=False)
     lay = json.loads(str(z["layout"]))
     x, m, opp = torch.from_numpy(z["x"].astype(np.float32)), torch.from_numpy(z["mask"]), torch.from_numpy(z["opp"])
@@ -699,7 +700,7 @@ def test_global_readout_is_unchanged():
                    "belief": default.belief_logits(x), "g": default.policy_tower(default._parts(x))[1]}
         for key, value in got.items():
             want = torch.from_numpy(z[f"{name}_{key}"])
-            assert torch.allclose(value, want, rtol=1e-5, atol=1e-6), (name, key, (value - want).abs().max())
+            assert torch.allclose(value, want, rtol=1e-4, atol=1e-4), (name, key, (value - want).abs().max())
 
 
 def test_old_specs_without_readout_load():
