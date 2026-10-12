@@ -1,0 +1,2657 @@
+{
+  "agent": "runs/s3c/best.pt",
+  "agent_kind": "transformer",
+  "agent_kwargs": {},
+  "games_requested": 2000,
+  "decks": [
+    "random",
+    "all"
+  ],
+  "games_per_opponent": {
+    "random": 2000,
+    "all": 2016
+  },
+  "start_seed": 0,
+  "workers": 8,
+  "deck_names": [
+    "Blitz",
+    "Bulwark",
+    "Volley",
+    "Legion"
+  ],
+  "deck_styles": [
+    "aggro fast troops",
+    "defensive",
+    "ranged-heavy",
+    "balanced"
+  ],
+  "verdict": {
+    "opponent": "lookahead",
+    "target": 0.7,
+    "cell_target": 0.6,
+    "baseline_target": 0.5,
+    "scenario_target": 0.5,
+    "parts": {
+      "random_decks": {
+        "opponent": "lookahead",
+        "decks": "random",
+        "target": 0.7,
+        "passed": true,
+        "games": 2000,
+        "win_rate": 0.9145,
+        "draw_rate": 0.0,
+        "score": 0.9145,
+        "win_rate_ci95": [
+          0.9014365264814974,
+          0.9259742413223437
+        ]
+      },
+      "cells": {
+        "opponent": "lookahead",
+        "decks": "all",
+        "cell_target": 0.6,
+        "passed": true,
+        "games": 2016,
+        "win_rate": 0.9231150793650794,
+        "draw_rate": 0.0,
+        "score": 0.9231150793650794,
+        "win_rate_ci95": [
+          0.9106643621600596,
+          0.9339563839632852
+        ],
+        "worst_cell": {
+          "name": "Bulwark-Volley",
+          "decks": [
+            1,
+            2
+          ],
+          "win_rate": 0.8611111111111112,
+          "games": 252,
+          "win_rate_ci95": [
+            0.8129669721363715,
+            0.898411085348652
+          ]
+        },
+        "worst_ordered_cell": {
+          "diagnostic": true,
+          "name": "P[Volley][Bulwark]",
+          "decks": [
+            2,
+            1
+          ],
+          "agent_deck": "Volley",
+          "opponent_deck": "Bulwark",
+          "win_rate": 0.8095238095238095,
+          "games": 126,
+          "win_rate_ci95": [
+            0.7322059334337443,
+            0.8685266885534662
+          ]
+        }
+      },
+      "baseline": {
+        "baseline": "runs/s3_pooled/best.pt",
+        "label": "best.pt",
+        "baseline_kind": "pooled",
+        "agent_kind": "transformer",
+        "decks": "random",
+        "baseline_target": 0.5,
+        "passed": false,
+        "games": 2000,
+        "win_rate": 0.4985,
+        "draw_rate": 0.0,
+        "score": 0.4985,
+        "win_rate_ci95": [
+          0.476610924647677,
+          0.5203948264941666
+        ]
+      },
+      "scenarios": {
+        "pct_solved": 70.0,
+        "scenario_target": 0.5,
+        "passed": true
+      }
+    },
+    "checks": {
+      "random_decks": true,
+      "cells": true,
+      "baseline": false,
+      "scenarios": true
+    },
+    "measured": [
+      "random_decks",
+      "cells",
+      "baseline",
+      "scenarios"
+    ],
+    "conclusive": true,
+    "indicative_reasons": [],
+    "passed": false
+  },
+  "skipped": [],
+  "results": [
+    {
+      "opponent": "lookahead",
+      "label": "lookahead",
+      "agent_a": "runs/s3c/best.pt",
+      "agent_b": "lookahead",
+      "kwargs_a": {},
+      "kwargs_b": {},
+      "start_seed": 0,
+      "n_deals": 1000,
+      "decks": "random",
+      "deck_names": [
+        "Blitz",
+        "Bulwark",
+        "Volley",
+        "Legion"
+      ],
+      "fixed_decks": false,
+      "games": 2000,
+      "wins": 1829,
+      "draws": 0,
+      "losses": 171,
+      "win_rate": 0.9145,
+      "draw_rate": 0.0,
+      "loss_rate": 0.0855,
+      "score": 0.9145,
+      "win_rate_ci95": [
+        0.9014365264814974,
+        0.9259742413223437
+      ],
+      "by_seat": {
+        "0": {
+          "games": 1000,
+          "wins": 907,
+          "draws": 0,
+          "losses": 93,
+          "win_rate": 0.907,
+          "draw_rate": 0.0,
+          "loss_rate": 0.093,
+          "score": 0.907,
+          "win_rate_ci95": [
+            0.8874087442345036,
+            0.9234762743582547
+          ]
+        },
+        "1": {
+          "games": 1000,
+          "wins": 922,
+          "draws": 0,
+          "losses": 78,
+          "win_rate": 0.922,
+          "draw_rate": 0.0,
+          "loss_rate": 0.078,
+          "score": 0.922,
+          "win_rate_ci95": [
+            0.9037173834289277,
+            0.9370528324092638
+          ]
+        }
+      },
+      "by_turn_order": {
+        "first": {
+          "games": 1000,
+          "wins": 977,
+          "draws": 0,
+          "losses": 23,
+          "win_rate": 0.977,
+          "draw_rate": 0.0,
+          "loss_rate": 0.023,
+          "score": 0.977,
+          "win_rate_ci95": [
+            0.9657235493377733,
+            0.9846257230670071
+          ]
+        },
+        "second": {
+          "games": 1000,
+          "wins": 852,
+          "draws": 0,
+          "losses": 148,
+          "win_rate": 0.852,
+          "draw_rate": 0.0,
+          "loss_rate": 0.148,
+          "score": 0.852,
+          "win_rate_ci95": [
+            0.828644950702635,
+            0.8726610113235342
+          ]
+        }
+      },
+      "matchups": [],
+      "min_cell": null,
+      "min_ordered_cell": null,
+      "deck_matrix": null,
+      "deals": {
+        "a_won_both": 830,
+        "split": 169,
+        "b_won_both": 1,
+        "with_draw": 0
+      },
+      "avg_rounds": 9.682,
+      "avg_steps": 72.932,
+      "elapsed_s": 14.348460200009868,
+      "games_per_s": 139.3877790453518
+    },
+    {
+      "opponent": "lookahead",
+      "label": "lookahead",
+      "agent_a": "runs/s3c/best.pt",
+      "agent_b": "lookahead",
+      "kwargs_a": {},
+      "kwargs_b": {},
+      "start_seed": 0,
+      "n_deals": 1008,
+      "decks": "all",
+      "deck_names": [
+        "Blitz",
+        "Bulwark",
+        "Volley",
+        "Legion"
+      ],
+      "fixed_decks": true,
+      "games": 2016,
+      "wins": 1861,
+      "draws": 0,
+      "losses": 155,
+      "win_rate": 0.9231150793650794,
+      "draw_rate": 0.0,
+      "loss_rate": 0.07688492063492064,
+      "score": 0.9231150793650794,
+      "win_rate_ci95": [
+        0.9106643621600596,
+        0.9339563839632852
+      ],
+      "by_seat": {
+        "0": {
+          "games": 1008,
+          "wins": 932,
+          "draws": 0,
+          "losses": 76,
+          "win_rate": 0.9246031746031746,
+          "draw_rate": 0.0,
+          "loss_rate": 0.07539682539682539,
+          "score": 0.9246031746031746,
+          "win_rate_ci95": [
+            0.9066430511163673,
+            0.9393392839004958
+          ]
+        },
+        "1": {
+          "games": 1008,
+          "wins": 929,
+          "draws": 0,
+          "losses": 79,
+          "win_rate": 0.9216269841269841,
+          "draw_rate": 0.0,
+          "loss_rate": 0.07837301587301587,
+          "score": 0.9216269841269841,
+          "win_rate_ci95": [
+            0.9033893815832645,
+            0.9366631707115176
+          ]
+        }
+      },
+      "by_turn_order": {
+        "first": {
+          "games": 1008,
+          "wins": 978,
+          "draws": 0,
+          "losses": 30,
+          "win_rate": 0.9702380952380952,
+          "draw_rate": 0.0,
+          "loss_rate": 0.02976190476190476,
+          "score": 0.9702380952380952,
+          "win_rate_ci95": [
+            0.957831372171031,
+            0.979074297917738
+          ]
+        },
+        "second": {
+          "games": 1008,
+          "wins": 883,
+          "draws": 0,
+          "losses": 125,
+          "win_rate": 0.8759920634920635,
+          "draw_rate": 0.0,
+          "loss_rate": 0.12400793650793651,
+          "score": 0.8759920634920635,
+          "win_rate_ci95": [
+            0.8542065243711708,
+            0.8949226928517057
+          ]
+        }
+      },
+      "matchups": [
+        {
+          "decks": [
+            0,
+            0
+          ],
+          "names": [
+            "Blitz",
+            "Blitz"
+          ],
+          "games": 126,
+          "wins": 112,
+          "draws": 0,
+          "losses": 14,
+          "win_rate": 0.8888888888888888,
+          "draw_rate": 0.0,
+          "loss_rate": 0.1111111111111111,
+          "score": 0.8888888888888888,
+          "win_rate_ci95": [
+            0.8221164243496584,
+            0.9326502032752981
+          ]
+        },
+        {
+          "decks": [
+            0,
+            1
+          ],
+          "names": [
+            "Blitz",
+            "Bulwark"
+          ],
+          "games": 252,
+          "wins": 236,
+          "draws": 0,
+          "losses": 16,
+          "win_rate": 0.9365079365079365,
+          "draw_rate": 0.0,
+          "loss_rate": 0.06349206349206349,
+          "score": 0.9365079365079365,
+          "win_rate_ci95": [
+            0.8993635575502092,
+            0.9605439844646544
+          ]
+        },
+        {
+          "decks": [
+            0,
+            2
+          ],
+          "names": [
+            "Blitz",
+            "Volley"
+          ],
+          "games": 252,
+          "wins": 231,
+          "draws": 0,
+          "losses": 21,
+          "win_rate": 0.9166666666666666,
+          "draw_rate": 0.0,
+          "loss_rate": 0.08333333333333333,
+          "score": 0.9166666666666666,
+          "win_rate_ci95": [
+            0.8759703304872128,
+            0.9448505050724296
+          ]
+        },
+        {
+          "decks": [
+            0,
+            3
+          ],
+          "names": [
+            "Blitz",
+            "Legion"
+          ],
+          "games": 252,
+          "wins": 243,
+          "draws": 0,
+          "losses": 9,
+          "win_rate": 0.9642857142857143,
+          "draw_rate": 0.0,
+          "loss_rate": 0.03571428571428571,
+          "score": 0.9642857142857143,
+          "win_rate_ci95": [
+            0.9335300918419069,
+            0.9810988392102662
+          ]
+        },
+        {
+          "decks": [
+            1,
+            1
+          ],
+          "names": [
+            "Bulwark",
+            "Bulwark"
+          ],
+          "games": 126,
+          "wins": 117,
+          "draws": 0,
+          "losses": 9,
+          "win_rate": 0.9285714285714286,
+          "draw_rate": 0.0,
+          "loss_rate": 0.07142857142857142,
+          "score": 0.9285714285714286,
+          "win_rate_ci95": [
+            0.869814774211143,
+            0.961968856232687
+          ]
+        },
+        {
+          "decks": [
+            1,
+            2
+          ],
+          "names": [
+            "Bulwark",
+            "Volley"
+          ],
+          "games": 252,
+          "wins": 217,
+          "draws": 0,
+          "losses": 35,
+          "win_rate": 0.8611111111111112,
+          "draw_rate": 0.0,
+          "loss_rate": 0.1388888888888889,
+          "score": 0.8611111111111112,
+          "win_rate_ci95": [
+            0.8129669721363715,
+            0.898411085348652
+          ]
+        },
+        {
+          "decks": [
+            1,
+            3
+          ],
+          "names": [
+            "Bulwark",
+            "Legion"
+          ],
+          "games": 252,
+          "wins": 233,
+          "draws": 0,
+          "losses": 19,
+          "win_rate": 0.9246031746031746,
+          "draw_rate": 0.0,
+          "loss_rate": 0.07539682539682539,
+          "score": 0.9246031746031746,
+          "win_rate_ci95": [
+            0.8852524109925811,
+            0.9512031071491499
+          ]
+        },
+        {
+          "decks": [
+            2,
+            2
+          ],
+          "names": [
+            "Volley",
+            "Volley"
+          ],
+          "games": 126,
+          "wins": 115,
+          "draws": 0,
+          "losses": 11,
+          "win_rate": 0.9126984126984127,
+          "draw_rate": 0.0,
+          "loss_rate": 0.0873015873015873,
+          "score": 0.9126984126984127,
+          "win_rate_ci95": [
+            0.8504236729488102,
+            0.9505531563674703
+          ]
+        },
+        {
+          "decks": [
+            2,
+            3
+          ],
+          "names": [
+            "Volley",
+            "Legion"
+          ],
+          "games": 252,
+          "wins": 236,
+          "draws": 0,
+          "losses": 16,
+          "win_rate": 0.9365079365079365,
+          "draw_rate": 0.0,
+          "loss_rate": 0.06349206349206349,
+          "score": 0.9365079365079365,
+          "win_rate_ci95": [
+            0.8993635575502092,
+            0.9605439844646544
+          ]
+        },
+        {
+          "decks": [
+            3,
+            3
+          ],
+          "names": [
+            "Legion",
+            "Legion"
+          ],
+          "games": 126,
+          "wins": 121,
+          "draws": 0,
+          "losses": 5,
+          "win_rate": 0.9603174603174603,
+          "draw_rate": 0.0,
+          "loss_rate": 0.03968253968253968,
+          "score": 0.9603174603174603,
+          "win_rate_ci95": [
+            0.9104643457790981,
+            0.9829328869198303
+          ]
+        }
+      ],
+      "min_cell": {
+        "decks": [
+          1,
+          2
+        ],
+        "name": "Bulwark-Volley",
+        "games": 252,
+        "wins": 217,
+        "draws": 0,
+        "losses": 35,
+        "win_rate": 0.8611111111111112,
+        "draw_rate": 0.0,
+        "loss_rate": 0.1388888888888889,
+        "score": 0.8611111111111112,
+        "win_rate_ci95": [
+          0.8129669721363715,
+          0.898411085348652
+        ]
+      },
+      "min_ordered_cell": {
+        "decks": [
+          2,
+          1
+        ],
+        "name": "P[Volley][Bulwark]",
+        "diagnostic": true,
+        "games": 126,
+        "wins": 102,
+        "draws": 0,
+        "losses": 24,
+        "win_rate": 0.8095238095238095,
+        "draw_rate": 0.0,
+        "loss_rate": 0.19047619047619047,
+        "score": 0.8095238095238095,
+        "win_rate_ci95": [
+          0.7322059334337443,
+          0.8685266885534662
+        ]
+      },
+      "deck_matrix": {
+        "rows": "A's deck",
+        "cols": "B's deck",
+        "names": [
+          "Blitz",
+          "Bulwark",
+          "Volley",
+          "Legion"
+        ],
+        "win_rate": [
+          [
+            0.8888888888888888,
+            0.9523809523809523,
+            0.873015873015873,
+            0.9444444444444444
+          ],
+          [
+            0.9206349206349206,
+            0.9285714285714286,
+            0.9126984126984127,
+            0.9603174603174603
+          ],
+          [
+            0.9603174603174603,
+            0.8095238095238095,
+            0.9126984126984127,
+            0.9761904761904762
+          ],
+          [
+            0.9841269841269841,
+            0.8888888888888888,
+            0.8968253968253969,
+            0.9603174603174603
+          ]
+        ],
+        "draw_rate": [
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        ],
+        "games": [
+          [
+            126,
+            126,
+            126,
+            126
+          ],
+          [
+            126,
+            126,
+            126,
+            126
+          ],
+          [
+            126,
+            126,
+            126,
+            126
+          ],
+          [
+            126,
+            126,
+            126,
+            126
+          ]
+        ]
+      },
+      "deals": {
+        "a_won_both": 854,
+        "split": 153,
+        "b_won_both": 1,
+        "with_draw": 0
+      },
+      "avg_rounds": 9.805059523809524,
+      "avg_steps": 78.28571428571429,
+      "elapsed_s": 16.185531300026923,
+      "games_per_s": 124.55568882046192
+    }
+  ],
+  "baseline": {
+    "spec": "runs/s3_pooled/best.pt",
+    "label": "best.pt",
+    "kind": "pooled",
+    "kwargs": {},
+    "agent_a": "runs/s3c/best.pt",
+    "agent_b": "runs/s3_pooled/best.pt",
+    "kwargs_a": {},
+    "kwargs_b": {},
+    "start_seed": 0,
+    "n_deals": 1000,
+    "decks": "random",
+    "deck_names": [
+      "Blitz",
+      "Bulwark",
+      "Volley",
+      "Legion"
+    ],
+    "fixed_decks": false,
+    "games": 2000,
+    "wins": 997,
+    "draws": 0,
+    "losses": 1003,
+    "win_rate": 0.4985,
+    "draw_rate": 0.0,
+    "loss_rate": 0.5015,
+    "score": 0.4985,
+    "win_rate_ci95": [
+      0.476610924647677,
+      0.5203948264941666
+    ],
+    "by_seat": {
+      "0": {
+        "games": 1000,
+        "wins": 512,
+        "draws": 0,
+        "losses": 488,
+        "win_rate": 0.512,
+        "draw_rate": 0.0,
+        "loss_rate": 0.488,
+        "score": 0.512,
+        "win_rate_ci95": [
+          0.4810325544060909,
+          0.5428756033902558
+        ]
+      },
+      "1": {
+        "games": 1000,
+        "wins": 485,
+        "draws": 0,
+        "losses": 515,
+        "win_rate": 0.485,
+        "draw_rate": 0.0,
+        "loss_rate": 0.515,
+        "score": 0.485,
+        "win_rate_ci95": [
+          0.4541408702709699,
+          0.5159739324835967
+        ]
+      }
+    },
+    "by_turn_order": {
+      "first": {
+        "games": 1000,
+        "wins": 688,
+        "draws": 0,
+        "losses": 312,
+        "win_rate": 0.688,
+        "draw_rate": 0.0,
+        "loss_rate": 0.312,
+        "score": 0.688,
+        "win_rate_ci95": [
+          0.6586108249018996,
+          0.7159503139075316
+        ]
+      },
+      "second": {
+        "games": 1000,
+        "wins": 309,
+        "draws": 0,
+        "losses": 691,
+        "win_rate": 0.309,
+        "draw_rate": 0.0,
+        "loss_rate": 0.691,
+        "score": 0.309,
+        "win_rate_ci95": [
+          0.28113685771666347,
+          0.33832496402481854
+        ]
+      }
+    },
+    "matchups": [],
+    "min_cell": null,
+    "min_ordered_cell": null,
+    "deck_matrix": null,
+    "deals": {
+      "a_won_both": 139,
+      "split": 719,
+      "b_won_both": 142,
+      "with_draw": 0
+    },
+    "avg_rounds": 10.2585,
+    "avg_steps": 81.4775,
+    "elapsed_s": 20.118540900060907,
+    "games_per_s": 99.41078778699827
+  },
+  "reference": {
+    "all": {
+      "agent_a": "lookahead",
+      "agent_b": "lookahead",
+      "kwargs_a": {},
+      "kwargs_b": {},
+      "start_seed": 0,
+      "n_deals": 1008,
+      "decks": "all",
+      "deck_names": [
+        "Blitz",
+        "Bulwark",
+        "Volley",
+        "Legion"
+      ],
+      "fixed_decks": true,
+      "games": 2016,
+      "wins": 1008,
+      "draws": 0,
+      "losses": 1008,
+      "win_rate": 0.5,
+      "draw_rate": 0.0,
+      "loss_rate": 0.5,
+      "score": 0.5,
+      "win_rate_ci95": [
+        0.4781948311376099,
+        0.5218051688623901
+      ],
+      "by_seat": {
+        "0": {
+          "games": 1008,
+          "wins": 512,
+          "draws": 0,
+          "losses": 496,
+          "win_rate": 0.5079365079365079,
+          "draw_rate": 0.0,
+          "loss_rate": 0.49206349206349204,
+          "score": 0.5079365079365079,
+          "win_rate_ci95": [
+            0.47710236024791863,
+            0.5387103936776302
+          ]
+        },
+        "1": {
+          "games": 1008,
+          "wins": 496,
+          "draws": 0,
+          "losses": 512,
+          "win_rate": 0.49206349206349204,
+          "draw_rate": 0.0,
+          "loss_rate": 0.5079365079365079,
+          "score": 0.49206349206349204,
+          "win_rate_ci95": [
+            0.4612896063223697,
+            0.5228976397520813
+          ]
+        }
+      },
+      "by_turn_order": {
+        "first": {
+          "games": 1008,
+          "wins": 669,
+          "draws": 0,
+          "losses": 339,
+          "win_rate": 0.6636904761904762,
+          "draw_rate": 0.0,
+          "loss_rate": 0.33630952380952384,
+          "score": 0.6636904761904762,
+          "win_rate_ci95": [
+            0.6339522563260855,
+            0.6921857933883593
+          ]
+        },
+        "second": {
+          "games": 1008,
+          "wins": 339,
+          "draws": 0,
+          "losses": 669,
+          "win_rate": 0.33630952380952384,
+          "draw_rate": 0.0,
+          "loss_rate": 0.6636904761904762,
+          "score": 0.33630952380952384,
+          "win_rate_ci95": [
+            0.3078142066116407,
+            0.36604774367391435
+          ]
+        }
+      },
+      "matchups": [
+        {
+          "decks": [
+            0,
+            0
+          ],
+          "names": [
+            "Blitz",
+            "Blitz"
+          ],
+          "games": 126,
+          "wins": 63,
+          "draws": 0,
+          "losses": 63,
+          "win_rate": 0.5,
+          "draw_rate": 0.0,
+          "loss_rate": 0.5,
+          "score": 0.5,
+          "win_rate_ci95": [
+            0.4139974353838817,
+            0.5860025646161183
+          ]
+        },
+        {
+          "decks": [
+            0,
+            1
+          ],
+          "names": [
+            "Blitz",
+            "Bulwark"
+          ],
+          "games": 252,
+          "wins": 126,
+          "draws": 0,
+          "losses": 126,
+          "win_rate": 0.5,
+          "draw_rate": 0.0,
+          "loss_rate": 0.5,
+          "score": 0.5,
+          "win_rate_ci95": [
+            0.4387321509100632,
+            0.5612678490899369
+          ]
+        },
+        {
+          "decks": [
+            0,
+            2
+          ],
+          "names": [
+            "Blitz",
+            "Volley"
+          ],
+          "games": 252,
+          "wins": 126,
+          "draws": 0,
+          "losses": 126,
+          "win_rate": 0.5,
+          "draw_rate": 0.0,
+          "loss_rate": 0.5,
+          "score": 0.5,
+          "win_rate_ci95": [
+            0.4387321509100632,
+            0.5612678490899369
+          ]
+        },
+        {
+          "decks": [
+            0,
+            3
+          ],
+          "names": [
+            "Blitz",
+            "Legion"
+          ],
+          "games": 252,
+          "wins": 126,
+          "draws": 0,
+          "losses": 126,
+          "win_rate": 0.5,
+          "draw_rate": 0.0,
+          "loss_rate": 0.5,
+          "score": 0.5,
+          "win_rate_ci95": [
+            0.4387321509100632,
+            0.5612678490899369
+          ]
+        },
+        {
+          "decks": [
+            1,
+            1
+          ],
+          "names": [
+            "Bulwark",
+            "Bulwark"
+          ],
+          "games": 126,
+          "wins": 63,
+          "draws": 0,
+          "losses": 63,
+          "win_rate": 0.5,
+          "draw_rate": 0.0,
+          "loss_rate": 0.5,
+          "score": 0.5,
+          "win_rate_ci95": [
+            0.4139974353838817,
+            0.5860025646161183
+          ]
+        },
+        {
+          "decks": [
+            1,
+            2
+          ],
+          "names": [
+            "Bulwark",
+            "Volley"
+          ],
+          "games": 252,
+          "wins": 126,
+          "draws": 0,
+          "losses": 126,
+          "win_rate": 0.5,
+          "draw_rate": 0.0,
+          "loss_rate": 0.5,
+          "score": 0.5,
+          "win_rate_ci95": [
+            0.4387321509100632,
+            0.5612678490899369
+          ]
+        },
+        {
+          "decks": [
+            1,
+            3
+          ],
+          "names": [
+            "Bulwark",
+            "Legion"
+          ],
+          "games": 252,
+          "wins": 126,
+          "draws": 0,
+          "losses": 126,
+          "win_rate": 0.5,
+          "draw_rate": 0.0,
+          "loss_rate": 0.5,
+          "score": 0.5,
+          "win_rate_ci95": [
+            0.4387321509100632,
+            0.5612678490899369
+          ]
+        },
+        {
+          "decks": [
+            2,
+            2
+          ],
+          "names": [
+            "Volley",
+            "Volley"
+          ],
+          "games": 126,
+          "wins": 63,
+          "draws": 0,
+          "losses": 63,
+          "win_rate": 0.5,
+          "draw_rate": 0.0,
+          "loss_rate": 0.5,
+          "score": 0.5,
+          "win_rate_ci95": [
+            0.4139974353838817,
+            0.5860025646161183
+          ]
+        },
+        {
+          "decks": [
+            2,
+            3
+          ],
+          "names": [
+            "Volley",
+            "Legion"
+          ],
+          "games": 252,
+          "wins": 126,
+          "draws": 0,
+          "losses": 126,
+          "win_rate": 0.5,
+          "draw_rate": 0.0,
+          "loss_rate": 0.5,
+          "score": 0.5,
+          "win_rate_ci95": [
+            0.4387321509100632,
+            0.5612678490899369
+          ]
+        },
+        {
+          "decks": [
+            3,
+            3
+          ],
+          "names": [
+            "Legion",
+            "Legion"
+          ],
+          "games": 126,
+          "wins": 63,
+          "draws": 0,
+          "losses": 63,
+          "win_rate": 0.5,
+          "draw_rate": 0.0,
+          "loss_rate": 0.5,
+          "score": 0.5,
+          "win_rate_ci95": [
+            0.4139974353838817,
+            0.5860025646161183
+          ]
+        }
+      ],
+      "min_cell": {
+        "decks": [
+          0,
+          0
+        ],
+        "name": "Blitz-Blitz",
+        "games": 126,
+        "wins": 63,
+        "draws": 0,
+        "losses": 63,
+        "win_rate": 0.5,
+        "draw_rate": 0.0,
+        "loss_rate": 0.5,
+        "score": 0.5,
+        "win_rate_ci95": [
+          0.4139974353838817,
+          0.5860025646161183
+        ]
+      },
+      "min_ordered_cell": {
+        "decks": [
+          1,
+          2
+        ],
+        "name": "P[Bulwark][Volley]",
+        "diagnostic": true,
+        "games": 126,
+        "wins": 52,
+        "draws": 0,
+        "losses": 74,
+        "win_rate": 0.4126984126984127,
+        "draw_rate": 0.0,
+        "loss_rate": 0.5873015873015873,
+        "score": 0.4126984126984127,
+        "win_rate_ci95": [
+          0.33056044633223847,
+          0.5000021474662405
+        ]
+      },
+      "deck_matrix": {
+        "rows": "A's deck",
+        "cols": "B's deck",
+        "names": [
+          "Blitz",
+          "Bulwark",
+          "Volley",
+          "Legion"
+        ],
+        "win_rate": [
+          [
+            0.5,
+            0.49206349206349204,
+            0.47619047619047616,
+            0.47619047619047616
+          ],
+          [
+            0.5079365079365079,
+            0.5,
+            0.4126984126984127,
+            0.47619047619047616
+          ],
+          [
+            0.5238095238095238,
+            0.5873015873015873,
+            0.5,
+            0.4365079365079365
+          ],
+          [
+            0.5238095238095238,
+            0.5238095238095238,
+            0.5634920634920635,
+            0.5
+          ]
+        ],
+        "draw_rate": [
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        ],
+        "games": [
+          [
+            126,
+            126,
+            126,
+            126
+          ],
+          [
+            126,
+            126,
+            126,
+            126
+          ],
+          [
+            126,
+            126,
+            126,
+            126
+          ],
+          [
+            126,
+            126,
+            126,
+            126
+          ]
+        ]
+      },
+      "deals": {
+        "a_won_both": 0,
+        "split": 1008,
+        "b_won_both": 0,
+        "with_draw": 0
+      },
+      "avg_rounds": 10.018849206349206,
+      "avg_steps": 78.08432539682539,
+      "elapsed_s": 4.055149700026959,
+      "games_per_s": 497.1456417469859
+    }
+  },
+  "scenarios": {
+    "agent": {
+      "agent": "runs/s3c/best.pt",
+      "n": 20,
+      "n_solved": 14,
+      "pct_solved": 70.0,
+      "mean_success": 0.7085,
+      "results": [
+        {
+          "name": "fast_move_attack_lethal",
+          "tags": [
+            "fast",
+            "lethal",
+            "move_cost"
+          ],
+          "solved": true,
+          "success": 1.0,
+          "playouts": 100,
+          "line": [
+            "MOVE(0)",
+            "ATTACK(front0->base)"
+          ]
+        },
+        {
+          "name": "fast_attack_then_move",
+          "tags": [
+            "fast",
+            "frontline",
+            "threat"
+          ],
+          "solved": true,
+          "success": 0.85,
+          "playouts": 100,
+          "line": [
+            "ATTACK(back0->front0)",
+            "MOVE(0)",
+            "END_TURN"
+          ]
+        },
+        {
+          "name": "defense_backline_order",
+          "tags": [
+            "defense",
+            "sequencing",
+            "threat"
+          ],
+          "solved": true,
+          "success": 0.99,
+          "playouts": 100,
+          "line": [
+            "PLAY(1)",
+            "ATTACK(front0->back0)",
+            "ATTACK(front1->back0)",
+            "PLAY(0)",
+            "END_TURN"
+          ]
+        },
+        {
+          "name": "defense_frontline_ranged",
+          "tags": [
+            "defense",
+            "ranged",
+            "frontline",
+            "threat"
+          ],
+          "solved": true,
+          "success": 1.0,
+          "playouts": 100,
+          "line": [
+            "ATTACK(back3->front0)",
+            "ATTACK(back2->front0)",
+            "ATTACK(back0->back0)",
+            "ATTACK(back1->back0)",
+            "PLAY(0)",
+            "END_TURN"
+          ]
+        },
+        {
+          "name": "ranged_finish_backline",
+          "tags": [
+            "ranged",
+            "armor",
+            "threat"
+          ],
+          "solved": true,
+          "success": 0.99,
+          "playouts": 100,
+          "line": [
+            "ATTACK(back1->back1)",
+            "ATTACK(back0->back0)",
+            "PLAY(0)",
+            "ATTACK(back2->front0)",
+            "END_TURN"
+          ]
+        },
+        {
+          "name": "ranged_base_lethal",
+          "tags": [
+            "ranged",
+            "lethal",
+            "seat1"
+          ],
+          "solved": false,
+          "success": 0.02,
+          "playouts": 100,
+          "line": [
+            "ATTACK(back1->back0)",
+            "PLAY(0)",
+            "PLAY(0)",
+            "ATTACK(back0->base)",
+            "ATTACK(back2->front0)",
+            "END_TURN"
+          ]
+        },
+        {
+          "name": "armor_pierce",
+          "tags": [
+            "armor",
+            "trade"
+          ],
+          "solved": true,
+          "success": 0.96,
+          "playouts": 100,
+          "line": [
+            "ATTACK(back3->front0)",
+            "MOVE(2)",
+            "MOVE(0)",
+            "PLAY(0)",
+            "MOVE(0)",
+            "ATTACK(front1->base)",
+            "END_TURN"
+          ]
+        },
+        {
+          "name": "armor_attacker_survives",
+          "tags": [
+            "armor",
+            "trade"
+          ],
+          "solved": false,
+          "success": 0.38,
+          "playouts": 100,
+          "line": [
+            "ATTACK(back1->front0)",
+            "MOVE(0)",
+            "MOVE(0)",
+            "PLAY(0)",
+            "END_TURN"
+          ]
+        },
+        {
+          "name": "move_cost_hold_frontline",
+          "tags": [
+            "move_cost",
+            "frontline",
+            "threat"
+          ],
+          "solved": false,
+          "success": 0.0,
+          "playouts": 100,
+          "line": [
+            "PLAY(2)",
+            "END_TURN"
+          ]
+        },
+        {
+          "name": "clear_frontline_then_lethal",
+          "tags": [
+            "frontline",
+            "defense",
+            "fast",
+            "lethal"
+          ],
+          "solved": true,
+          "success": 0.56,
+          "playouts": 100,
+          "line": [
+            "ATTACK(back1->front0)",
+            "ATTACK(back2->front0)",
+            "MOVE(0)",
+            "ATTACK(front0->base)"
+          ]
+        },
+        {
+          "name": "stop_lethal_kill_right_unit",
+          "tags": [
+            "threat",
+            "ranged"
+          ],
+          "solved": true,
+          "success": 0.91,
+          "playouts": 100,
+          "line": [
+            "ATTACK(back0->front0)",
+            "PLAY(0)",
+            "END_TURN"
+          ]
+        },
+        {
+          "name": "ranged_no_return",
+          "tags": [
+            "ranged",
+            "trade",
+            "fast",
+            "lethal"
+          ],
+          "solved": true,
+          "success": 0.83,
+          "playouts": 100,
+          "line": [
+            "ATTACK(back1->front0)",
+            "MOVE(0)",
+            "ATTACK(front0->base)"
+          ]
+        },
+        {
+          "name": "budget_cheap_movers",
+          "tags": [
+            "move_cost",
+            "fast",
+            "lethal"
+          ],
+          "solved": false,
+          "success": 0.45,
+          "playouts": 100,
+          "line": [
+            "MOVE(0)",
+            "MOVE(2)",
+            "ATTACK(front1->base)",
+            "ATTACK(front0->base)",
+            "END_TURN"
+          ]
+        },
+        {
+          "name": "base_ignores_defense",
+          "tags": [
+            "defense",
+            "lethal",
+            "seat1"
+          ],
+          "solved": true,
+          "success": 1.0,
+          "playouts": 100,
+          "line": [
+            "PLAY(0)",
+            "ATTACK(front2->base)",
+            "ATTACK(front1->base)",
+            "ATTACK(front0->base)"
+          ]
+        },
+        {
+          "name": "sacrifice_to_clear",
+          "tags": [
+            "frontline",
+            "fast",
+            "lethal",
+            "trade"
+          ],
+          "solved": true,
+          "success": 1.0,
+          "playouts": 100,
+          "line": [
+            "ATTACK(back1->front0)",
+            "MOVE(0)",
+            "ATTACK(front0->base)"
+          ]
+        },
+        {
+          "name": "ranged_through_defense",
+          "tags": [
+            "ranged",
+            "defense",
+            "sequencing",
+            "threat"
+          ],
+          "solved": false,
+          "success": 0.27,
+          "playouts": 100,
+          "line": [
+            "PLAY(0)",
+            "PLAY(0)",
+            "ATTACK(back2->front0)",
+            "ATTACK(back0->back0)",
+            "ATTACK(back1->front0)",
+            "END_TURN"
+          ]
+        },
+        {
+          "name": "operation_lethal",
+          "tags": [
+            "operation",
+            "effects",
+            "choice",
+            "lethal",
+            "sequencing"
+          ],
+          "solved": true,
+          "success": 0.98,
+          "playouts": 100,
+          "line": [
+            "PLAY(2)",
+            "PLAY(2)",
+            "CHOOSE(enemy_back0)"
+          ]
+        },
+        {
+          "name": "on_death_exploit",
+          "tags": [
+            "on_death",
+            "effects",
+            "trade",
+            "threat",
+            "seat1"
+          ],
+          "solved": true,
+          "success": 1.0,
+          "playouts": 100,
+          "line": [
+            "ATTACK(back0->front0)",
+            "MOVE(0)",
+            "PLAY(0)",
+            "END_TURN"
+          ]
+        },
+        {
+          "name": "effect_clears_defense",
+          "tags": [
+            "effects",
+            "operation",
+            "choice",
+            "defense",
+            "armor",
+            "threat"
+          ],
+          "solved": true,
+          "success": 0.98,
+          "playouts": 100,
+          "line": [
+            "PLAY(2)",
+            "CHOOSE(enemy_back0)",
+            "ATTACK(back0->back0)",
+            "ATTACK(back1->base)",
+            "PLAY(0)",
+            "END_TURN"
+          ]
+        },
+        {
+          "name": "mulligan_sanity",
+          "tags": [
+            "mulligan",
+            "seat1"
+          ],
+          "solved": false,
+          "success": 0.0,
+          "playouts": 100,
+          "line": [
+            "MULLIGAN(2)",
+            "MULLIGAN(3)",
+            "MULLIGAN(4)",
+            "MULLIGAN(0)",
+            "CONFIRM"
+          ]
+        }
+      ]
+    },
+    "lookahead": {
+      "agent": "lookahead",
+      "n": 20,
+      "n_solved": 9,
+      "pct_solved": 45.0,
+      "mean_success": null,
+      "results": [
+        {
+          "name": "fast_move_attack_lethal",
+          "tags": [
+            "fast",
+            "lethal",
+            "move_cost"
+          ],
+          "solved": false,
+          "success": null,
+          "playouts": 0,
+          "line": [
+            "PLAY(1)",
+            "END_TURN"
+          ]
+        },
+        {
+          "name": "fast_attack_then_move",
+          "tags": [
+            "fast",
+            "frontline",
+            "threat"
+          ],
+          "solved": false,
+          "success": null,
+          "playouts": 0,
+          "line": [
+            "ATTACK(back0->front0)",
+            "PLAY(0)",
+            "END_TURN"
+          ]
+        },
+        {
+          "name": "defense_backline_order",
+          "tags": [
+            "defense",
+            "sequencing",
+            "threat"
+          ],
+          "solved": false,
+          "success": null,
+          "playouts": 0,
+          "line": [
+            "ATTACK(front0->base)",
+            "ATTACK(front1->base)",
+            "PLAY(0)",
+            "PLAY(0)",
+            "END_TURN"
+          ]
+        },
+        {
+          "name": "defense_frontline_ranged",
+          "tags": [
+            "defense",
+            "ranged",
+            "frontline",
+            "threat"
+          ],
+          "solved": false,
+          "success": null,
+          "playouts": 0,
+          "line": [
+            "ATTACK(back0->base)",
+            "ATTACK(back1->base)",
+            "ATTACK(back2->front0)",
+            "PLAY(0)",
+            "END_TURN"
+          ]
+        },
+        {
+          "name": "ranged_finish_backline",
+          "tags": [
+            "ranged",
+            "armor",
+            "threat"
+          ],
+          "solved": true,
+          "success": null,
+          "playouts": 0,
+          "line": [
+            "ATTACK(back0->back0)",
+            "ATTACK(back1->back0)",
+            "PLAY(0)",
+            "END_TURN"
+          ]
+        },
+        {
+          "name": "ranged_base_lethal",
+          "tags": [
+            "ranged",
+            "lethal",
+            "seat1"
+          ],
+          "solved": true,
+          "success": null,
+          "playouts": 0,
+          "line": [
+            "ATTACK(back0->base)",
+            "ATTACK(back1->base)"
+          ]
+        },
+        {
+          "name": "armor_pierce",
+          "tags": [
+            "armor",
+            "trade"
+          ],
+          "solved": true,
+          "success": null,
+          "playouts": 0,
+          "line": [
+            "ATTACK(back3->front0)",
+            "PLAY(0)",
+            "MOVE(0)",
+            "ATTACK(front0->base)",
+            "MOVE(0)",
+            "MOVE(0)",
+            "END_TURN"
+          ]
+        },
+        {
+          "name": "armor_attacker_survives",
+          "tags": [
+            "armor",
+            "trade"
+          ],
+          "solved": true,
+          "success": null,
+          "playouts": 0,
+          "line": [
+            "ATTACK(back0->front0)",
+            "PLAY(0)",
+            "MOVE(1)",
+            "MOVE(1)",
+            "END_TURN"
+          ]
+        },
+        {
+          "name": "move_cost_hold_frontline",
+          "tags": [
+            "move_cost",
+            "frontline",
+            "threat"
+          ],
+          "solved": false,
+          "success": null,
+          "playouts": 0,
+          "line": [
+            "PLAY(1)",
+            "END_TURN"
+          ]
+        },
+        {
+          "name": "clear_frontline_then_lethal",
+          "tags": [
+            "frontline",
+            "defense",
+            "fast",
+            "lethal"
+          ],
+          "solved": false,
+          "success": null,
+          "playouts": 0,
+          "line": [
+            "ATTACK(back0->front0)",
+            "ATTACK(back1->front0)",
+            "PLAY(0)",
+            "MOVE(0)",
+            "END_TURN"
+          ]
+        },
+        {
+          "name": "stop_lethal_kill_right_unit",
+          "tags": [
+            "threat",
+            "ranged"
+          ],
+          "solved": true,
+          "success": null,
+          "playouts": 0,
+          "line": [
+            "ATTACK(back0->front0)",
+            "PLAY(0)",
+            "END_TURN"
+          ]
+        },
+        {
+          "name": "ranged_no_return",
+          "tags": [
+            "ranged",
+            "trade",
+            "fast",
+            "lethal"
+          ],
+          "solved": true,
+          "success": null,
+          "playouts": 0,
+          "line": [
+            "ATTACK(back1->front0)",
+            "PLAY(0)",
+            "MOVE(0)",
+            "ATTACK(front0->base)"
+          ]
+        },
+        {
+          "name": "budget_cheap_movers",
+          "tags": [
+            "move_cost",
+            "fast",
+            "lethal"
+          ],
+          "solved": false,
+          "success": null,
+          "playouts": 0,
+          "line": [
+            "MOVE(0)",
+            "ATTACK(front0->base)",
+            "MOVE(2)",
+            "ATTACK(front1->base)",
+            "END_TURN"
+          ]
+        },
+        {
+          "name": "base_ignores_defense",
+          "tags": [
+            "defense",
+            "lethal",
+            "seat1"
+          ],
+          "solved": true,
+          "success": null,
+          "playouts": 0,
+          "line": [
+            "ATTACK(front0->base)",
+            "ATTACK(front2->base)",
+            "ATTACK(front1->base)"
+          ]
+        },
+        {
+          "name": "sacrifice_to_clear",
+          "tags": [
+            "frontline",
+            "fast",
+            "lethal",
+            "trade"
+          ],
+          "solved": false,
+          "success": null,
+          "playouts": 0,
+          "line": [
+            "ATTACK(back0->front0)",
+            "MOVE(0)",
+            "END_TURN"
+          ]
+        },
+        {
+          "name": "ranged_through_defense",
+          "tags": [
+            "ranged",
+            "defense",
+            "sequencing",
+            "threat"
+          ],
+          "solved": false,
+          "success": null,
+          "playouts": 0,
+          "line": [
+            "ATTACK(back0->base)",
+            "ATTACK(back1->base)",
+            "PLAY(1)",
+            "ATTACK(back2->base)",
+            "PLAY(0)",
+            "END_TURN"
+          ]
+        },
+        {
+          "name": "operation_lethal",
+          "tags": [
+            "operation",
+            "effects",
+            "choice",
+            "lethal",
+            "sequencing"
+          ],
+          "solved": false,
+          "success": null,
+          "playouts": 0,
+          "line": [
+            "PLAY(1)",
+            "PLAY(0)",
+            "END_TURN"
+          ]
+        },
+        {
+          "name": "on_death_exploit",
+          "tags": [
+            "on_death",
+            "effects",
+            "trade",
+            "threat",
+            "seat1"
+          ],
+          "solved": true,
+          "success": null,
+          "playouts": 0,
+          "line": [
+            "ATTACK(back0->front0)",
+            "PLAY(0)",
+            "MOVE(0)",
+            "END_TURN"
+          ]
+        },
+        {
+          "name": "effect_clears_defense",
+          "tags": [
+            "effects",
+            "operation",
+            "choice",
+            "defense",
+            "armor",
+            "threat"
+          ],
+          "solved": false,
+          "success": null,
+          "playouts": 0,
+          "line": [
+            "ATTACK(back0->base)",
+            "PLAY(1)",
+            "ATTACK(back1->base)",
+            "PLAY(0)",
+            "END_TURN"
+          ]
+        },
+        {
+          "name": "mulligan_sanity",
+          "tags": [
+            "mulligan",
+            "seat1"
+          ],
+          "solved": true,
+          "success": null,
+          "playouts": 0,
+          "line": [
+            "MULLIGAN(3)",
+            "MULLIGAN(4)",
+            "CONFIRM"
+          ]
+        }
+      ]
+    },
+    "random": {
+      "agent": "random",
+      "n": 20,
+      "n_solved": null,
+      "pct_solved": 12.75,
+      "mean_success": 0.1275,
+      "results": [
+        {
+          "name": "fast_move_attack_lethal",
+          "tags": [
+            "fast",
+            "lethal",
+            "move_cost"
+          ],
+          "solved": null,
+          "success": 0.2,
+          "playouts": 20,
+          "line": [
+            "END_TURN"
+          ]
+        },
+        {
+          "name": "fast_attack_then_move",
+          "tags": [
+            "fast",
+            "frontline",
+            "threat"
+          ],
+          "solved": null,
+          "success": 0.1,
+          "playouts": 20,
+          "line": [
+            "ATTACK(back0->front0)",
+            "MOVE(0)",
+            "END_TURN"
+          ]
+        },
+        {
+          "name": "defense_backline_order",
+          "tags": [
+            "defense",
+            "sequencing",
+            "threat"
+          ],
+          "solved": null,
+          "success": 0.1,
+          "playouts": 20,
+          "line": [
+            "ATTACK(front1->back0)",
+            "END_TURN"
+          ]
+        },
+        {
+          "name": "defense_frontline_ranged",
+          "tags": [
+            "defense",
+            "ranged",
+            "frontline",
+            "threat"
+          ],
+          "solved": null,
+          "success": 0.35,
+          "playouts": 20,
+          "line": [
+            "PLAY(0)",
+            "ATTACK(back1->front0)",
+            "ATTACK(back3->front0)",
+            "ATTACK(back0->front0)",
+            "ATTACK(back2->front0)",
+            "END_TURN"
+          ]
+        },
+        {
+          "name": "ranged_finish_backline",
+          "tags": [
+            "ranged",
+            "armor",
+            "threat"
+          ],
+          "solved": null,
+          "success": 0.0,
+          "playouts": 20,
+          "line": [
+            "ATTACK(back1->back1)",
+            "END_TURN"
+          ]
+        },
+        {
+          "name": "ranged_base_lethal",
+          "tags": [
+            "ranged",
+            "lethal",
+            "seat1"
+          ],
+          "solved": null,
+          "success": 0.1,
+          "playouts": 20,
+          "line": [
+            "PLAY(0)",
+            "ATTACK(back2->front0)",
+            "ATTACK(back1->back0)",
+            "ATTACK(back0->front1)",
+            "END_TURN"
+          ]
+        },
+        {
+          "name": "armor_pierce",
+          "tags": [
+            "armor",
+            "trade"
+          ],
+          "solved": null,
+          "success": 0.25,
+          "playouts": 20,
+          "line": [
+            "ATTACK(back2->front0)",
+            "ATTACK(back1->front0)",
+            "END_TURN"
+          ]
+        },
+        {
+          "name": "armor_attacker_survives",
+          "tags": [
+            "armor",
+            "trade"
+          ],
+          "solved": null,
+          "success": 0.3,
+          "playouts": 20,
+          "line": [
+            "ATTACK(back0->front0)",
+            "MOVE(1)",
+            "END_TURN"
+          ]
+        },
+        {
+          "name": "move_cost_hold_frontline",
+          "tags": [
+            "move_cost",
+            "frontline",
+            "threat"
+          ],
+          "solved": null,
+          "success": 0.1,
+          "playouts": 20,
+          "line": [
+            "END_TURN"
+          ]
+        },
+        {
+          "name": "clear_frontline_then_lethal",
+          "tags": [
+            "frontline",
+            "defense",
+            "fast",
+            "lethal"
+          ],
+          "solved": null,
+          "success": 0.0,
+          "playouts": 20,
+          "line": [
+            "ATTACK(back1->front0)",
+            "PLAY(0)",
+            "ATTACK(back0->front0)",
+            "MOVE(0)",
+            "END_TURN"
+          ]
+        },
+        {
+          "name": "stop_lethal_kill_right_unit",
+          "tags": [
+            "threat",
+            "ranged"
+          ],
+          "solved": null,
+          "success": 0.2,
+          "playouts": 20,
+          "line": [
+            "PLAY(0)",
+            "ATTACK(back0->front0)",
+            "END_TURN"
+          ]
+        },
+        {
+          "name": "ranged_no_return",
+          "tags": [
+            "ranged",
+            "trade",
+            "fast",
+            "lethal"
+          ],
+          "solved": null,
+          "success": 0.05,
+          "playouts": 20,
+          "line": [
+            "END_TURN"
+          ]
+        },
+        {
+          "name": "budget_cheap_movers",
+          "tags": [
+            "move_cost",
+            "fast",
+            "lethal"
+          ],
+          "solved": null,
+          "success": 0.1,
+          "playouts": 20,
+          "line": [
+            "END_TURN"
+          ]
+        },
+        {
+          "name": "base_ignores_defense",
+          "tags": [
+            "defense",
+            "lethal",
+            "seat1"
+          ],
+          "solved": null,
+          "success": 0.05,
+          "playouts": 20,
+          "line": [
+            "PLAY(0)",
+            "ATTACK(front0->base)",
+            "ATTACK(front2->back0)",
+            "ATTACK(front1->back1)",
+            "END_TURN"
+          ]
+        },
+        {
+          "name": "sacrifice_to_clear",
+          "tags": [
+            "frontline",
+            "fast",
+            "lethal",
+            "trade"
+          ],
+          "solved": null,
+          "success": 0.05,
+          "playouts": 20,
+          "line": [
+            "END_TURN"
+          ]
+        },
+        {
+          "name": "ranged_through_defense",
+          "tags": [
+            "ranged",
+            "defense",
+            "sequencing",
+            "threat"
+          ],
+          "solved": null,
+          "success": 0.0,
+          "playouts": 20,
+          "line": [
+            "ATTACK(back2->front0)",
+            "ATTACK(back0->base)",
+            "ATTACK(back1->front0)",
+            "PLAY(1)",
+            "END_TURN"
+          ]
+        },
+        {
+          "name": "operation_lethal",
+          "tags": [
+            "operation",
+            "effects",
+            "choice",
+            "lethal",
+            "sequencing"
+          ],
+          "solved": null,
+          "success": 0.1,
+          "playouts": 20,
+          "line": [
+            "PLAY(1)",
+            "ATTACK(back0->front0)",
+            "PLAY(0)",
+            "END_TURN"
+          ]
+        },
+        {
+          "name": "on_death_exploit",
+          "tags": [
+            "on_death",
+            "effects",
+            "trade",
+            "threat",
+            "seat1"
+          ],
+          "solved": null,
+          "success": 0.5,
+          "playouts": 20,
+          "line": [
+            "ATTACK(back1->front0)",
+            "END_TURN"
+          ]
+        },
+        {
+          "name": "effect_clears_defense",
+          "tags": [
+            "effects",
+            "operation",
+            "choice",
+            "defense",
+            "armor",
+            "threat"
+          ],
+          "solved": null,
+          "success": 0.0,
+          "playouts": 20,
+          "line": [
+            "PLAY(0)",
+            "ATTACK(back0->back0)",
+            "ATTACK(back1->back0)",
+            "PLAY(0)",
+            "END_TURN"
+          ]
+        },
+        {
+          "name": "mulligan_sanity",
+          "tags": [
+            "mulligan",
+            "seat1"
+          ],
+          "solved": null,
+          "success": 0.0,
+          "playouts": 20,
+          "line": [
+            "MULLIGAN(1)",
+            "MULLIGAN(3)",
+            "MULLIGAN(2)",
+            "MULLIGAN(0)",
+            "CONFIRM"
+          ]
+        }
+      ]
+    },
+    "greedy": {
+      "agent": "greedy",
+      "n": 20,
+      "n_solved": 9,
+      "pct_solved": 45.0,
+      "mean_success": null,
+      "results": [
+        {
+          "name": "fast_move_attack_lethal",
+          "tags": [
+            "fast",
+            "lethal",
+            "move_cost"
+          ],
+          "solved": true,
+          "success": null,
+          "playouts": 0,
+          "line": [
+            "MOVE(0)",
+            "ATTACK(front0->base)"
+          ]
+        },
+        {
+          "name": "fast_attack_then_move",
+          "tags": [
+            "fast",
+            "frontline",
+            "threat"
+          ],
+          "solved": false,
+          "success": null,
+          "playouts": 0,
+          "line": [
+            "PLAY(0)",
+            "ATTACK(back0->front0)",
+            "END_TURN"
+          ]
+        },
+        {
+          "name": "defense_backline_order",
+          "tags": [
+            "defense",
+            "sequencing",
+            "threat"
+          ],
+          "solved": true,
+          "success": null,
+          "playouts": 0,
+          "line": [
+            "PLAY(0)",
+            "PLAY(0)",
+            "ATTACK(front0->back0)",
+            "ATTACK(front1->back0)",
+            "END_TURN"
+          ]
+        },
+        {
+          "name": "defense_frontline_ranged",
+          "tags": [
+            "defense",
+            "ranged",
+            "frontline",
+            "threat"
+          ],
+          "solved": false,
+          "success": null,
+          "playouts": 0,
+          "line": [
+            "PLAY(0)",
+            "ATTACK(back2->front0)",
+            "ATTACK(back0->back0)",
+            "ATTACK(back1->back0)",
+            "END_TURN"
+          ]
+        },
+        {
+          "name": "ranged_finish_backline",
+          "tags": [
+            "ranged",
+            "armor",
+            "threat"
+          ],
+          "solved": true,
+          "success": null,
+          "playouts": 0,
+          "line": [
+            "PLAY(0)",
+            "ATTACK(back0->back0)",
+            "ATTACK(back1->back0)",
+            "END_TURN"
+          ]
+        },
+        {
+          "name": "ranged_base_lethal",
+          "tags": [
+            "ranged",
+            "lethal",
+            "seat1"
+          ],
+          "solved": true,
+          "success": null,
+          "playouts": 0,
+          "line": [
+            "ATTACK(back0->base)",
+            "ATTACK(back1->base)"
+          ]
+        },
+        {
+          "name": "armor_pierce",
+          "tags": [
+            "armor",
+            "trade"
+          ],
+          "solved": true,
+          "success": null,
+          "playouts": 0,
+          "line": [
+            "PLAY(0)",
+            "ATTACK(back3->front0)",
+            "MOVE(0)",
+            "MOVE(1)",
+            "MOVE(0)",
+            "ATTACK(front0->base)",
+            "END_TURN"
+          ]
+        },
+        {
+          "name": "armor_attacker_survives",
+          "tags": [
+            "armor",
+            "trade"
+          ],
+          "solved": true,
+          "success": null,
+          "playouts": 0,
+          "line": [
+            "PLAY(0)",
+            "ATTACK(back0->front0)",
+            "MOVE(1)",
+            "MOVE(1)",
+            "END_TURN"
+          ]
+        },
+        {
+          "name": "move_cost_hold_frontline",
+          "tags": [
+            "move_cost",
+            "frontline",
+            "threat"
+          ],
+          "solved": false,
+          "success": null,
+          "playouts": 0,
+          "line": [
+            "PLAY(1)",
+            "END_TURN"
+          ]
+        },
+        {
+          "name": "clear_frontline_then_lethal",
+          "tags": [
+            "frontline",
+            "defense",
+            "fast",
+            "lethal"
+          ],
+          "solved": false,
+          "success": null,
+          "playouts": 0,
+          "line": [
+            "PLAY(1)",
+            "ATTACK(back1->front0)",
+            "ATTACK(back0->front0)",
+            "END_TURN"
+          ]
+        },
+        {
+          "name": "stop_lethal_kill_right_unit",
+          "tags": [
+            "threat",
+            "ranged"
+          ],
+          "solved": false,
+          "success": null,
+          "playouts": 0,
+          "line": [
+            "PLAY(0)",
+            "ATTACK(back0->front1)",
+            "END_TURN"
+          ]
+        },
+        {
+          "name": "ranged_no_return",
+          "tags": [
+            "ranged",
+            "trade",
+            "fast",
+            "lethal"
+          ],
+          "solved": true,
+          "success": null,
+          "playouts": 0,
+          "line": [
+            "PLAY(0)",
+            "ATTACK(back1->front0)",
+            "MOVE(0)",
+            "ATTACK(front0->base)"
+          ]
+        },
+        {
+          "name": "budget_cheap_movers",
+          "tags": [
+            "move_cost",
+            "fast",
+            "lethal"
+          ],
+          "solved": false,
+          "success": null,
+          "playouts": 0,
+          "line": [
+            "MOVE(0)",
+            "MOVE(2)",
+            "ATTACK(front0->back0)",
+            "ATTACK(front1->base)",
+            "END_TURN"
+          ]
+        },
+        {
+          "name": "base_ignores_defense",
+          "tags": [
+            "defense",
+            "lethal",
+            "seat1"
+          ],
+          "solved": true,
+          "success": null,
+          "playouts": 0,
+          "line": [
+            "ATTACK(front0->base)",
+            "ATTACK(front2->base)",
+            "ATTACK(front1->base)"
+          ]
+        },
+        {
+          "name": "sacrifice_to_clear",
+          "tags": [
+            "frontline",
+            "fast",
+            "lethal",
+            "trade"
+          ],
+          "solved": false,
+          "success": null,
+          "playouts": 0,
+          "line": [
+            "ATTACK(back0->front0)",
+            "MOVE(0)",
+            "END_TURN"
+          ]
+        },
+        {
+          "name": "ranged_through_defense",
+          "tags": [
+            "ranged",
+            "defense",
+            "sequencing",
+            "threat"
+          ],
+          "solved": false,
+          "success": null,
+          "playouts": 0,
+          "line": [
+            "PLAY(1)",
+            "PLAY(0)",
+            "ATTACK(back0->front0)",
+            "ATTACK(back1->back0)",
+            "ATTACK(back2->back0)",
+            "END_TURN"
+          ]
+        },
+        {
+          "name": "operation_lethal",
+          "tags": [
+            "operation",
+            "effects",
+            "choice",
+            "lethal",
+            "sequencing"
+          ],
+          "solved": false,
+          "success": null,
+          "playouts": 0,
+          "line": [
+            "PLAY(1)",
+            "PLAY(0)",
+            "END_TURN"
+          ]
+        },
+        {
+          "name": "on_death_exploit",
+          "tags": [
+            "on_death",
+            "effects",
+            "trade",
+            "threat",
+            "seat1"
+          ],
+          "solved": true,
+          "success": null,
+          "playouts": 0,
+          "line": [
+            "PLAY(0)",
+            "ATTACK(back0->front0)",
+            "MOVE(0)",
+            "END_TURN"
+          ]
+        },
+        {
+          "name": "effect_clears_defense",
+          "tags": [
+            "effects",
+            "operation",
+            "choice",
+            "defense",
+            "armor",
+            "threat"
+          ],
+          "solved": false,
+          "success": null,
+          "playouts": 0,
+          "line": [
+            "PLAY(1)",
+            "PLAY(0)",
+            "ATTACK(back0->back0)",
+            "ATTACK(back1->back0)",
+            "END_TURN"
+          ]
+        },
+        {
+          "name": "mulligan_sanity",
+          "tags": [
+            "mulligan",
+            "seat1"
+          ],
+          "solved": false,
+          "success": null,
+          "playouts": 0,
+          "line": [
+            "CONFIRM"
+          ]
+        }
+      ]
+    }
+  }
+}

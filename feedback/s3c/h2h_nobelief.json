@@ -1,0 +1,137 @@
+{
+  "agent": "runs/s3c/best.pt",
+  "agent_kind": "transformer",
+  "agent_kwargs": {},
+  "games_requested": 2000,
+  "decks": [
+    "random"
+  ],
+  "games_per_opponent": {
+    "random": 2000
+  },
+  "start_seed": 0,
+  "workers": 8,
+  "deck_names": [
+    "Blitz",
+    "Bulwark",
+    "Volley",
+    "Legion"
+  ],
+  "deck_styles": [
+    "aggro fast troops",
+    "defensive",
+    "ranged-heavy",
+    "balanced"
+  ],
+  "verdict": null,
+  "skipped": [],
+  "results": [
+    {
+      "opponent": "runs/s3c_nobelief/best.pt",
+      "label": "best.pt",
+      "agent_a": "runs/s3c/best.pt",
+      "agent_b": "runs/s3c_nobelief/best.pt",
+      "kwargs_a": {},
+      "kwargs_b": {},
+      "start_seed": 0,
+      "n_deals": 1000,
+      "decks": "random",
+      "deck_names": [
+        "Blitz",
+        "Bulwark",
+        "Volley",
+        "Legion"
+      ],
+      "fixed_decks": false,
+      "games": 2000,
+      "wins": 1063,
+      "draws": 0,
+      "losses": 937,
+      "win_rate": 0.5315,
+      "draw_rate": 0.0,
+      "loss_rate": 0.4685,
+      "score": 0.5315,
+      "win_rate_ci95": [
+        0.5095909682760833,
+        0.5532882577451976
+      ],
+      "by_seat": {
+        "0": {
+          "games": 1000,
+          "wins": 538,
+          "draws": 0,
+          "losses": 462,
+          "win_rate": 0.538,
+          "draw_rate": 0.0,
+          "loss_rate": 0.462,
+          "score": 0.538,
+          "win_rate_ci95": [
+            0.5070132970793998,
+            0.5686958692756982
+          ]
+        },
+        "1": {
+          "games": 1000,
+          "wins": 525,
+          "draws": 0,
+          "losses": 475,
+          "win_rate": 0.525,
+          "draw_rate": 0.0,
+          "loss_rate": 0.475,
+          "score": 0.525,
+          "win_rate_ci95": [
+            0.49401247046123636,
+            0.555796191614486
+          ]
+        }
+      },
+      "by_turn_order": {
+        "first": {
+          "games": 1000,
+          "wins": 708,
+          "draws": 0,
+          "losses": 292,
+          "win_rate": 0.708,
+          "draw_rate": 0.0,
+          "loss_rate": 0.292,
+          "score": 0.708,
+          "win_rate_ci95": [
+            0.679065763076869,
+            0.7353423053931402
+          ]
+        },
+        "second": {
+          "games": 1000,
+          "wins": 355,
+          "draws": 0,
+          "losses": 645,
+          "win_rate": 0.355,
+          "draw_rate": 0.0,
+          "loss_rate": 0.645,
+          "score": 0.355,
+          "win_rate_ci95": [
+            0.3259484631755532,
+            0.38516129678525773
+          ]
+        }
+      },
+      "matchups": [],
+      "min_cell": null,
+      "min_ordered_cell": null,
+      "deck_matrix": null,
+      "deals": {
+        "a_won_both": 172,
+        "split": 719,
+        "b_won_both": 109,
+        "with_draw": 0
+      },
+      "avg_rounds": 10.3095,
+      "avg_steps": 82.397,
+      "elapsed_s": 24.885992400115356,
+      "games_per_s": 80.36649565121338
+    }
+  ],
+  "baseline": null,
+  "reference": null,
+  "scenarios": null
+}
